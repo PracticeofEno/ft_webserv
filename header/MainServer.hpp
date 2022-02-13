@@ -12,7 +12,7 @@ class MainServer
         ~MainServer();
 
     private:
-        //Server makeServer(std::ifstream& inputFile);
+        void makeServerPool(std::string data);
 
 
 };

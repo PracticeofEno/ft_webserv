@@ -1,7 +1,9 @@
 #ifndef LOCATION_HPP
 #define LOCATION_HPP
 
-#include "total.hpp"
+#include <vector>
+#include <string.h>
+#include <iostream>
 
 class Location
 {
@@ -12,6 +14,8 @@ class Location
         bool                        directoryListing;
         std::string                 cgiExtension;
         std::string                 uploadPath;
+        Location();
+        ~Location();
 
     private:
 };

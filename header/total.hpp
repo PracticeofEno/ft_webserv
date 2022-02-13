@@ -14,9 +14,9 @@
 #include <vector>
 #include <map>
 
-#include "MainsServer.hpp"
 #include "Location.hpp"
 #include "Server.hpp"
 #include "ServerPool.hpp"
+#include "MainServer.hpp"
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "total.hpp"
+#include "Location.hpp"
 
 class Server
 {
@@ -12,6 +12,9 @@ class Server
         std::vector<Location>   locations;
         int                     socket;
         int                     port;
+
+        Server();
+        ~Server();
         
     private :
 };
