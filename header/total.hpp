@@ -17,5 +17,6 @@
 #include "MainsServer.hpp"
 #include "Location.hpp"
 #include "Server.hpp"
+#include "ServerPool.hpp"
 
 #endif

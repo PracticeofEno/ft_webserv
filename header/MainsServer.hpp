@@ -8,11 +8,11 @@ class MainServer
     public :
         ServerPool sp;
         
-
         MainServer(std::string fileName);
         ~MainServer();
 
     private:
+        //Server makeServer(std::ifstream& inputFile);
 
 
 };
