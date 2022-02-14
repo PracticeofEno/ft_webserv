@@ -13,7 +13,8 @@ class MainServer
 
     private:
         void makeServerPool(std::string data);
-
+        Server* makeServer(std::string& data);
+        Location* makeLocation(std::string& data);
 
 };
 

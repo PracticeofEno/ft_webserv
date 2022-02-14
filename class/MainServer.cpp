@@ -30,35 +30,73 @@ void MainServer::makeServerPool(std::string data)
 {
     size_t endPos;
     std::string tmp;
-    tmp = data;
-    while (true)
+
+    endPos = data.find("\r\n");
+    while (endPos != std::string::npos)
     {
-        endPos = tmp.find("\r\n");
-        if (endPos != std::string::npos)
+        tmp = data.substr(0, endPos + 2);
+        data.erase(0, endPos + 2);
+        endPos = data.find("\r\n");
+        if (tmp.find("server") != std::string::npos && tmp.find("{") != std::string::npos)
         {
-            if (tmp.find("server", endPos) != std::string::npos && tmp.find("{", endPos) != std::string::npos)
-            {
-                tmp.erase(0, endPos + 2);
-                sp.serverPool.push_back(makeServer(tmp));
-            }
+            sp.serverPool.push_back(*makeServer(data));
+            endPos = data.find("\r\n");
         }
     }
-    (void)data;
 }
 
-Server &makeServer(std::string data)
+Server* MainServer::makeServer(std::string& data)
 {
     std::string tmp;
-    Server server;
+    Server* server;
     size_t endPos;
 
-    tmp = data;
-    while (true)
+    server = new Server();
+
+    endPos = data.find("\r\n");
+    while (endPos != std::string::npos)
     {
-        endPos = tmp.find("\r\n");
-        if (tmp.find("location", endPos) != std::string::npos && tmp.find("{", endPos) != std::string::npos)
+        tmp = data.substr(0, endPos + 2);
+        data.erase(0, endPos + 2);
+        endPos = data.find("\r\n");
+        if (tmp.find("location") != std::string::npos && tmp.find("{") != std::string::npos)
         {
-            Location location;
+            server->locations.push_back(*makeLocation(data));
+            endPos = data.find("\r\n");
+        }
+        else if (tmp.find("}") != std::string::npos)
+        {
+            break;
+        }
+        else
+        {
+            server->dataSetting(tmp);
         }
     }
+    return server;
+}
+
+Location* MainServer::makeLocation(std::string& data)
+{
+    std::string tmp;
+    Location* location;
+    size_t endPos;
+
+    location = new Location();
+    endPos = data.find("\r\n");
+    while (endPos != std::string::npos)
+    {
+        tmp = data.substr(0, endPos + 2);
+        data.erase(0, endPos + 2);
+        endPos = data.find("\r\n");
+        if (tmp.find("}") != std::string::npos)
+        {
+            break;
+        }
+        else
+        {
+            location->dataSetting(tmp);
+        }
+    }
+    return location;
 }
