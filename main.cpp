@@ -1,9 +1,8 @@
-#include "total.hpp"
+#include "Total.hpp"
 
 
 int main()
 {
-    MainServer("default.config");
-    
+    MainServer main_server("default.config");
     return (0);
 }

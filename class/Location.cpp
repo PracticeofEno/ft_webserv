@@ -25,6 +25,23 @@ Location::~Location()
 {
 }
 
+Location::Location(const Location& location)
+{
+    *this = location;
+}
+
+Location& Location::operator=(const Location& location)
+{
+    this->cgi_extension_ = location.cgi_extension_;
+    this->dl_default_ = location.dl_default_;
+    this->root_ = location.root_;
+    this->method_ = location.method_;
+    this->upload_path_ = location.upload_path_;
+    this->directory_listing_ = location.directory_listing_;
+    this->redirection_ = location.redirection_;
+    return *this;
+}
+
 void Location::dataSetting(std::string data)
 {
     std::string key, value;
@@ -33,23 +50,23 @@ void Location::dataSetting(std::string data)
     data = data.erase(0, data.find_first_of(' '));
     value = trim(data);
     if (key.compare("method") == 0)
-        method = value;
+        method_ = value;
     else if (key.compare("redirection") == 0)
-        redirection = value;
+        redirection_ = value;
     else if (key.compare("root") == 0)
-        root = value;
+        root_ = value;
     else if (key.compare("cgiExtension") == 0)
-        cgiExtension = value;
+        cgi_extension_ = value;
     else if (key.compare("uploadPath") == 0)
-        uploadPath = value;
+        upload_path_ = value;
     else if (key.compare("dlDefault") == 0)
-        dlDefault = value;
+        dl_default_ = value;
     else if (key.compare("directoryListing") == 0)
     {
-        directoryListing = false;
+        directory_listing_ = false;
         if (value.compare("on") == 0)
-            directoryListing = true;
+            directory_listing_ = true;
         else if (value.compare("off") == 0)
-            directoryListing = false;
+            directory_listing_ = false;
     }
 }

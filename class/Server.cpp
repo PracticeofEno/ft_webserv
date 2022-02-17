@@ -27,6 +27,23 @@ Server::~Server()
     
 }
 
+Server::Server(const Server& server)
+{
+    *this = server;
+}
+
+Server& Server::operator=(const Server& server)
+{
+    this->port_ = server.port_;
+    this->root_ = server.root_;
+    this->error_page_path_ = server.error_page_path_;
+    this->client_body_size_ = server.client_body_size_;
+    this->server_name_ = server.server_name_;
+    this->socket_ = server.socket_;
+    this->locations_ = server.locations_;
+    return *this;
+}
+
 void Server::dataSetting(std::string data)
 {
     std::string key, value;
@@ -35,13 +52,13 @@ void Server::dataSetting(std::string data)
     data = data.erase(0, data.find_first_of(' '));
     value = trim(data);
     if (key.compare("serverName") == 0)
-        serverName = value;
+        server_name_ = value;
     else if (key.compare("errorPagePath") == 0)
-        errorPagePath = value;
+        error_page_path_ = value;
     else if (key.compare("root") == 0)
-        root = value;
+        root_ = value;
     else if (key.compare("port") == 0)
-        std::stringstream(value) >> port;
+        std::stringstream(value) >> port_;
     else if (key.compare("clientBodySize") == 0)
-        std::stringstream(value) >> clientBodySize;
+        std::stringstream(value) >> client_body_size_;
 }

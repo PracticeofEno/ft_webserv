@@ -6,7 +6,7 @@
 class ServerPool
 {
     public :
-        std::vector<Server> serverPool;
+        std::vector<Server> serverPool_;
 
         ServerPool();
         ~ServerPool();

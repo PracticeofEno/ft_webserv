@@ -15,8 +15,8 @@ MainServer::MainServer(std::string fileName)
             data.append("\r\n");
         }
         inputFile.close();
-        std::cout << data << std::endl;
         makeServerPool(data);
+
     }
     else
         std::cout << "Config file open fail" << std::endl;
@@ -39,19 +39,17 @@ void MainServer::makeServerPool(std::string data)
         endPos = data.find("\r\n");
         if (tmp.find("server") != std::string::npos && tmp.find("{") != std::string::npos)
         {
-            sp.serverPool.push_back(*makeServer(data));
+            sp_.serverPool_.push_back(makeServer(data));
             endPos = data.find("\r\n");
         }
     }
 }
 
-Server* MainServer::makeServer(std::string& data)
+Server MainServer::makeServer(std::string& data)
 {
     std::string tmp;
-    Server* server;
+    Server server;
     size_t endPos;
-
-    server = new Server();
 
     endPos = data.find("\r\n");
     while (endPos != std::string::npos)
@@ -61,7 +59,7 @@ Server* MainServer::makeServer(std::string& data)
         endPos = data.find("\r\n");
         if (tmp.find("location") != std::string::npos && tmp.find("{") != std::string::npos)
         {
-            server->locations.push_back(*makeLocation(data));
+            server.locations_.push_back(makeLocation(data));
             endPos = data.find("\r\n");
         }
         else if (tmp.find("}") != std::string::npos)
@@ -70,19 +68,18 @@ Server* MainServer::makeServer(std::string& data)
         }
         else
         {
-            server->dataSetting(tmp);
+            server.dataSetting(tmp);
         }
     }
     return server;
 }
 
-Location* MainServer::makeLocation(std::string& data)
+Location MainServer::makeLocation(std::string& data)
 {
     std::string tmp;
-    Location* location;
+    Location location;
     size_t endPos;
 
-    location = new Location();
     endPos = data.find("\r\n");
     while (endPos != std::string::npos)
     {
@@ -95,7 +92,7 @@ Location* MainServer::makeLocation(std::string& data)
         }
         else
         {
-            location->dataSetting(tmp);
+            location.dataSetting(tmp);
         }
     }
     return location;
