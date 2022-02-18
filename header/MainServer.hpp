@@ -14,6 +14,7 @@ class MainServer
         ServerPool sp_;
         ConnectionPool cons_;
         
+        MainServer();
         MainServer(std::string file_name);
         ~MainServer();
         void init();

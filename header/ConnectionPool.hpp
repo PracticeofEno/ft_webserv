@@ -9,6 +9,7 @@ class ConnectionPool
         int epfd_;
         std::vector<Connection> cons_;
 
+        ConnectionPool();
         ConnectionPool(int epfd);
         ~ConnectionPool();
 
