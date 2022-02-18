@@ -84,7 +84,6 @@ void MainServer::init(void)
 
         _epfd = epoll_create(EPOLL_SIZE);                         // epoll 인스턴스 생성
         _ep_events_buf = new epoll_event[EPOLL_SIZE];             // 버퍼 동적할당
-
         this->cons_.addConnection(server_sock, SERVER);
     }
 }
@@ -163,6 +162,10 @@ Location MainServer::makeLocation(std::string &data)
 
 void MainServer::start()
 {
+    struct sockaddr_in clnt_addr;
+    int client_sock;
+    socklen_t addr_sz;
+
     while (1)
     {
         _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
@@ -175,11 +178,12 @@ void MainServer::start()
 
         for (int i = 0; i < _event_cnt; i++)
         {
-            if ( true/*서버소켓이라면 )*/)    // ConnectionPool 뒤적거려서 해당 소켓이 서버소켓인지 확인한뒤에
+            // ConnectionPool 뒤적거려서 해당 소켓이 서버소켓인지 확인한뒤에 서버라면
+            if (this->cons_.CheckServerSocket(_ep_events_buf[i].data.fd))    
             {
-                //addr_sz = sizeof(clnt_addr);
-                //client_sock = accept(server_sock, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
-                //connectionPool.addConnection(_ep_events_buf[i].data.fd);
+                addr_sz = sizeof(clnt_addr);
+                client_sock = accept(_ep_events_buf[i].data.fd, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
+                this->cons_.addConnection(_ep_events_buf[i].data.fd, CLIENT);
             }
             else  // 클라이언트 소켓에서 온거라면 알맞게 처리
             {
