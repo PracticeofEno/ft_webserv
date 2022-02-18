@@ -48,3 +48,27 @@ void ConnectionPool::deleteConnection(int socket)
         cons_.erase(it);
     epoll_ctl(this->epfd_, EPOLL_CTL_DEL, socket, NULL);
 }
+
+bool ConnectionPool::CheckServerSocket(int socket)
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator its = cons_.begin();
+    std::vector<Connection>::iterator ite = cons_.end();
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->socket_ == socket)
+            break;
+    }
+    if (it != ite)
+    {
+        if (it->socket_ == socket)
+        {
+            if (it->kind_ == SERVER)
+                return (true);
+            else
+                return (false);
+        }
+    }
+    return (false);
+}
