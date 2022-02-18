@@ -18,5 +18,7 @@
 #include "Server.hpp"
 #include "ServerPool.hpp"
 #include "MainServer.hpp"
+#include "Connection.hpp"
+#include "ConnectionPool.hpp"
 
 #endif
