@@ -1,27 +1,39 @@
-NAME			= webserv
+NAME = ft_webserv
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -D_GLIBCXX_DEBUG
+CC = clang++
 
-CC				= c++
-CFLAGS			= -Wall -Werror -Wextra -std=c++98
+CFLAGS += -I ./header/ -I ./class/
 
-SRCS			= main.cpp \
-					Server.cpp
+CLASS_FILES = 	MainServer \
+				ServerPool \
+				Server \
+				Location \
 
-OBJS			= $(SRCS:.cpp=.o)
 
-$(NAME)			: $(OBJS)
-					$(CC) $(CFLAGS) $(OBJS) -o $@
+CLASS_SRCS = $(addprefix class/, $(addsuffix .cpp, $(CLASS_FILES)))
 
-%.o				: %.cpp
-					$(CC) $(CFLAGS) -c $< -o $@
+OBJS = $(CLASS_SRCS:.cpp=.o)
 
-all				: $(NAME)
+all : $(NAME)
 
-clean			:
-					rm -rf $(OBJS)
+$(NAME) : $(OBJS)
+	$(CC) $(CFLAGS) -g -o $(NAME) main.cpp $(OBJS)
 
-fclean			:
-					rm -rf $(NAME) $(OBJS)
+%.o : %.cpp
+	$(CC) $(CFLAGS) -g -c -o $@ $^
 
-re				: fclean all
+clean :
+	rm -f $(OBJS) $(C_OBJS)
 
-.PHONY			: all clean fclean re bonus
+fclean :
+	rm -f $(OBJS) $(C_OBJS) $(NAME)
+
+re : fclean all
+
+map : $(MAP_OBJS)
+	$(CC) $(CFLAGS) -g -o map $(MAP_OBJS)
+vector :
+
+stack :
+
+.PHONY: clean fclean all re bonus

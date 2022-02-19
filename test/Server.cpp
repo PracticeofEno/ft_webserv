@@ -114,6 +114,7 @@ Server::Server(unsigned int port) : clnt_addr_size_(sizeof(serv_addr_))
 			}
 			else
 			{
+				memset(buf, 0, sizeof(buf));
 				read_val = read(clnt_sock_, buf, sizeof(buf));
 
 				if (read_val == 0)
