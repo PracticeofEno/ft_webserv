@@ -13,6 +13,7 @@ class MainServer
     public :
         ServerPool sp_;
         ConnectionPool cons_;
+        std::vector<std::pair<std::string, std::string> > mime;
         
         MainServer();
         MainServer(std::string file_name);

@@ -16,6 +16,7 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
+        
     }
     else
         std::cout << "Config file open fail" << std::endl;
@@ -187,7 +188,7 @@ void MainServer::start()
             }
             else  // 클라이언트 소켓에서 온거라면 알맞게 처리
             {
-
+                //Request 처리
             }
         }
     }
