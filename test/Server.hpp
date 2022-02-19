@@ -24,7 +24,7 @@ class Server
 		struct sockaddr_in	serv_addr_;
 		struct sockaddr_in	clnt_addr_;
 		socklen_t			clnt_addr_size_;
-		//std::string			reqData_;
+		std::string			reqData_;
 };
 
 #endif
