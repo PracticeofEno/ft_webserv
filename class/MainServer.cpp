@@ -16,7 +16,8 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
-        
+        //makerMimeType();
+
     }
     else
         std::cout << "Config file open fail" << std::endl;

@@ -20,5 +20,7 @@
 #include "MainServer.hpp"
 #include "Connection.hpp"
 #include "ConnectionPool.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 
 #endif

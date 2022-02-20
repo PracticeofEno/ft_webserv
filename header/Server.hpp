@@ -25,6 +25,7 @@ class Server
         //////////////////////////////////////////////////////////
 
         void dataSetting(std::string data);
+        Response Server::handleRequest(Reqeust& request)
         
     private :
 };

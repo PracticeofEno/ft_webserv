@@ -1,7 +1,7 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include "server.hpp"
+#include "Total.hpp"
 
 class Request
 {
