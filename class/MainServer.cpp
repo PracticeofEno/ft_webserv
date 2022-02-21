@@ -1,5 +1,6 @@
 #include "MainServer.hpp"
 
+<<<<<<< HEAD
 MainServer::MainServer()
 {
 }
@@ -30,6 +31,9 @@ void MainServer::TestCode(Connection &tmp, Server server)
 
     server.handleRequest(req, tmp);
 }
+=======
+void MainServer::makeMimeType(std::string data)
+>>>>>>> d043503 (test)
 
 MainServer::MainServer(std::string fileName)
 {
@@ -47,6 +51,11 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
+<<<<<<< HEAD
+=======
+        //makerMimeType(mime);
+
+>>>>>>> d043503 (test)
     }
     else
         std::cout << "Config file open fail" << std::endl;
