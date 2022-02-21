@@ -13,7 +13,8 @@ class MainServer
     public :
         ServerPool sp_;
         ConnectionPool cons_;
-        std::vector<std::pair<std::string, std::string> > mime;
+        std::vector<std::pair<std::string, std::string> > mime; 
+        // mime 이라는 이름의 pair 클래스 생성
         
         MainServer();
         MainServer(std::string file_name);
