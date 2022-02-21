@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <vector>
 #include <map>
+#include <sstream>
 
 #include "Location.hpp"
 #include "Server.hpp"

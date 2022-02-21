@@ -1,10 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "Location.hpp"
-#include <iostream>
-#include <string>
-#include <sstream>
+#include "Total.hpp"
 
 class Server
 {
@@ -25,7 +22,7 @@ class Server
         //////////////////////////////////////////////////////////
 
         void dataSetting(std::string data);
-        Response Server::handleRequest(Reqeust& request)
+        Response Server::handleRequest(Request& request);
         
     private :
 };

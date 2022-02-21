@@ -62,3 +62,8 @@ void Server::dataSetting(std::string data)
     else if (key.compare("clientBodySize") == 0)
         std::stringstream(value) >> client_body_size_;
 }
+
+Response Server::handleRequest(Request& request)
+{
+    
+}
