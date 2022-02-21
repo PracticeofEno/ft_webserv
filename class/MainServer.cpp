@@ -1,5 +1,7 @@
 #include "MainServer.hpp"
 
+void MainServer::makeMimeType(std::string data)
+
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -16,7 +18,7 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
-        //makerMimeType();
+        //makerMimeType(mime);
 
     }
     else
