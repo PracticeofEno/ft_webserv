@@ -2,10 +2,8 @@
 
 ServerPool::ServerPool()
 {
-
 }
 
 ServerPool::~ServerPool()
 {
-    
 }

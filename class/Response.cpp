@@ -2,3 +2,25 @@
 
 Response::Response() {}
 Response::~Response() {}
+
+
+void Response::send(int fd)
+{
+    write(fd, this->http_version_.c_str(), this->http_version_.size());
+    write(fd, " ", 1);
+    write(fd, this->status_.code_.c_str(), this->status_.code_.size());
+    write(fd, " ", 1);
+    write(fd, this->status_.messasge_.c_str(), this->status_.messasge_.size());
+    write(fd, "\r\n", 2);
+
+    std::map<std::string, std::string>::iterator it;
+    std::map<std::string, std::string>::iterator its = this->header_.begin();
+    std::map<std::string, std::string>::iterator ite = this->header_.end();
+    for (it = its; it != ite; it++)
+    {
+        write(fd, it->first.c_str(), it->first.size());
+        write(fd, ": ", 2);
+        write(fd, it->second.c_str(), it->second.size());
+        write(fd, "\r\n", 2);
+    }
+}

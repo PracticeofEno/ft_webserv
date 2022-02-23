@@ -65,5 +65,5 @@ void Server::dataSetting(std::string data)
 
 Response Server::handleRequest(Request& request)
 {
-    
+   
 }
