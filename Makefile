@@ -2,7 +2,7 @@ NAME = ft_webserv
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -D_GLIBCXX_DEBUG
 CC = clang++
 
-CFLAGS += -I ./header/ -I ./class/
+CFLAGS += -I ./header/
 
 CLASS_FILES = 	MainServer \
 				ServerPool \
