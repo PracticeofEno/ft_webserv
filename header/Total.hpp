@@ -23,5 +23,6 @@
 #include "ConnectionPool.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "ResponseStatus.hpp"
 
 #endif

@@ -6,18 +6,18 @@
 class Response 
 {
     public:
-        std::string method_;
-        int         status_code_;
-        std::string status_message;
-        std::map<std::string, std::string> header;
-        std::string payload;
+        std::string http_version_;
+        ResponseStatus status_;
+        std::string status_code_;
+        std::string status_message_;
+        std::map<std::string, std::string> header_;
+        std::string payload_;
 
         Response();
         ~Response();
 
-
+        void send(int fd);
     private:
 
 };
-
 #endif
