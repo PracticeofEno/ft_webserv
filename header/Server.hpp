@@ -2,9 +2,9 @@
 #define SERVER_HPP
 
 #include "Total.hpp"
-#include "Request.hpp"
 #include "Response.hpp"
 #include "Location.hpp"
+#include "Request.hpp"
 
 class Server
 {
