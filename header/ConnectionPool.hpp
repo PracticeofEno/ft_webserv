@@ -2,6 +2,7 @@
 #define CONNECTIONPOOL_HPP
 
 #include "Total.hpp"
+#include "Connection.hpp"
 
 class ConnectionPool
 {

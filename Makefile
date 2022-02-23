@@ -8,7 +8,11 @@ CLASS_FILES = 	MainServer \
 				ServerPool \
 				Server \
 				Location \
-
+				Connection \
+				ConnectionPool \
+				Request \
+				Response \
+				ResponseStatus 
 
 CLASS_SRCS = $(addprefix class/, $(addsuffix .cpp, $(CLASS_FILES)))
 

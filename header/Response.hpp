@@ -2,6 +2,7 @@
 #define RESPONSE_HPP
 
 #include "Total.hpp"
+#include "ResponseStatus.hpp"
 
 class Response 
 {

@@ -1,6 +1,7 @@
 #ifndef SERVERPOOL_HPP
 #define SERVERPOOL_HPP
 
+#include "Total.hpp"
 #include "Server.hpp"
 
 class ServerPool

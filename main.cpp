@@ -1,4 +1,5 @@
 #include "Total.hpp"
+#include "MainServer.hpp"
 
 int	main(void)
 {

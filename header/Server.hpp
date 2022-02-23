@@ -2,6 +2,9 @@
 #define SERVER_HPP
 
 #include "Total.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
+#include "Location.hpp"
 
 class Server
 {
@@ -22,7 +25,7 @@ class Server
         //////////////////////////////////////////////////////////
 
         void dataSetting(std::string data);
-        Response Server::handleRequest(Request& request);
+        Response handleRequest(Request& request);
         
     private :
 };

@@ -1,9 +1,7 @@
 #ifndef LOCATION_HPP
 #define LOCATION_HPP
 
-#include <vector>
-#include <string.h>
-#include <iostream>
+#include "Total.hpp"
 
 class Location
 {

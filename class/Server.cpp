@@ -63,7 +63,8 @@ void Server::dataSetting(std::string data)
         std::stringstream(value) >> client_body_size_;
 }
 
+/*
 Response Server::handleRequest(Request& request)
 {
-   
 }
+*/

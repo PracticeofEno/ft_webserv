@@ -16,6 +16,7 @@
  {
      this->code_ = tmp.code_;
      this->messasge_ = tmp.messasge_;
+     return *this;
  }
 
 void ResponseStatus::setCode(std::string code)
@@ -30,6 +31,7 @@ void ResponseStatus::setCode(std::string code)
 
 void ResponseStatus::setReserve()
 {
+    /*
     this->_reserve.insert("100", "Continue");
     this->_reserve.insert("101", "Switching Protocol");
     this->_reserve.insert("103", "Early Hints");
@@ -82,4 +84,5 @@ void ResponseStatus::setReserve()
     this->_reserve.insert("508", "Loop Detected");
     this->_reserve.insert("510", "Not Extended ");
     this->_reserve.insert("511", "Network Authentication Required ");
+    */
 }
