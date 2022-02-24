@@ -9,8 +9,6 @@ class Response
     public:
         std::string http_version_;
         ResponseStatus status_;
-        std::string status_code_;
-        std::string status_message_;
         std::map<std::string, std::string> header_;
         std::string payload_;
 
@@ -19,6 +17,7 @@ class Response
 
         void send(int fd);
     private:
-
+        void writeStartLine(int fd);
+        void writeHeader(int fd);
 };
 #endif
