@@ -7,7 +7,9 @@
 
  ResponseStatus::ResponseStatus(int code)
  {
-     setCode(std::to_string(code));
+     std::stringstream ssInt;
+     ssInt << code;
+     setCode(ssInt.str());
  }
  ResponseStatus::~ResponseStatus() {}
 

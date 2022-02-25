@@ -62,7 +62,7 @@ void Server::dataSetting(std::string data)
     else if (key.compare("clientBodySize") == 0)
         std::stringstream(value) >> client_body_size_;
     else if (key.compare("HTTP") == 0)
-        std::stringstream(value) >> http_version_;
+        http_version_ = value;
 }
 
 
@@ -82,9 +82,20 @@ Response Server::handleRequest(Request& request)
     }
     else
     {
-        
-    }
+        if (this->locations_[index].method_.compare("GET") == 0)
+        {
 
+        }
+        else if (this->locations_[index].method_.compare("POST") == 0)
+        {
+
+        }
+        else if (this->locations_[index].method_.compare("DELETE") == 0)
+        {
+            
+        }
+    }
+    return response;
 }
 
 int Server::findLocation(std::string root)
