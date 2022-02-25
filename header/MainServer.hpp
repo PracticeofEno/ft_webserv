@@ -2,19 +2,15 @@
 #define MAINSERVER_HPP
 
 #include "Total.hpp"
-
-#define EPOLL_SIZE 50 // 실제론 사용되지 않음
-#define BUF_SIZE 4096
-#define SERVER 1
-#define CLIENT 2
+#include "ServerPool.hpp"
+#include "ConnectionPool.hpp"
+#include "Location.hpp"
 
 class MainServer
 {
     public :
         ServerPool sp_;
         ConnectionPool cons_;
-        std::vector<std::pair<std::string, std::string> > mime; 
-        // mime 이라는 이름의 pair 클래스 생성
         
         MainServer();
         MainServer(std::string file_name);

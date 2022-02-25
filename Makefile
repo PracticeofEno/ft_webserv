@@ -2,13 +2,17 @@ NAME = ft_webserv
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -D_GLIBCXX_DEBUG
 CC = c++
 
-CFLAGS += -I ./header/ -I ./class/
+CFLAGS += -I ./header/
 
 CLASS_FILES = 	MainServer \
 				ServerPool \
 				Server \
 				Location \
-
+				Connection \
+				ConnectionPool \
+				Request \
+				Response \
+				ResponseStatus 
 
 CLASS_SRCS = $(addprefix class/, $(addsuffix .cpp, $(CLASS_FILES)))
 

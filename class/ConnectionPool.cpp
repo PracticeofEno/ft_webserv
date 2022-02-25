@@ -1,5 +1,10 @@
 #include "ConnectionPool.hpp"
 
+ConnectionPool::ConnectionPool()
+{
+
+}
+
 ConnectionPool::ConnectionPool(int epfd) : epfd_(epfd)
 {
 

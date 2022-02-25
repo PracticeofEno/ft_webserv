@@ -61,9 +61,88 @@ void Server::dataSetting(std::string data)
         std::stringstream(value) >> port_;
     else if (key.compare("clientBodySize") == 0)
         std::stringstream(value) >> client_body_size_;
+    else if (key.compare("HTTP") == 0)
+        http_version_ = value;
 }
+
 
 Response Server::handleRequest(Request& request)
 {
-    
+    Response response;
+    int index = findLocation(request.getUrl());
+    if (index == NO)
+    {
+        response.http_version_ = "HTTP/" + this->http_version_;
+        response.status_ = ResponseStatus(404);
+        response.addHeader("Server", this->server_name_);
+        response.addHeader("Date", this->generateTime());
+        response.addHeader("Content-type", "text/html");
+        response.addHeader("Connection", "keep-alive");
+        response.payload_ = getPayload(this->root_ + "/" + this->error_page_path_);
+    }
+    else
+    {
+        if (this->locations_[index].method_.compare("GET") == 0)
+        {
+
+        }
+        else if (this->locations_[index].method_.compare("POST") == 0)
+        {
+
+        }
+        else if (this->locations_[index].method_.compare("DELETE") == 0)
+        {
+
+        }
+    }
+    return response;
+}
+
+int Server::findLocation(std::string root)
+{
+    std::vector<Location>::iterator it;
+    std::vector<Location>::iterator its = this->locations_.begin();
+    std::vector<Location>::iterator ite = this->locations_.end();
+    int i = 0;
+    bool tf = false;
+
+    for(it = its; it != ite; it++)
+    {
+        if (it->root_.compare(root) == 0)
+        {
+            tf = true;
+            break;
+        }
+        i++;
+    }
+    if (!tf)
+        return (NO);
+    return (i);
+}
+
+std::string Server::generateTime()
+{
+    char buf[1000];
+    time_t now = time(0);
+    struct tm tm = *gmtime(&now);
+    strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+    printf("Time is: [%s]\n", buf);
+    return (std::string(buf));
+}
+
+//getPayload에서 파일 전체를 getline으로 읽는데.. 
+//이미지파일이나 다른거할때 문제가 생길수도(?)
+std::string Server::getPayload(std::string path)
+{
+    std::string tmp;
+
+	std::ifstream openFile(path.data());
+	if( openFile.is_open() ){
+		std::string line;
+		while(getline(openFile, line)){
+			tmp.append(line).append("\r\n");
+		}
+		openFile.close();
+	}
+    return tmp;
 }

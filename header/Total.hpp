@@ -1,6 +1,12 @@
 #ifndef TOTAL_HPP
 #define TOTAL_HPP
 
+#define EPOLL_SIZE 50 // 실제론 사용되지 않음
+#define BUF_SIZE 4096
+#define SERVER 1
+#define CLIENT 2
+#define NO -1
+
 #include <iostream>
 #include <fstream>
 #include <sys/types.h>
@@ -14,15 +20,5 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include <utilty>
-
-#include "Location.hpp"
-#include "Server.hpp"
-#include "ServerPool.hpp"
-#include "MainServer.hpp"
-#include "Connection.hpp"
-#include "ConnectionPool.hpp"
-#include "Request.hpp"
-#include "Response.hpp"
 
 #endif

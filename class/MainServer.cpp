@@ -32,12 +32,8 @@ MainServer::~MainServer()
 void MainServer::init(void)
 {
     struct sockaddr_in serv_addr;
-    struct sockaddr_in clnt_addr;
-    int server_sock, client_sock;
-    socklen_t addr_sz;
+    int server_sock;
     std::string recieveString;
-
-    struct epoll_event userevent;      // 등록하기 위한 변수!
 
     std::vector<Server>::iterator it;
     std::vector<Server>::iterator its = sp_.serverPool_.begin();
@@ -192,6 +188,7 @@ void MainServer::start()
             else  // 클라이언트 소켓에서 온거라면 알맞게 처리
             {
                 //Request 처리
+                
             }
         }
     }
