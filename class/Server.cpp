@@ -61,10 +61,60 @@ void Server::dataSetting(std::string data)
         std::stringstream(value) >> port_;
     else if (key.compare("clientBodySize") == 0)
         std::stringstream(value) >> client_body_size_;
+    else if (key.compare("HTTP") == 0)
+        std::stringstream(value) >> http_version_;
 }
 
-/*
+
 Response Server::handleRequest(Request& request)
 {
+    Response response;
+    int index = findLocation(request.getUrl());
+    if (index == NO)
+    {
+        response.http_version_ = std::string("HTTP").append("/").append(this->http_version_);
+        response.status_ = ResponseStatus(404);
+        response.addHeader("Server", this->server_name_);
+        response.addHeader("Date", this->generateTime());
+        response.addHeader("Content-type", "text/html");
+        response.addHeader("Connection", "keep-alive");
+        //add error_page to payload
+    }
+    else
+    {
+        
+    }
+
 }
-*/
+
+int Server::findLocation(std::string root)
+{
+    std::vector<Location>::iterator it;
+    std::vector<Location>::iterator its = this->locations_.begin();
+    std::vector<Location>::iterator ite = this->locations_.end();
+    int i = 0;
+    bool tf = false;
+
+    for(it = its; it != ite; it++)
+    {
+        if (it->root_.compare(root) == 0)
+        {
+            tf = true;
+            break;
+        }
+        i++;
+    }
+    if (!tf)
+        return (NO);
+    return (i);
+}
+
+std::string Server::generateTime()
+{
+    char buf[1000];
+    time_t now = time(0);
+    struct tm tm = *gmtime(&now);
+    strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+    printf("Time is: [%s]\n", buf);
+    return (std::string(buf));
+}

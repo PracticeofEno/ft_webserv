@@ -10,6 +10,7 @@ class Server
 {
     public :
         std::string             server_name_;
+        std::string             http_version_;
         std::string             error_page_path_;
         std::string             root_;
         int                     client_body_size_;
@@ -28,6 +29,8 @@ class Server
         Response handleRequest(Request& request);
         
     private :
+        int findLocation(std::string root);
+        std::string generateTime();
 };
 
 #endif

@@ -34,3 +34,8 @@ void Response::writeHeader(int fd)
     }
     write(fd, "\r\n", 2);
 }
+
+void Response::addHeader(std::string key, std::string value)
+{
+    this->header_.insert(std::pair<std::string, std::string>(key, value));
+}

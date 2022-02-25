@@ -4,6 +4,11 @@
  {
      setReserve();
  }
+
+ ResponseStatus::ResponseStatus(int code)
+ {
+     setCode(std::to_string(code));
+ }
  ResponseStatus::~ResponseStatus() {}
 
  ResponseStatus::ResponseStatus(const ResponseStatus& tmp)

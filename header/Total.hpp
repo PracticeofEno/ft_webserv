@@ -5,6 +5,7 @@
 #define BUF_SIZE 4096
 #define SERVER 1
 #define CLIENT 2
+#define NO -1
 
 #include <iostream>
 #include <fstream>
@@ -19,5 +20,6 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <ctime>
 
 #endif

@@ -16,6 +16,7 @@ class Response
         ~Response();
 
         void send(int fd);
+        void addHeader(std::string key, std::string value);
     private:
         void writeStartLine(int fd);
         void writeHeader(int fd);
