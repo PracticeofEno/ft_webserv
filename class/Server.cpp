@@ -130,6 +130,8 @@ std::string Server::generateTime()
     return (std::string(buf));
 }
 
+//getPayload에서 파일 전체를 getline으로 읽는데.. 
+//이미지파일이나 다른거할때 문제가 생길수도(?)
 std::string Server::getPayload(std::string path)
 {
     std::string tmp;
