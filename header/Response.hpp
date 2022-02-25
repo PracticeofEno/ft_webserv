@@ -20,5 +20,6 @@ class Response
     private:
         void writeStartLine(int fd);
         void writeHeader(int fd);
+        void writePayload(int fd);
 };
 #endif

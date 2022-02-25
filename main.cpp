@@ -4,11 +4,11 @@
 int	main(void)
 {
 	MainServer main_server("default.config");
-	char buf[1000];
-    time_t now = time(0);
-    struct tm tm = *gmtime(&now);
-    strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
-    printf("Time is: [%s]\n", buf);
+
+	Server serv;
+	std::string tmp = serv.getPayload(std::string("/root/ft_webserv/www/default_error_page.html"));
+
+	std::cout << tmp << std::endl;
 
 	return 0;
 }

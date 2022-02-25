@@ -8,6 +8,7 @@ void Response::send(int fd)
 {
     writeStartLine(fd);
     writeHeader(fd);
+    writePayload(fd);
 }
 
 void Response::writeStartLine(int fd)
@@ -33,6 +34,11 @@ void Response::writeHeader(int fd)
         write(fd, "\r\n", 2);
     }
     write(fd, "\r\n", 2);
+}
+
+void Response::writePayload(int fd)
+{
+    write(fd, this->payload_.c_str(), this->payload_.size());
 }
 
 void Response::addHeader(std::string key, std::string value)

@@ -27,10 +27,12 @@ class Server
 
         void dataSetting(std::string data);
         Response handleRequest(Request& request);
+        std::string getPayload(std::string path);
         
     private :
         int findLocation(std::string root);
         std::string generateTime();
+        
 };
 
 #endif

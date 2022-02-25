@@ -72,13 +72,13 @@ Response Server::handleRequest(Request& request)
     int index = findLocation(request.getUrl());
     if (index == NO)
     {
-        response.http_version_ = std::string("HTTP").append("/").append(this->http_version_);
+        response.http_version_ = "HTTP/" + this->http_version_;
         response.status_ = ResponseStatus(404);
         response.addHeader("Server", this->server_name_);
         response.addHeader("Date", this->generateTime());
         response.addHeader("Content-type", "text/html");
         response.addHeader("Connection", "keep-alive");
-        //add error_page to payload
+        response.payload_ = getPayload(this->root_ + "/" + this->error_page_path_);
     }
     else
     {
@@ -92,7 +92,7 @@ Response Server::handleRequest(Request& request)
         }
         else if (this->locations_[index].method_.compare("DELETE") == 0)
         {
-            
+
         }
     }
     return response;
@@ -128,4 +128,19 @@ std::string Server::generateTime()
     strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
     printf("Time is: [%s]\n", buf);
     return (std::string(buf));
+}
+
+std::string Server::getPayload(std::string path)
+{
+    std::string tmp;
+
+	std::ifstream openFile(path.data());
+	if( openFile.is_open() ){
+		std::string line;
+		while(getline(openFile, line)){
+			tmp.append(line).append("\r\n");
+		}
+		openFile.close();
+	}
+    return tmp;
 }
