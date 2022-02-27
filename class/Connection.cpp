@@ -16,3 +16,35 @@ Connection &Connection::operator=(const Connection &tmp)
     this->timeout_ = tmp.timeout_;
     return *this;
 }
+
+void Connection::read(int socket)
+{
+    std::string tmp;
+    char buf[bufSize];
+    int strLen;
+
+    while (true)
+    {
+        strLen = read(socket, buf, bufSize);
+        if (strLen < 0)    
+        {
+            if (errno == EAGAIN)
+                break;
+        }
+        else if (strLen == 0)
+        {
+            std::cout << "all data receive" << std::endl;
+            break;
+        }
+        else
+        {
+            tmp.append(buf, strLen);
+        }
+    }
+    return tmp;
+}
+
+std::string Connection::readLine(int socket)
+{
+    
+}

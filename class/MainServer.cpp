@@ -177,7 +177,7 @@ void MainServer::start()
         for (int i = 0; i < _event_cnt; i++)
         {
             // ConnectionPool 뒤적거려서 해당 소켓이 서버소켓인지 확인한뒤에 서버라면
-            if (this->cons_.CheckServerSocket(_ep_events_buf[i].data.fd))    
+            if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, SERVER))    
             {
                 addr_sz = sizeof(clnt_addr);
                 client_sock = accept(_ep_events_buf[i].data.fd, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
@@ -186,7 +186,15 @@ void MainServer::start()
             else  // 클라이언트 소켓에서 온거라면 알맞게 처리
             {
                 //Request 처리
-                
+                if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT)) 
+                {
+                    this->cons_.getConnection(_ep_events_buf[i].data.fd).read(_ep_events_buf[i].data.fd);
+                }
+                else
+                {
+                    //사실 여기에 흐름이 오면 안되겠지만.. 
+                    //Coonection에 없는애가 요청이 온상태임
+                }
             }
         }
     }

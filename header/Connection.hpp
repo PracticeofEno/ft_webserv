@@ -17,8 +17,8 @@ public:
     Connection(const Connection& con);
     Connection &operator=(const Connection &tmp);
 
-   
-    void read();
+    void read(int socket);
+    std::string readLine(int socket);
 
 private:
 };

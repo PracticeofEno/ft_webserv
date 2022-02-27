@@ -16,7 +16,8 @@ class ConnectionPool
 
         void addConnection(int socket, int indicate);
         void deleteConnection(int socket);
-        bool CheckServerSocket(int socket);
+        bool CheckSocket(int socket, int kind);
+        Connection& getConnection(int socket);
 
     private:
         
