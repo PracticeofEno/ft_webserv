@@ -1,6 +1,10 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
+#define START_LINE 11
+#define HEADER 22
+#define BODY 33
+
 #include "Total.hpp"
 #include "Request.hpp"
 
@@ -17,10 +21,12 @@ public:
     Connection(const Connection& con);
     Connection &operator=(const Connection &tmp);
 
-    void read(int socket);
-    std::string readLine(int socket);
+    bool makeRequest();
+    void readSocket();
+    std::string readLine();
 
 private:
+    std::string _buffer;
 };
 
 #endif

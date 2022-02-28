@@ -17,15 +17,21 @@ Connection &Connection::operator=(const Connection &tmp)
     return *this;
 }
 
-void Connection::read(int socket)
+bool Connection::makeRequest()
 {
-    std::string tmp;
-    char buf[bufSize];
+    readSocket();
+    std::cout << this->_buffer << std::endl;
+    return true;
+}
+
+void Connection::readSocket()
+{
+    char buf[BUF_SIZE];
     int strLen;
 
     while (true)
     {
-        strLen = read(socket, buf, bufSize);
+        strLen = read(socket_, buf, BUF_SIZE);
         if (strLen < 0)    
         {
             if (errno == EAGAIN)
@@ -38,13 +44,26 @@ void Connection::read(int socket)
         }
         else
         {
-            tmp.append(buf, strLen);
+            _buffer.append(buf, strLen);
         }
     }
-    return tmp;
 }
 
-std::string Connection::readLine(int socket)
+std::string Connection::readLine()
 {
-    
+    /*
+    std::string str = "I want to convert string to char*";
+    std::vector<char> writable(_buffer.begin(), _buffer.end());
+    writable.push_back('\0');
+    char *ptr = &writable[0];
+    std::cout << ptr;
+    */
+    std::string ret("");
+    size_t      index = _buffer.find("\r\n");
+    if (index != std::string::npos)
+    {
+        ret = _buffer.substr(0, index + 2);
+        _buffer.erase(0, index + 2);
+    }
+    return (ret);
 }

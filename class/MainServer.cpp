@@ -16,8 +16,7 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
-        //makerMimeType();
-
+        // makerMimeType();
     }
     else
         std::cout << "Config file open fail" << std::endl;
@@ -80,8 +79,9 @@ void MainServer::init(void)
             _exit(1);
         }
 
-        _epfd = epoll_create(EPOLL_SIZE);                         // epoll 인스턴스 생성
-        _ep_events_buf = new epoll_event[EPOLL_SIZE];             // 버퍼 동적할당
+        _epfd = epoll_create(EPOLL_SIZE);             // epoll 인스턴스 생성
+        _ep_events_buf = new epoll_event[EPOLL_SIZE]; // 버퍼 동적할당
+        this->cons_.setEpfd(_epfd);
         this->cons_.addConnection(server_sock, SERVER);
     }
 }
@@ -167,35 +167,41 @@ void MainServer::start()
     while (1)
     {
         _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
-
-        if (_event_cnt == -1)
+        try
         {
-            std::cout << "wait() error!" << std::endl;
-            break;
+            if (_event_cnt == -1)
+            {
+                std::cout << "wait() error!" << std::endl;
+                break;
+            }
+            std::cout << _event_cnt << std::endl;
+            for (int i = 0; i < _event_cnt; i++)
+            {
+                // ConnectionPool 뒤적거려서 해당 소켓이 서버소켓인지 확인한뒤에 서버라면
+                if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, SERVER))
+                {
+                    addr_sz = sizeof(clnt_addr);
+                    client_sock = accept(_ep_events_buf[i].data.fd, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
+                    this->cons_.addConnection(client_sock, CLIENT);
+                }
+                else // 클라이언트 소켓에서 온거라면 알맞게 처리
+                {
+                    // Request 처리
+                    if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT))
+                    {
+                        this->cons_.getConnection(_ep_events_buf[i].data.fd).makeRequest();
+                    }
+                    else
+                    {
+                        //사실 여기에 흐름이 오면 안되겠지만..
+                        // Coonection에 없는애가 요청이 온상태임
+                    }
+                }
+            }
         }
-
-        for (int i = 0; i < _event_cnt; i++)
+        catch (const std::exception &e)
         {
-            // ConnectionPool 뒤적거려서 해당 소켓이 서버소켓인지 확인한뒤에 서버라면
-            if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, SERVER))    
-            {
-                addr_sz = sizeof(clnt_addr);
-                client_sock = accept(_ep_events_buf[i].data.fd, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
-                this->cons_.addConnection(_ep_events_buf[i].data.fd, CLIENT);
-            }
-            else  // 클라이언트 소켓에서 온거라면 알맞게 처리
-            {
-                //Request 처리
-                if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT)) 
-                {
-                    this->cons_.getConnection(_ep_events_buf[i].data.fd).read(_ep_events_buf[i].data.fd);
-                }
-                else
-                {
-                    //사실 여기에 흐름이 오면 안되겠지만.. 
-                    //Coonection에 없는애가 요청이 온상태임
-                }
-            }
+            std::cerr << e.what() << '\n';
         }
     }
 }
