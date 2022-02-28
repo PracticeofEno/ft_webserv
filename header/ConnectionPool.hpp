@@ -14,9 +14,11 @@ class ConnectionPool
         ConnectionPool(int epfd);
         ~ConnectionPool();
 
+        void setEpfd(int epfd);
         void addConnection(int socket, int indicate);
         void deleteConnection(int socket);
-        bool CheckServerSocket(int socket);
+        bool CheckSocket(int socket, int kind);
+        Connection& getConnection(int socket);
 
     private:
         

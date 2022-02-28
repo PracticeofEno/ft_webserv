@@ -3,7 +3,6 @@
 Response::Response() {}
 Response::~Response() {}
 
-
 void Response::send(int fd)
 {
     writeStartLine(fd);

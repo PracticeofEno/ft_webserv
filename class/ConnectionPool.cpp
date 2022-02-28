@@ -5,11 +5,6 @@ ConnectionPool::ConnectionPool()
 
 }
 
-ConnectionPool::ConnectionPool(int epfd) : epfd_(epfd)
-{
-
-}
-
 ConnectionPool::~ConnectionPool()
 {
 
@@ -35,7 +30,10 @@ void ConnectionPool::addConnection(int socket, int indicate)
     userevent.events = EPOLLIN | EPOLLET;
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
-    std::cout << "connected client : " << socket << std::endl;
+    if (indicate == SERVER)
+        std::cout << "make server : " << socket << std::endl;
+    else
+        std::cout << "connected client : " << socket << std::endl;
 }
 
 void ConnectionPool::deleteConnection(int socket)
@@ -54,7 +52,7 @@ void ConnectionPool::deleteConnection(int socket)
     epoll_ctl(this->epfd_, EPOLL_CTL_DEL, socket, NULL);
 }
 
-bool ConnectionPool::CheckServerSocket(int socket)
+bool ConnectionPool::CheckSocket(int socket, int kind)
 {
     std::vector<Connection>::iterator it;
     std::vector<Connection>::iterator its = cons_.begin();
@@ -67,13 +65,29 @@ bool ConnectionPool::CheckServerSocket(int socket)
     }
     if (it != ite)
     {
-        if (it->socket_ == socket)
-        {
-            if (it->kind_ == SERVER)
-                return (true);
-            else
-                return (false);
-        }
+        if (it->kind_ == kind)
+            return (true);
+        else
+            return (false);
     }
     return (false);
+}
+
+Connection& ConnectionPool::getConnection(int socket)
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator its = cons_.begin();
+    std::vector<Connection>::iterator ite = cons_.end();
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->socket_ == socket)
+            break;
+    }
+    return *it;
+}
+
+void ConnectionPool::setEpfd(int epfd)
+{
+    this->epfd_ = epfd;
 }

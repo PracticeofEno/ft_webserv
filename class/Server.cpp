@@ -69,9 +69,11 @@ void Server::dataSetting(std::string data)
 Response Server::handleRequest(Request& request)
 {
     Response response;
-    int index = findLocation(request.getUrl());
+    int index = findLocation(request.url_);
     if (index == NO)
     {
+        // throw Exception Error number 404
+        /*
         response.http_version_ = "HTTP/" + this->http_version_;
         response.status_ = ResponseStatus(404);
         response.addHeader("Server", this->server_name_);
@@ -79,6 +81,7 @@ Response Server::handleRequest(Request& request)
         response.addHeader("Content-type", "text/html");
         response.addHeader("Connection", "keep-alive");
         response.payload_ = getPayload(this->root_ + "/" + this->error_page_path_);
+        */
     }
     else
     {
@@ -94,8 +97,12 @@ Response Server::handleRequest(Request& request)
         {
 
         }
+        else
+        {
+            //throw Exception Error number 405
+        }
     }
-    return response;
+    return (response);
 }
 
 int Server::findLocation(std::string root)
