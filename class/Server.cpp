@@ -76,7 +76,6 @@ Response Server::handleRequest(Request& request)
     {
         if (this->locations_[index].method_.compare("GET") == 0)
         {
-            
         }
         else if (this->locations_[index].method_.compare("POST") == 0)
         {
@@ -92,19 +91,23 @@ Response Server::handleRequest(Request& request)
     return (response);
 }
 
-int Server::findLocation(std::string root)
+int Server::findLocation(std::string url)
 {
     std::vector<Location>::iterator it;
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
     int i = 0;
     bool tf = false;
+    std::string path;
 
     for(it = its; it != ite; it++)
     {
-        if (it->root_.compare(root) == 0)
+        if (it->root_.compare(url) == 0)
         {
-            tf = true;
+            path = "/root/ft_webserv/" + it->root_ + url;
+            path = replace_all(path, "//", "/");
+            if (access(path.c_str(), F_OK) == 0)
+                tf = true;
             break;
         }
         i++;
