@@ -71,23 +71,12 @@ Response Server::handleRequest(Request& request)
     Response response;
     int index = findLocation(request.url_);
     if (index == NO)
-    {
-        // throw Exception Error number 404
-        /*
-        response.http_version_ = "HTTP/" + this->http_version_;
-        response.status_ = ResponseStatus(404);
-        response.addHeader("Server", this->server_name_);
-        response.addHeader("Date", this->generateTime());
-        response.addHeader("Content-type", "text/html");
-        response.addHeader("Connection", "keep-alive");
-        response.payload_ = getPayload(this->root_ + "/" + this->error_page_path_);
-        */
-    }
+        throw ExceptionCode(404);
     else
     {
         if (this->locations_[index].method_.compare("GET") == 0)
         {
-
+            
         }
         else if (this->locations_[index].method_.compare("POST") == 0)
         {
@@ -98,9 +87,7 @@ Response Server::handleRequest(Request& request)
 
         }
         else
-        {
-            //throw Exception Error number 405
-        }
+            throw ExceptionCode(405);
     }
     return (response);
 }

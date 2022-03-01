@@ -5,6 +5,7 @@
 #include "ServerPool.hpp"
 #include "ConnectionPool.hpp"
 #include "Location.hpp"
+#include "ExceptionCode.hpp"
 
 class MainServer
 {
@@ -25,6 +26,7 @@ class MainServer
         void makeServerPool(std::string data);
         Server makeServer(std::string& data);
         Location makeLocation(std::string& data);
+        void    makeMimeType(std::string data);
 
 };
 

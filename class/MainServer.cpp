@@ -1,5 +1,22 @@
 #include "MainServer.hpp"
 
+std::string &lltrim(std::string &s, const char *t = " \t\n\r\f\v")
+{
+    s.erase(0, s.find_first_not_of(t));
+    return s;
+}
+
+std::string &rrtrim(std::string &s, const char *t = " \t\n\r\f\v")
+{
+    s.erase(s.find_last_not_of(t) + 1);
+    return s;
+}
+
+std::string &ttrim(std::string &s, const char *t = " \t\n\r\f\v")
+{
+    return lltrim(rrtrim(s, t), t);
+}
+
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -16,7 +33,24 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
-        // makerMimeType();
+    }
+    else
+        std::cout << "Config file open fail" << std::endl;
+
+    std::ifstream mimeFile(std::string("mime.types").c_str());
+    if (true == mimeFile.is_open())
+    {
+
+        std::string s;
+        std::string data;
+        while (mimeFile)
+        {
+            getline(mimeFile, s);
+            data.append(s);
+            data.append("\r\n");
+        }
+        mimeFile.close();
+        makeMimeType(data);
     }
     else
         std::cout << "Config file open fail" << std::endl;
@@ -199,9 +233,37 @@ void MainServer::start()
                 }
             }
         }
-        catch (const std::exception &e)
+        catch (const ExceptionCode &e)
         {
-            std::cerr << e.what() << '\n';
         }
+    }
+}
+
+void MainServer::makeMimeType(std::string data)
+{
+    size_t endPos;
+    std::string tmp, key, value;
+
+    endPos = data.find("\r\n");
+    tmp = data.substr(0, endPos + 2);
+    data.erase(0, endPos + 2);
+    endPos = data.find("\r\n");
+    while (endPos != std::string::npos)
+    {
+        tmp = data.substr(0, endPos + 2);
+        data.erase(0, endPos + 2);
+
+        if (tmp.find("}") == std::string::npos)
+        {
+            tmp = ttrim(tmp);
+            key = tmp.substr(0, tmp.find_first_of(' '));
+            tmp = tmp.erase(0, tmp.find_first_of(' '));
+            value = ttrim(tmp);
+            if (key != "" && value != "")
+                this->mime.insert(std::pair<std::string, std::string>(key, value));
+        }
+        else
+            break;
+        endPos = data.find("\r\n");
     }
 }

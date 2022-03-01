@@ -5,6 +5,7 @@
 #include "Response.hpp"
 #include "Location.hpp"
 #include "Request.hpp"
+#include "ExceptionCode.hpp"
 
 class Server
 {
