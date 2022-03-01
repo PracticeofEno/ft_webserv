@@ -12,7 +12,8 @@ CLASS_FILES = 	MainServer \
 				ConnectionPool \
 				Request \
 				Response \
-				ResponseStatus 
+				ResponseStatus \
+				ExceptionCode
 
 CLASS_SRCS = $(addprefix class/, $(addsuffix .cpp, $(CLASS_FILES)))
 

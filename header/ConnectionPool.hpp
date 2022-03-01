@@ -11,7 +11,6 @@ class ConnectionPool
         std::vector<Connection> cons_;
 
         ConnectionPool();
-        ConnectionPool(int epfd);
         ~ConnectionPool();
 
         void setEpfd(int epfd);

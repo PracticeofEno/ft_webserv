@@ -1,7 +1,5 @@
 #include "MainServer.hpp"
 
-void MainServer::makeMimeType(std::string data)
-
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -200,9 +198,37 @@ void MainServer::start()
                 }
             }
         }
-        catch (const std::exception &e)
+        catch (const ExceptionCode &e)
         {
-            std::cerr << e.what() << '\n';
         }
+    }
+}
+
+void MainServer::makeMimeType(std::string data)
+{
+    size_t endPos;
+    std::string tmp, key, value;
+
+    endPos = data.find("\r\n");
+    tmp = data.substr(0, endPos + 2);
+    data.erase(0, endPos + 2);
+    endPos = data.find("\r\n");
+    while (endPos != std::string::npos)
+    {
+        tmp = data.substr(0, endPos + 2);
+        data.erase(0, endPos + 2);
+
+        if (tmp.find("}") == std::string::npos)
+        {
+            tmp = ttrim(tmp);
+            key = tmp.substr(0, tmp.find_first_of(' '));
+            tmp = tmp.erase(0, tmp.find_first_of(' '));
+            value = ttrim(tmp);
+            if (key != "" && value != "")
+                this->mime.insert(std::pair<std::string, std::string>(key, value));
+        }
+        else
+            break;
+        endPos = data.find("\r\n");
     }
 }
