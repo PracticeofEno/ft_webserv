@@ -1,22 +1,5 @@
 #include "MainServer.hpp"
 
-std::string &lltrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(0, s.find_first_not_of(t));
-    return s;
-}
-
-std::string &rrtrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(s.find_last_not_of(t) + 1);
-    return s;
-}
-
-std::string &ttrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    return lltrim(rrtrim(s, t), t);
-}
-
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -33,24 +16,6 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
-    }
-    else
-        std::cout << "Config file open fail" << std::endl;
-
-    std::ifstream mimeFile(std::string("mime.types").c_str());
-    if (true == mimeFile.is_open())
-    {
-
-        std::string s;
-        std::string data;
-        while (mimeFile)
-        {
-            getline(mimeFile, s);
-            data.append(s);
-            data.append("\r\n");
-        }
-        mimeFile.close();
-        makeMimeType(data);
     }
     else
         std::cout << "Config file open fail" << std::endl;

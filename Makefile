@@ -1,6 +1,6 @@
 NAME = ft_webserv
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -D_GLIBCXX_DEBUG
-CC = clang++
+CC = c++
 
 CFLAGS += -I ./header/
 
@@ -42,3 +42,4 @@ vector :
 stack :
 
 .PHONY: clean fclean all re bonus
+ 
