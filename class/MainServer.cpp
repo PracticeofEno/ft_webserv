@@ -224,6 +224,7 @@ void MainServer::start()
                     if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT))
                     {
                         this->cons_.getConnection(_ep_events_buf[i].data.fd).makeRequest();
+                        
                     }
                     else
                     {
