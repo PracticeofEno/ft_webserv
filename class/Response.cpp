@@ -37,7 +37,8 @@ void Response::writeHeader(int fd)
 
 void Response::writePayload(int fd)
 {
-    write(fd, this->payload_.c_str(), this->payload_.size());
+    (void)fd;
+    //write(fd, this->payload_.c_str(), this->payload_.size());
 }
 
 void Response::addHeader(std::string key, std::string value)
