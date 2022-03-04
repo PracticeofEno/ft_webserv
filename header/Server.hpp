@@ -33,6 +33,8 @@ class Server
     private :
         int findLocation(std::string root);
         std::string generateTime();
+        void GETHandler(Request& request);
+        std::string getMimeType(std::string uri);
         
 };
 

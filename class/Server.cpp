@@ -1,5 +1,16 @@
 #include "Server.hpp"
 
+std::string replace_all(std::string &message, const std::string &pattern, const std::string &replace) 
+{
+    std::string result = message;
+    std::string::size_type pos = 0;
+    while ((pos = result.find(pattern)) != std::string::npos)
+    {
+        result.replace(pos, pattern.size(), replace);
+    }
+    return result;
+}
+
 std::string &ltrim(std::string &s, const char *t = " \t\n\r\f\v")
 {
     s.erase(0, s.find_first_not_of(t));
@@ -76,7 +87,7 @@ Response Server::handleRequest(Request& request)
     {
         if (this->locations_[index].method_.compare("GET") == 0)
         {
-            
+            GETHandler(request);
         }
         else if (this->locations_[index].method_.compare("POST") == 0)
         {
@@ -92,19 +103,23 @@ Response Server::handleRequest(Request& request)
     return (response);
 }
 
-int Server::findLocation(std::string root)
+int Server::findLocation(std::string url)
 {
     std::vector<Location>::iterator it;
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
     int i = 0;
     bool tf = false;
+    std::string path;
 
     for(it = its; it != ite; it++)
     {
-        if (it->root_.compare(root) == 0)
+        if (it->root_.compare(url) == 0)
         {
-            tf = true;
+            path = "/root/ft_webserv/" + it->root_ + url;
+            path = replace_all(path, "//", "/");
+            if (access(path.c_str(), F_OK) == 0)
+                tf = true;
             break;
         }
         i++;
@@ -139,4 +154,27 @@ std::string Server::getPayload(std::string path)
 		openFile.close();
 	}
     return tmp;
+}
+
+void Server::GETHandler(Request& request)
+{
+    Response res;
+
+    res.status_ = ResponseStatus(200);
+    res.http_version_ = "HTTP/1.1";
+    res.addHeader("Server", this->server_name_);
+    res.addHeader("Date", generateTime());
+    res.addHeader("Content-Type", getMimeType(request.url_));
+    res.addHeader("Connection", "");
+}
+
+std::string Server::getMimeType(std::string url)
+{
+    std::string ret = "application/octet-stream";
+    size_t index = url.find(".");
+    if (index != std::string::npos)
+    {
+        url.erase(0, index);
+    }
+    return ret;
 }

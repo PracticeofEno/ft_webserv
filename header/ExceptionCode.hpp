@@ -13,7 +13,7 @@ class ExceptionCode : public std::exception
         int getCode() const;
     private:
         int _code;
+        //int _socket;
 
 };
-
 #endif
