@@ -20,6 +20,7 @@ Connection &Connection::operator=(const Connection &tmp)
 bool Connection::makeRequest()
 {
     readSocket();
+    
     std::cout << this->_buffer << std::endl;
     return true;
 }
@@ -32,20 +33,18 @@ void Connection::readSocket()
     while (true)
     {
         strLen = read(socket_, buf, BUF_SIZE);
-        if (strLen < 0)    
-        {
-            if (errno == EAGAIN)
-                break;
-        }
-        else if (strLen == 0)
+        if (strLen == 0)
         {
             std::cout << "all data receive" << std::endl;
             break;
         }
-        else
+        else if (strLen > 0)
         {
             _buffer.append(buf, strLen);
+            continue;
         }
+        else
+            break;
     }
 }
 

@@ -70,3 +70,11 @@ void Location::dataSetting(std::string data)
             directory_listing_ = false;
     }
 }
+
+bool Location::methodCheck(std::string method)
+{
+    if (this->method_.find(method) != std::string::npos)
+        return (true);
+    else
+        return (false);
+}

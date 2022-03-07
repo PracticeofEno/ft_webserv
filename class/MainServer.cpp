@@ -1,5 +1,6 @@
 #include "MainServer.hpp"
 
+
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -19,6 +20,7 @@ MainServer::MainServer(std::string fileName)
     }
     else
         std::cout << "Config file open fail" << std::endl;
+
 }
 
 MainServer::~MainServer()
@@ -34,6 +36,10 @@ void MainServer::init(void)
     std::vector<Server>::iterator it;
     std::vector<Server>::iterator its = sp_.serverPool_.begin();
     std::vector<Server>::iterator ite = sp_.serverPool_.end();
+
+    _epfd = epoll_create(EPOLL_SIZE);             // epoll 인스턴스 생성
+    this->cons_.setEpfd(_epfd);
+    _ep_events_buf = new epoll_event[EPOLL_SIZE]; // 버퍼 동적할당
 
     for (it = its; it != ite; it++)
     {
@@ -77,10 +83,6 @@ void MainServer::init(void)
             close(server_sock);
             _exit(1);
         }
-
-        _epfd = epoll_create(EPOLL_SIZE);             // epoll 인스턴스 생성
-        _ep_events_buf = new epoll_event[EPOLL_SIZE]; // 버퍼 동적할당
-        this->cons_.setEpfd(_epfd);
         this->cons_.addConnection(server_sock, SERVER);
     }
 }
@@ -189,6 +191,7 @@ void MainServer::start()
                     if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT))
                     {
                         this->cons_.getConnection(_ep_events_buf[i].data.fd).makeRequest();
+                        TestCode(this->cons_.getConnection(_ep_events_buf[i].data.fd), sp_.serverPool_.at(0));
                     }
                     else
                     {
@@ -200,6 +203,7 @@ void MainServer::start()
         }
         catch (const ExceptionCode &e)
         {
+            
         }
     }
 }
@@ -207,7 +211,7 @@ void MainServer::start()
 void MainServer::makeMimeType(std::string data)
 {
     size_t endPos;
-    std::string tmp, key, value;
+    std::string tmp, tmp2, key, value;
 
     endPos = data.find("\r\n");
     tmp = data.substr(0, endPos + 2);
@@ -221,11 +225,19 @@ void MainServer::makeMimeType(std::string data)
         if (tmp.find("}") == std::string::npos)
         {
             tmp = ttrim(tmp);
-            key = tmp.substr(0, tmp.find_first_of(' '));
+            value = tmp.substr(0, tmp.find_first_of(' '));
             tmp = tmp.erase(0, tmp.find_first_of(' '));
-            value = ttrim(tmp);
+            key = ttrim(tmp);
             if (key != "" && value != "")
-                this->mime.insert(std::pair<std::string, std::string>(key, value));
+            {
+                while (key.find(" ") != std::string::npos)
+                {
+                    tmp2 = key.substr(0, key.find_first_of(' '));
+                    key = key.erase(0, key.find_first_of(' ') + 1);
+                    mime.insert(std::pair<std::string, std::string>(tmp2, value));
+                }
+                mime.insert(std::pair<std::string, std::string>(key, value));
+            }
         }
         else
             break;

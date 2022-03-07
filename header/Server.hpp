@@ -6,6 +6,7 @@
 #include "Location.hpp"
 #include "Request.hpp"
 #include "ExceptionCode.hpp"
+#define MIMETYPE std::map<std::string, std::string>
 
 class Server
 {
@@ -30,12 +31,19 @@ class Server
         Response handleRequest(Request& request);
         std::string getPayload(std::string path);
         
+        
     private :
         int findLocation(std::string root);
         std::string generateTime();
-        void GETHandler(Request& request);
-        std::string getMimeType(std::string uri);
-        
+        Response GETHandler(Request& request);
+        Response POSTHandler(Request& request);
+        Response DELETEHandler(Request& request);
+        std::string searchMimeType(std::string uri);
+        std::string getRecentTime(std::string url);
+        std::string getFilePath(std::string url);
+        std::string getFileSize(std::string url);
+        Response tryHandle(Request& req);
+
 };
 
 #endif

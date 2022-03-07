@@ -10,16 +10,18 @@ class Response
         std::string http_version_;
         ResponseStatus status_;
         std::map<std::string, std::string> header_;
-        std::string payload_;
+        std::string file_path_;
 
         Response();
         ~Response();
+        Response(const Response& tmp);
+        Response& operator=(const Response& tmp);
 
         void send(int fd);
         void addHeader(std::string key, std::string value);
     private:
         void writeStartLine(int fd);
         void writeHeader(int fd);
-        void writePayload(int fd);
+        void writeFile(int fd);
 };
 #endif
