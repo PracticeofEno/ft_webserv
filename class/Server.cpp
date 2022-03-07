@@ -1,6 +1,7 @@
 #include "Server.hpp"
 
-std::string replace_all(std::string &message, const std::string &pattern, const std::string &replace) 
+
+std::string replace_all(std::string &message, const std::string &pattern, const std::string &replace)
 {
     std::string result = message;
     std::string::size_type pos = 0;
@@ -30,20 +31,18 @@ std::string &trim(std::string &s, const char *t = " \t\n\r\f\v")
 
 Server::Server()
 {
-
 }
 
 Server::~Server()
 {
-    
 }
 
-Server::Server(const Server& server)
+Server::Server(const Server &server)
 {
     *this = server;
 }
 
-Server& Server::operator=(const Server& server)
+Server &Server::operator=(const Server &server)
 {
     this->port_ = server.port_;
     this->root_ = server.root_;
@@ -76,29 +75,29 @@ void Server::dataSetting(std::string data)
         http_version_ = value;
 }
 
-
-Response Server::handleRequest(Request& request)
+Response Server::handleRequest(Request &request)
 {
     Response response;
     int index = findLocation(request.url_);
-    if (index == NO)
+
+    if (index == NOTEXIST)
         throw ExceptionCode(404);
     else
     {
-        if (this->locations_[index].method_.compare("GET") == 0)
+        if (index != EXIST) // location안에 존재했다면
         {
-            GETHandler(request);
+            if (this->locations_[index].methodCheck(request.method_))
+            {
+                tryHandle(request);
+            }
+            else
+                throw ExceptionCode(405);
         }
-        else if (this->locations_[index].method_.compare("POST") == 0)
+        else // location에서 찾은건 아니지만 /www/를 기준으로 해당 경로에 존재한다면
         {
-
+            if (request.method_ == "GET" || request.method_ == "POST" || request.method_ == "DELETE")
+                response = tryHandle(request);
         }
-        else if (this->locations_[index].method_.compare("DELETE") == 0)
-        {
-
-        }
-        else
-            throw ExceptionCode(405);
     }
     return (response);
 }
@@ -112,7 +111,7 @@ int Server::findLocation(std::string url)
     bool tf = false;
     std::string path;
 
-    for(it = its; it != ite; it++)
+    for (it = its; it != ite; it++)
     {
         if (it->root_.compare(url) == 0)
         {
@@ -125,7 +124,14 @@ int Server::findLocation(std::string url)
         i++;
     }
     if (!tf)
-        return (NO);
+    {
+        path = getFilePath(url);
+        if (access(path.c_str(), F_OK) == 0)
+        {
+            return (EXIST);
+        }
+        return (NOTEXIST);
+    }
     return (i);
 }
 
@@ -135,46 +141,117 @@ std::string Server::generateTime()
     time_t now = time(0);
     struct tm tm = *gmtime(&now);
     strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
-    printf("Time is: [%s]\n", buf);
     return (std::string(buf));
 }
 
-//getPayload에서 파일 전체를 getline으로 읽는데.. 
-//이미지파일이나 다른거할때 문제가 생길수도(?)
-std::string Server::getPayload(std::string path)
+Response Server::GETHandler(Request &request)
 {
-    std::string tmp;
-
-	std::ifstream openFile(path.data());
-	if( openFile.is_open() ){
-		std::string line;
-		while(getline(openFile, line)){
-			tmp.append(line).append("\r\n");
-		}
-		openFile.close();
-	}
-    return tmp;
-}
-
-void Server::GETHandler(Request& request)
-{
+    //내가 CGI냐? 
     Response res;
-
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
     res.addHeader("Server", this->server_name_);
     res.addHeader("Date", generateTime());
-    res.addHeader("Content-Type", getMimeType(request.url_));
-    res.addHeader("Connection", "");
+    res.addHeader("Content-Type", searchMimeType(request.url_));
+    res.addHeader("Last-Modified", getRecentTime(request.url_));
+    res.addHeader("Content-Length", getFileSize(request.url_));
+    //res.addHeader("Accpet-Ranges", "bytes");
+    res.file_path_ = getFilePath(request.url_);
+    return (res);
 }
 
-std::string Server::getMimeType(std::string url)
+Response Server::POSTHandler(Request &request)
+{
+    Response res;
+    (void)request;
+    return (res);
+}
+
+Response Server::DELETEHandler(Request &request)
+{
+    Response res;
+    (void)request;
+    return (res);
+}
+std::string Server::searchMimeType(std::string url)
 {
     std::string ret = "application/octet-stream";
     size_t index = url.find(".");
+    MIMETYPE::iterator it;
+    MIMETYPE::iterator its = mime.begin();
+    MIMETYPE::iterator ite = mime.end();
     if (index != std::string::npos)
     {
-        url.erase(0, index);
+        std::string ext = url.substr(index + 1, std::string::npos);
+        if (ext.compare("") != 0)
+        {
+            for (it = its; it != ite; it++)
+            {
+                if (it->first.compare(ext) == 0)
+                {
+                    ret = it->second;
+                    break;
+                }
+            }
+        }
     }
     return ret;
+}
+
+std::string Server::getRecentTime(std::string url)
+{
+    std::string path;
+    std::string ret;
+    struct stat st;
+
+    path = getFilePath(url);
+    lstat(path.c_str(), &st);
+    ret = std::string(ctime(&st.st_mtime));
+    ret.erase(ret.find("\n"), 1);
+    return (ret);
+}
+
+std::string Server::getFileSize(std::string url)
+{
+    std::string path;
+    struct stat st;
+    std::stringstream ss;
+
+    path = getFilePath(url);
+    lstat(path.c_str(), &st);
+    ss << st.st_size;
+    return (ss.str());
+}
+
+std::string Server::getFilePath(std::string url)
+{
+    std::vector<Location>::iterator it;
+    std::vector<Location>::iterator its = this->locations_.begin();
+    std::vector<Location>::iterator ite = this->locations_.end();
+    std::string path;
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->root_.compare(url) == 0)
+        {
+            path = "/root/ft_webserv/" + it->root_ + url;
+            path = replace_all(path, "//", "/");
+            return (path);
+        }
+    }
+    url = "/root/ft_webserv/www/" + url;
+    url = replace_all(url, "//", "/");
+    return url;
+}
+
+Response Server::tryHandle(Request& req)
+{
+    Response res;
+    if (req.method_ == "GET")
+        res = GETHandler(req);
+    else if (req.method_ == "POST")
+        res = POSTHandler(req);
+    else if (req.method_ == "DELETE")
+        res = DELETEHandler(req);
+    return res;
 }

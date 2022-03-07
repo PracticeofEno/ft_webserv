@@ -3,11 +3,24 @@
 Response::Response() {}
 Response::~Response() {}
 
+Response::Response(const Response& tmp) 
+{
+    *this = tmp;
+}
+Response& Response::operator= (const Response& tmp)
+{
+    this->file_path_ = tmp.file_path_;
+    this->http_version_ = tmp.http_version_;
+    this->header_ = tmp.header_;
+    this->status_ = tmp.status_;
+    return *this;
+}
+
 void Response::send(int fd)
 {
     writeStartLine(fd);
     writeHeader(fd);
-    writePayload(fd);
+    writeFile(fd);
 }
 
 void Response::writeStartLine(int fd)
@@ -35,10 +48,23 @@ void Response::writeHeader(int fd)
     write(fd, "\r\n", 2);
 }
 
-void Response::writePayload(int fd)
+void Response::writeFile(int socket)
 {
-    (void)fd;
+    (void)socket;
+    /*
+    unsigned char data[4096];
+
+    std::ofstream out(this->file_path_.c_str(), std::ios::out | std::ios::binary);
+    if (out.is_open())
+    {
+        std::string data;
+        out.write(data, 4096);
+    }
+    else
+        std::cout << "Config file open fail" << std::endl;
+    (void)socket;
     //write(fd, this->payload_.c_str(), this->payload_.size());
+    */
 }
 
 void Response::addHeader(std::string key, std::string value)

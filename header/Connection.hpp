@@ -27,6 +27,7 @@ public:
 
 private:
     std::string _buffer;
+
 };
 
 #endif

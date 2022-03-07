@@ -22,6 +22,7 @@ class Location
         //////////////////////////////////////////////////////////
 
         void dataSetting(std::string data);
+        bool methodCheck(std::string method);
 
     private:
 };
