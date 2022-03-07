@@ -1,34 +1,5 @@
 #include "MainServer.hpp"
 
-void TestCode(Connection& tmp, Server server)
-{
-    Request req;
-    req.method_ = "GET";
-    req.version_ = "HTTP/1.1";
-    req.url_ = "/default_error_page.html";
-    req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
-    
-    Response res = server.handleRequest(req);
-    res.send(1);
-    res.send(tmp.socket_);
-}
-
-std::string &lltrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(0, s.find_first_not_of(t));
-    return s;
-}
-
-std::string &rrtrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(s.find_last_not_of(t) + 1);
-    return s;
-}
-
-std::string &ttrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    return lltrim(rrtrim(s, t), t);
-}
 
 MainServer::MainServer(std::string fileName)
 {
@@ -50,23 +21,6 @@ MainServer::MainServer(std::string fileName)
     else
         std::cout << "Config file open fail" << std::endl;
 
-    std::ifstream mimeFile(std::string("mime.types").c_str());
-    if (true == mimeFile.is_open())
-    {
-
-        std::string s;
-        std::string data;
-        while (mimeFile)
-        {
-            getline(mimeFile, s);
-            data.append(s);
-            data.append("\r\n");
-        }
-        mimeFile.close();
-        makeMimeType(data);
-    }
-    else
-        std::cout << "MimeType file open fail" << std::endl;
 }
 
 MainServer::~MainServer()
