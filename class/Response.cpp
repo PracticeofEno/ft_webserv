@@ -48,23 +48,25 @@ void Response::writeHeader(int fd)
     write(fd, "\r\n", 2);
 }
 
-void Response::writeFile(int socket)
+void Response::writeFile(int fd)
 {
-    (void)socket;
-    /*
-    unsigned char data[4096];
-
-    std::ofstream out(this->file_path_.c_str(), std::ios::out | std::ios::binary);
-    if (out.is_open())
+    unsigned char *buffer;
+    int length = 0;
+    std::ifstream in(this->file_path_.c_str(), std::ifstream::binary);
+    if (in.is_open())
     {
-        std::string data;
-        out.write(data, 4096);
+        in.seekg(0, in.end);
+		length = (int)in.tellg();
+		in.seekg(0, in.beg);
+        buffer = new unsigned char[length];
+        in.read((char*)buffer, length);
+		in.close();
+        write(fd, (char*)buffer, length);
     }
     else
         std::cout << "Config file open fail" << std::endl;
-    (void)socket;
-    //write(fd, this->payload_.c_str(), this->payload_.size());
-    */
+    
+
 }
 
 void Response::addHeader(std::string key, std::string value)
