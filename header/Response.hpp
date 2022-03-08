@@ -11,17 +11,18 @@ class Response
         ResponseStatus status_;
         std::map<std::string, std::string> header_;
         std::string file_path_;
+        int socket_;
 
         Response();
         ~Response();
         Response(const Response& tmp);
         Response& operator=(const Response& tmp);
 
-        void send(int fd);
+        void send();
         void addHeader(std::string key, std::string value);
     private:
-        void writeStartLine(int fd);
-        void writeHeader(int fd);
-        void writeFile(int fd);
+        void writeStartLine();
+        void writeHeader();
+        void writeFile();
 };
 #endif

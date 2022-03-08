@@ -1,16 +1,28 @@
 #include "MainServer.hpp"
 
+void *send(void *tmp)
+{
+    Response* p_res = (Response*) tmp;
+    p_res->send();
+    delete p_res;
+    return (0);
+}
+
 void TestCode(Connection& tmp, Server server)
 {
     Request req;
+    IOThread thread;
     req.method_ = "GET";
     req.version_ = "HTTP/1.1";
     req.url_ = "/default_error_page.html";
     req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
     
     Response res = server.handleRequest(req);
-    res.send(1);
-    res.send(tmp.socket_);
+    res.socket_ = tmp.socket_;
+    Response *p_res = new Response();
+    *p_res = res;
+    thread.setFunction(&send);
+    thread.start((void *)p_res);
 }
 
 std::string &lltrim(std::string &s, const char *t = " \t\n\r\f\v")

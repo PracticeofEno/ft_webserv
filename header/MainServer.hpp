@@ -6,6 +6,7 @@
 #include "ConnectionPool.hpp"
 #include "Location.hpp"
 #include "ExceptionCode.hpp"
+#include "IOThread.hpp"
 
 class MainServer
 {
