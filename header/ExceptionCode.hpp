@@ -11,9 +11,9 @@ class ExceptionCode : public std::exception
         virtual ~ExceptionCode() throw();
         virtual const char* what() const throw();
         int getCode() const;
+
     private:
         int _code;
         //int _socket;
-
 };
 #endif
