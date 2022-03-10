@@ -1,34 +1,5 @@
 #include "Server.hpp"
 
-
-std::string replace_all(std::string &message, const std::string &pattern, const std::string &replace)
-{
-    std::string result = message;
-    std::string::size_type pos = 0;
-    while ((pos = result.find(pattern)) != std::string::npos)
-    {
-        result.replace(pos, pattern.size(), replace);
-    }
-    return result;
-}
-
-std::string &ltrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(0, s.find_first_not_of(t));
-    return s;
-}
-
-std::string &rtrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(s.find_last_not_of(t) + 1);
-    return s;
-}
-
-std::string &trim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    return ltrim(rtrim(s, t), t);
-}
-
 Server::Server()
 {
 }
@@ -57,22 +28,25 @@ Server &Server::operator=(const Server &server)
 void Server::dataSetting(std::string data)
 {
     std::string key, value;
-    data = trim(data);
+    data = ft_trim(data);
     key = data.substr(0, data.find_first_of(' '));
     data = data.erase(0, data.find_first_of(' '));
-    value = trim(data);
+    value = ft_trim(data);
     if (key.compare("serverName") == 0)
         server_name_ = value;
     else if (key.compare("errorPagePath") == 0)
         error_page_path_ = value;
     else if (key.compare("root") == 0)
         root_ = value;
+    else if (key.compare("cgiExtension") == 0)
+        cgi_extension_ = value;
     else if (key.compare("port") == 0)
         std::stringstream(value) >> port_;
     else if (key.compare("clientBodySize") == 0)
         std::stringstream(value) >> client_body_size_;
     else if (key.compare("HTTP") == 0)
         http_version_ = value;
+    
 }
 
 Response Server::handleRequest(Request &request)
@@ -88,7 +62,7 @@ Response Server::handleRequest(Request &request)
         {
             if (this->locations_[index].methodCheck(request.method_))
             {
-                tryHandle(request);
+                tryHandle(request, index);
             }
             else
                 throw ExceptionCode(405);
@@ -146,7 +120,6 @@ std::string Server::generateTime()
 
 Response Server::GETHandler(Request &request)
 {
-    //내가 CGI냐? 
     Response res;
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
@@ -247,11 +220,101 @@ std::string Server::getFilePath(std::string url)
 Response Server::tryHandle(Request& req)
 {
     Response res;
-    if (req.method_ == "GET")
-        res = GETHandler(req);
-    else if (req.method_ == "POST")
-        res = POSTHandler(req);
-    else if (req.method_ == "DELETE")
-        res = DELETEHandler(req);
+    
+
+    if (CheckCGI(req.url_))
+    {
+    }
+    else
+    {
+        if (req.method_ == "GET")
+            res = GETHandler(req);
+        else if (req.method_ == "POST")
+            res = POSTHandler(req);
+        else if (req.method_ == "DELETE")
+            res = DELETEHandler(req);
+    }    
     return res;
+}
+
+Response Server::tryHandle(Request& req, int index)
+{
+    Response res;
+    
+    if (CheckCGI(req.url_, index))
+    {
+    }
+    else
+    {
+        if (req.method_ == "GET")
+            res = GETHandler(req);
+        else if (req.method_ == "POST")
+            res = POSTHandler(req);
+        else if (req.method_ == "DELETE")
+            res = DELETEHandler(req);
+    }    
+    return res;
+}
+
+bool Server::CheckCGI(std::string url)
+{
+    size_t index = url.find(".");
+    std::string ext = url.substr(index + 1, std::string::npos);
+    if (this->cgi_extension_.compare(ext) == 0)
+        return true;
+    return false;
+}
+
+bool Server::CheckCGI(std::string url, int loca_index)
+{
+    size_t index = url.find(".");
+    std::string ext = url.substr(index + 1, std::string::npos);
+
+    if (this->locations_[loca_index].cgi_extension_.compare(ext) == 0)
+        return true;
+    return false;
+}
+
+void Server::CGIHandler(Request& request)
+{
+    char** tmp;
+    pid_t pid;
+    
+    tmp = getCgiVariable(request);
+    pid = fork();
+    if (pid == 0)
+    {
+
+    }
+    (void)request;
+}
+
+char** Server::getCgiVariable(Request& request)
+{
+    char** ctmp;
+    (void)request;
+    std::map<std::string, std::string> tmp;
+
+    ctmp = new char*[18];
+
+    tmp.insert(std::pair<std::string, std::string>("AUTH_TYPE", "null"));
+    tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", "-1"));
+    tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "null"));
+    tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
+    tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "?"));
+    tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", "null"));
+    tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", "null"));
+    tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", "null"));
+    tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", "null"));
+    tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));
+    tmp.insert(std::pair<std::string, std::string>("REMOTE_USER", "null"));
+    tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", "null"));
+    tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", "null"));
+    tmp.insert(std::pair<std::string, std::string>("SERVER_NAME", "null"));
+    tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", "null"));
+    tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", "null"));
+    tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "null"));
+    tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
+
+    return 0;
 }

@@ -10,10 +10,24 @@ ConnectionPool::~ConnectionPool()
 
 }
 
-void ConnectionPool::addConnection(int socket, int indicate)
+ConnectionPool::ConnectionPool(const ConnectionPool& tmp)
+{
+    *this = tmp;
+}
+
+ConnectionPool& ConnectionPool::operator=(const ConnectionPool& tmp)
+{
+    this->epfd_ = tmp.epfd_;
+    this->cons_ = tmp.cons_;
+    return *this;
+}
+
+void ConnectionPool::addConnection(int socket, int indicate, std::string client_ip)
 {
     struct epoll_event userevent;      // 등록하기 위한 변수!
+
     Connection con(socket, indicate);
+    con.client_ip_ = client_ip;
 
     this->cons_.push_back(con);
     

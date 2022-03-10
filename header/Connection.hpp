@@ -8,13 +8,17 @@
 #include "Total.hpp"
 #include "Request.hpp"
 
+//epoll에 등록한 fd
+
 class Connection
 {
 public:
-    int socket_;
+    int socket_; // Clinet socket
     int kind_;
     int timeout_;
     Request reqeust_;
+    int epollfd;
+    std::string client_ip_;
 
     Connection(int socket, int kind);
     ~Connection();

@@ -16,6 +16,8 @@ class MainServer
         
         MainServer();
         MainServer(std::string file_name);
+        MainServer(const MainServer& tmp);
+        MainServer& operator=(const MainServer& tmp);
         ~MainServer();
         void init();
         void start();

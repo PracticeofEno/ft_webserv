@@ -2,6 +2,7 @@
 #define LOCATION_HPP
 
 #include "Total.hpp"
+#include "Util.hpp"
 
 class Location
 {

@@ -15,6 +15,7 @@ class Server
         std::string             http_version_;
         std::string             error_page_path_;
         std::string             root_;
+        std::string             cgi_extension_;
         int                     client_body_size_;
         std::vector<Location>   locations_;
         int                     socket_;
@@ -29,8 +30,6 @@ class Server
 
         void dataSetting(std::string data);
         Response handleRequest(Request& request);
-        std::string getPayload(std::string path);
-        
         
     private :
         int findLocation(std::string root);
@@ -38,11 +37,16 @@ class Server
         Response GETHandler(Request& request);
         Response POSTHandler(Request& request);
         Response DELETEHandler(Request& request);
+        void CGIHandler(Request& request);
         std::string searchMimeType(std::string uri);
         std::string getRecentTime(std::string url);
         std::string getFilePath(std::string url);
         std::string getFileSize(std::string url);
         Response tryHandle(Request& req);
+        Response tryHandle(Request& req, int index);
+        bool CheckCGI(std::string url);
+        bool CheckCGI(std::string url, int index);
+        char** getCgiVariable(Request& request);
 
 };
 

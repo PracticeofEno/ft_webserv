@@ -1,5 +1,25 @@
 #include "MainServer.hpp"
 
+MainServer::MainServer()
+{
+}
+
+MainServer::~MainServer()
+{
+}
+
+MainServer::MainServer(const MainServer& tmp)
+{
+    *this = tmp;
+}
+
+MainServer& MainServer::operator=(const MainServer& tmp)
+{
+    this->sp_ = tmp.sp_;
+    this->cons_ = tmp.cons_;
+    return *this;
+}
+
 void *send(void *tmp)
 {
     Response* p_res = (Response*) tmp;
@@ -81,9 +101,7 @@ MainServer::MainServer(std::string fileName)
         std::cout << "MimeType file open fail" << std::endl;
 }
 
-MainServer::~MainServer()
-{
-}
+
 
 void MainServer::init(void)
 {
@@ -141,7 +159,7 @@ void MainServer::init(void)
             close(server_sock);
             _exit(1);
         }
-        this->cons_.addConnection(server_sock, SERVER);
+        this->cons_.addConnection(server_sock, SERVER, "127.0.0.1");
     }
 }
 
@@ -222,6 +240,8 @@ void MainServer::start()
     struct sockaddr_in clnt_addr;
     int client_sock;
     socklen_t addr_sz;
+    std::string client_ip;
+    char ip_tmp[16];
 
     while (1)
     {
@@ -241,21 +261,13 @@ void MainServer::start()
                 {
                     addr_sz = sizeof(clnt_addr);
                     client_sock = accept(_ep_events_buf[i].data.fd, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
-                    this->cons_.addConnection(client_sock, CLIENT);
+                    client_ip = std::string (inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
+                    this->cons_.addConnection(client_sock, CLIENT, client_ip);
                 }
-                else // 클라이언트 소켓에서 온거라면 알맞게 처리
+                else if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT)) // 클라이언트 소켓에서 온거라면 알맞게 처리
                 {
-                    // Request 처리
-                    if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT))
-                    {
-                        this->cons_.getConnection(_ep_events_buf[i].data.fd).makeRequest();
-                        TestCode(this->cons_.getConnection(_ep_events_buf[i].data.fd), sp_.serverPool_.at(0));
-                    }
-                    else
-                    {
-                        //사실 여기에 흐름이 오면 안되겠지만..
-                        // Coonection에 없는애가 요청이 온상태임
-                    }
+                    this->cons_.getConnection(_ep_events_buf[i].data.fd).makeRequest();
+                    TestCode(this->cons_.getConnection(_ep_events_buf[i].data.fd), sp_.serverPool_.at(0));
                 }
             }
         }
