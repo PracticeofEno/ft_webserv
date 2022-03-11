@@ -6,7 +6,6 @@
 #include "ConnectionPool.hpp"
 #include "Location.hpp"
 #include "ExceptionCode.hpp"
-#include "IOThread.hpp"
 
 class MainServer
 {
@@ -31,5 +30,6 @@ class MainServer
         void    makeMimeType(std::string data);
 
 };
+extern MainServer main_server;
 
 #endif

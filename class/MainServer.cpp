@@ -20,46 +20,17 @@ MainServer& MainServer::operator=(const MainServer& tmp)
     return *this;
 }
 
-void *send(void *tmp)
-{
-    Response* p_res = (Response*) tmp;
-    p_res->send();
-    delete p_res;
-    return (0);
-}
-
 void TestCode(Connection& tmp, Server server)
 {
     Request req;
-    IOThread thread;
     req.method_ = "GET";
     req.version_ = "HTTP/1.1";
-    req.url_ = "/default_error_page.html";
+    req.url_ = "/cgi-bin/aa.cgi";
     req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
     
-    Response res = server.handleRequest(req);
+    Response res = server.handleRequest(req, tmp);
     res.socket_ = tmp.socket_;
-    Response *p_res = new Response();
-    *p_res = res;
-    thread.setFunction(&send);
-    thread.start((void *)p_res);
-}
-
-std::string &lltrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(0, s.find_first_not_of(t));
-    return s;
-}
-
-std::string &rrtrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    s.erase(s.find_last_not_of(t) + 1);
-    return s;
-}
-
-std::string &ttrim(std::string &s, const char *t = " \t\n\r\f\v")
-{
-    return lltrim(rrtrim(s, t), t);
+    // 이 리스폰스는 완성된 리스폰스 (abc.txt )
 }
 
 MainServer::MainServer(std::string fileName)
@@ -242,6 +213,7 @@ void MainServer::start()
     socklen_t addr_sz;
     std::string client_ip;
     char ip_tmp[16];
+    
 
     while (1)
     {
@@ -256,18 +228,30 @@ void MainServer::start()
             std::cout << _event_cnt << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
+                Connection& con = this->cons_.getConnection(_ep_events_buf[i].data.fd);
                 // ConnectionPool 뒤적거려서 해당 소켓이 서버소켓인지 확인한뒤에 서버라면
-                if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, SERVER))
+                if (con.kind_ == SERVER)
                 {
                     addr_sz = sizeof(clnt_addr);
                     client_sock = accept(_ep_events_buf[i].data.fd, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
                     client_ip = std::string (inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
                     this->cons_.addConnection(client_sock, CLIENT, client_ip);
                 }
-                else if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT)) // 클라이언트 소켓에서 온거라면 알맞게 처리
+                else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
                 {
                     this->cons_.getConnection(_ep_events_buf[i].data.fd).makeRequest();
+                    // Reqeust가 완성됐으면 
                     TestCode(this->cons_.getConnection(_ep_events_buf[i].data.fd), sp_.serverPool_.at(0));
+                }
+                else if (con.kind_ == READFILE)
+                {
+                    //_ep._events_buf[i].data.fd << 얘가 어떤 커넥션이 들고있냐? 
+                    //write(커넥션의 pipe[1]);
+                }
+                else if (con.kind_ == READONE)
+                {
+                    //epoll에서 둘다 제거 시키고 send ~ 
+                    
                 }
             }
         }
@@ -294,10 +278,10 @@ void MainServer::makeMimeType(std::string data)
 
         if (tmp.find("}") == std::string::npos)
         {
-            tmp = ttrim(tmp);
+            tmp = ft_trim(tmp);
             value = tmp.substr(0, tmp.find_first_of(' '));
             tmp = tmp.erase(0, tmp.find_first_of(' '));
-            key = ttrim(tmp);
+            key = ft_trim(tmp);
             if (key != "" && value != "")
             {
                 while (key.find(" ") != std::string::npos)

@@ -49,7 +49,7 @@ void Server::dataSetting(std::string data)
     
 }
 
-Response Server::handleRequest(Request &request)
+Response Server::handleRequest(Request &request, Connection& tmp)
 {
     Response response;
     int index = findLocation(request.url_);
@@ -62,7 +62,7 @@ Response Server::handleRequest(Request &request)
         {
             if (this->locations_[index].methodCheck(request.method_))
             {
-                tryHandle(request, index);
+                tryHandle(request, index, tmp);
             }
             else
                 throw ExceptionCode(405);
@@ -70,7 +70,7 @@ Response Server::handleRequest(Request &request)
         else // location에서 찾은건 아니지만 /www/를 기준으로 해당 경로에 존재한다면
         {
             if (request.method_ == "GET" || request.method_ == "POST" || request.method_ == "DELETE")
-                response = tryHandle(request);
+                response = tryHandle(request, tmp);
         }
     }
     return (response);
@@ -84,12 +84,15 @@ int Server::findLocation(std::string url)
     int i = 0;
     bool tf = false;
     std::string path;
+    char buf[PATH_MAX];
+    realpath(".", buf);
+    std::string current_path(buf);
 
     for (it = its; it != ite; it++)
     {
         if (it->root_.compare(url) == 0)
         {
-            path = "/root/ft_webserv/" + it->root_ + url;
+            path = current_path + it->root_ + url;
             path = replace_all(path, "//", "/");
             if (access(path.c_str(), F_OK) == 0)
                 tf = true;
@@ -202,28 +205,32 @@ std::string Server::getFilePath(std::string url)
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
     std::string path;
+    char buf[PATH_MAX];
+    realpath(".", buf);
+    std::string current_path(buf);
 
     for (it = its; it != ite; it++)
     {
         if (it->root_.compare(url) == 0)
         {
-            path = "/root/ft_webserv/" + it->root_ + url;
+            path = current_path + it->root_ + url;
             path = replace_all(path, "//", "/");
             return (path);
         }
     }
-    url = "/root/ft_webserv/www/" + url;
+    url = current_path + "/www/" + url;
     url = replace_all(url, "//", "/");
     return url;
 }
 
-Response Server::tryHandle(Request& req)
+Response Server::tryHandle(Request& req, Connection& tmp)
 {
     Response res;
     
 
     if (CheckCGI(req.url_))
     {
+        CGIHandler(req, tmp);
     }
     else
     {
@@ -237,12 +244,13 @@ Response Server::tryHandle(Request& req)
     return res;
 }
 
-Response Server::tryHandle(Request& req, int index)
+Response Server::tryHandle(Request& req, int index, Connection& tmp)
 {
     Response res;
     
     if (CheckCGI(req.url_, index))
     {
+        CGIHandler(req, tmp);
     }
     else
     {
@@ -275,12 +283,12 @@ bool Server::CheckCGI(std::string url, int loca_index)
     return false;
 }
 
-void Server::CGIHandler(Request& request)
+void Server::CGIHandler(Request& request, Connection& tmp)
 {
-    char** tmp;
+    char** env;
     pid_t pid;
     
-    tmp = getCgiVariable(request);
+    env = getCgiVariable(request, tmp);
     pid = fork();
     if (pid == 0)
     {
@@ -289,32 +297,58 @@ void Server::CGIHandler(Request& request)
     (void)request;
 }
 
-char** Server::getCgiVariable(Request& request)
+//env 동적 할당해서 끝나고 해제해줘야함
+char** Server::getCgiVariable(Request& request, Connection& tmp)
 {
-    char** ctmp;
-    (void)request;
-    std::map<std::string, std::string> tmp;
+    char** env;
+    char* buf;
+    int i = 0;
+    std::map<std::string, std::string> env_tmp;
+    std::map<std::string, std::string>::iterator it;
+    std::map<std::string, std::string>::iterator its;
+    std::map<std::string, std::string>::iterator ite;
+    std::stringstream ss;
+    ss << this->port_;
+    std::string tmp2;
 
-    ctmp = new char*[18];
+    env_tmp.insert(std::pair<std::string, std::string>("AUTH_TYPE", "null"));
+    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", "-1"));
+    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "null"));
+    env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", request.url_));
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", getFilePath(request.url_)));
+    env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
+    env_tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", tmp.client_ip_));
+    env_tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", tmp.client_ip_));
+    env_tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));
+    env_tmp.insert(std::pair<std::string, std::string>("REMOTE_USER", "null"));
+    env_tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", request.method_));
+    env_tmp.insert(std::pair<std::string, std::string>("REQUEST_URI", getCgiUri(request)));
+    env_tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", request.url_));
+    env_tmp.insert(std::pair<std::string, std::string>("SERVER_NAME", this->server_name_));
+    env_tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", ss.str()));
+    env_tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", this->http_version_));
+    env_tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "ft_webserv"));
+    env_tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
 
-    tmp.insert(std::pair<std::string, std::string>("AUTH_TYPE", "null"));
-    tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", "-1"));
-    tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "null"));
-    tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
-    tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "?"));
-    tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", "null"));
-    tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", "null"));
-    tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", "null"));
-    tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", "null"));
-    tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));
-    tmp.insert(std::pair<std::string, std::string>("REMOTE_USER", "null"));
-    tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", "null"));
-    tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", "null"));
-    tmp.insert(std::pair<std::string, std::string>("SERVER_NAME", "null"));
-    tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", "null"));
-    tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", "null"));
-    tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "null"));
-    tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
+    env = new char*[env_tmp.size()];
+    for (it = its; it != ite; it++)
+    {
+        tmp2 = it->first + "=" + it->second;
+        buf = new char[tmp2.size() + 1];
+        strncpy(buf, tmp2.c_str(), tmp2.size());
+        env[i] = buf;
+        i++;
+    }
+    return env;
+}
 
-    return 0;
+std::string Server::getCgiUri(Request& req)
+{
+    std::string tmp;
+    std::stringstream ss;
+    ss << port_;
+    tmp = "http://" + server_name_ + ":" + ss.str() + "/" + req.url_ + "/" + req.query_;
+    tmp = replace_all(tmp, "//", "/");
+    return tmp;
 }

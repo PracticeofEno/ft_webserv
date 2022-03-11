@@ -3,11 +3,11 @@
 Response::Response() {}
 Response::~Response() {}
 
-Response::Response(const Response& tmp) 
+Response::Response(const Response &tmp)
 {
     *this = tmp;
 }
-Response& Response::operator= (const Response& tmp)
+Response &Response::operator=(const Response &tmp)
 {
     this->file_path_ = tmp.file_path_;
     this->http_version_ = tmp.http_version_;
@@ -57,16 +57,15 @@ void Response::writeFile()
     if (in.is_open())
     {
         in.seekg(0, in.end);
-		length = (int)in.tellg();
-		in.seekg(0, in.beg);
+        length = (int)in.tellg();
+        in.seekg(0, in.beg);
         buffer = new unsigned char[length];
         in.read((char*)buffer, length);
-		in.close();
+        in.close();
         write(this->socket_, (char*)buffer, length);
     }
     else
         std::cout << "Config file open fail" << std::endl;
-    
 
 }
 

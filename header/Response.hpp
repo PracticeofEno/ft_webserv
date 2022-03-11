@@ -3,7 +3,8 @@
 
 #include "Total.hpp"
 #include "ResponseStatus.hpp"
-
+#include "Connection.hpp"
+#include "MainServer.hpp"
 class Response 
 {
     public:

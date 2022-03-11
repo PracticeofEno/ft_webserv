@@ -14,7 +14,7 @@ CLASS_FILES = 	MainServer \
 				Response \
 				ResponseStatus \
 				ExceptionCode \
-				IOThread
+				Util
 
 CLASS_SRCS = $(addprefix class/, $(addsuffix .cpp, $(CLASS_FILES)))
 
@@ -23,7 +23,7 @@ OBJS = $(CLASS_SRCS:.cpp=.o)
 all : $(NAME)
 
 $(NAME) : $(OBJS)
-	$(CC) $(CFLAGS) -g -o $(NAME) main.cpp $(OBJS) -lpthread
+	$(CC) $(CFLAGS) -g -o $(NAME) main.cpp $(OBJS)
 
 %.o : %.cpp
 	$(CC) $(CFLAGS) -g -c -o $@ $^

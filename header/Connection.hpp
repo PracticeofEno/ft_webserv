@@ -17,8 +17,8 @@ public:
     int kind_;
     int timeout_;
     Request reqeust_;
-    int epollfd;
     std::string client_ip_;
+    int pipe[2];
 
     Connection(int socket, int kind);
     ~Connection();
@@ -31,6 +31,7 @@ public:
 
 private:
     std::string _buffer;
+    string _file_buffer;
 
 };
 
