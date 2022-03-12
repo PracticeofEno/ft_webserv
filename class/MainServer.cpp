@@ -1,38 +1,5 @@
 #include "MainServer.hpp"
 
-MainServer::MainServer()
-{
-}
-
-MainServer::~MainServer()
-{
-}
-
-MainServer::MainServer(const MainServer &tmp)
-{
-    *this = tmp;
-}
-
-MainServer &MainServer::operator=(const MainServer &tmp)
-{
-    this->sp_ = tmp.sp_;
-    this->cons_ = tmp.cons_;
-    return *this;
-}
-
-void TestCode(Connection &tmp, Server server)
-{
-    Request req;
-    req.method_ = "GET";
-    req.version_ = "HTTP/1.1";
-    req.url_ = "/cgi-bin/aa.cgi";
-    req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
-
-    server.handleRequest(req, tmp);
-
-
-}
-
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -53,23 +20,6 @@ MainServer::MainServer(std::string fileName)
     else
         std::cout << "Config file open fail" << std::endl;
 
-    std::ifstream mimeFile(std::string("mime.types").c_str());
-    if (true == mimeFile.is_open())
-    {
-
-        std::string s;
-        std::string data;
-        while (mimeFile)
-        {
-            getline(mimeFile, s);
-            data.append(s);
-            data.append("\r\n");
-        }
-        mimeFile.close();
-        makeMimeType(data);
-    }
-    else
-        std::cout << "MimeType file open fail" << std::endl;
 }
 
 void MainServer::init(void)

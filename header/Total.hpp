@@ -24,8 +24,4 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include <ctime>
-#include <sys/stat.h>
-typedef std::basic_string<unsigned char> string;
-extern std::map<std::string, std::string> mime;
 #endif
