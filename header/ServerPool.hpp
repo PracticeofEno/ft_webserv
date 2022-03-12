@@ -11,6 +11,8 @@ class ServerPool
 
         ServerPool();
         ~ServerPool();
+        ServerPool(const ServerPool& tmp);
+        ServerPool& operator=(const ServerPool& tmp);
     private :
 
 };

@@ -1,7 +1,5 @@
 #include "MainServer.hpp"
 
-
-
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -24,10 +22,6 @@ MainServer::MainServer(std::string fileName)
 
 }
 
-MainServer::~MainServer()
-{
-}
-
 void MainServer::init(void)
 {
     struct sockaddr_in serv_addr;
@@ -38,7 +32,7 @@ void MainServer::init(void)
     std::vector<Server>::iterator its = sp_.serverPool_.begin();
     std::vector<Server>::iterator ite = sp_.serverPool_.end();
 
-    _epfd = epoll_create(EPOLL_SIZE);             // epoll 인스턴스 생성
+    _epfd = epoll_create(EPOLL_SIZE); // epoll 인스턴스 생성
     this->cons_.setEpfd(_epfd);
     _ep_events_buf = new epoll_event[EPOLL_SIZE]; // 버퍼 동적할당
 
@@ -84,7 +78,7 @@ void MainServer::init(void)
             close(server_sock);
             _exit(1);
         }
-        this->cons_.addConnection(server_sock, SERVER);
+        this->cons_.addConnection(server_sock, SERVER, "127.0.0.1");
     }
 }
 
@@ -162,10 +156,6 @@ Location MainServer::makeLocation(std::string &data)
 
 void MainServer::start()
 {
-    struct sockaddr_in clnt_addr;
-    int client_sock;
-    socklen_t addr_sz;
-
     while (1)
     {
         _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
@@ -176,35 +166,21 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-            std::cout << _event_cnt << std::endl;
+            std::cout << "Recieve Events count : " <<  _event_cnt << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
-                // ConnectionPool 뒤적거려서 해당 소켓이 서버소켓인지 확인한뒤에 서버라면
-                if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, SERVER))
+                if (_ep_events_buf[i].events == EPOLLIN)
                 {
-                    addr_sz = sizeof(clnt_addr);
-                    client_sock = accept(_ep_events_buf[i].data.fd, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
-                    this->cons_.addConnection(client_sock, CLIENT);
+                    handleReadEvent(_ep_events_buf[i].data.fd);
                 }
-                else // 클라이언트 소켓에서 온거라면 알맞게 처리
+                else if (_ep_events_buf[i].events == EPOLLOUT)
                 {
-                    // Request 처리
-                    if (this->cons_.CheckSocket(_ep_events_buf[i].data.fd, CLIENT))
-                    {
-                        this->cons_.getConnection(_ep_events_buf[i].data.fd).makeRequest();
-                        TestCode(this->cons_.getConnection(_ep_events_buf[i].data.fd), sp_.serverPool_.at(0));
-                    }
-                    else
-                    {
-                        //사실 여기에 흐름이 오면 안되겠지만..
-                        // Coonection에 없는애가 요청이 온상태임
-                    }
+                    handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
             }
         }
         catch (const ExceptionCode &e)
         {
-            
         }
     }
 }
@@ -225,10 +201,10 @@ void MainServer::makeMimeType(std::string data)
 
         if (tmp.find("}") == std::string::npos)
         {
-            tmp = ttrim(tmp);
+            tmp = ft_trim(tmp);
             value = tmp.substr(0, tmp.find_first_of(' '));
             tmp = tmp.erase(0, tmp.find_first_of(' '));
-            key = ttrim(tmp);
+            key = ft_trim(tmp);
             if (key != "" && value != "")
             {
                 while (key.find(" ") != std::string::npos)
@@ -244,4 +220,37 @@ void MainServer::makeMimeType(std::string data)
             break;
         endPos = data.find("\r\n");
     }
+}
+
+void MainServer::handleReadEvent(int event_fd)
+{
+    struct sockaddr_in clnt_addr;
+    int client_sock;
+    socklen_t addr_sz;
+    std::string client_ip;
+    char ip_tmp[16];
+
+    Connection& con = cons_.getConnection(event_fd);
+    if (con.kind_ == SERVER)
+    {
+        addr_sz = sizeof(clnt_addr);
+        client_sock = accept(con.socket_, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
+        client_ip = std::string(inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
+        this->cons_.addConnection(client_sock, CLIENT, client_ip);
+    }
+    else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
+    {
+        this->cons_.getConnection(con.socket_).makeRequest();
+        TestCode(this->cons_.getConnection(con.socket_), sp_.serverPool_.at(0));
+    }
+    else if (con.kind_ == FILE_READ)
+    {
+        con = cons_.getPipeConnection(con.socket_);
+        con.response_.readFileData(con.file_fd_);
+    }
+}
+
+void MainServer::handleWriteEvent(int event_fd)
+{
+    (void)event_fd;
 }

@@ -1,11 +1,11 @@
 #include "Total.hpp"
 #include "MainServer.hpp"
 
+MainServer main_server;
 std::map<std::string, std::string> mime;
-
 int	main()
 {
-	MainServer main_server("default.config");
+	main_server =  MainServer("default.config");
 	main_server.init();
 	main_server.start();
 	

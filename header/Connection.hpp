@@ -7,15 +7,22 @@
 
 #include "Total.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
+class MainServer;
 
 class Connection
 {
 public:
-    int socket_;
+    int socket_; // Clinet socket
     int kind_;
     int timeout_;
     Request reqeust_;
+    Response response_;
+    std::string client_ip_;
+    int pipe_fd[2];
+    int file_fd_;
 
+    Connection();
     Connection(int socket, int kind);
     ~Connection();
     Connection(const Connection& con);
@@ -24,10 +31,8 @@ public:
     bool makeRequest();
     void readSocket();
     std::string readLine();
-
+    void addFile(MainServer& tmp);
 private:
-    std::string _buffer;
-
 };
 
 #endif

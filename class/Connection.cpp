@@ -1,5 +1,7 @@
 #include "Connection.hpp"
+#include "MainServer.hpp"
 
+Connection::Connection() {}
 Connection::Connection(int socket, int kind) : socket_(socket), kind_(kind), timeout_(0) {}
 
 Connection::~Connection() {}
@@ -14,55 +16,28 @@ Connection &Connection::operator=(const Connection &tmp)
     this->socket_ = tmp.socket_;
     this->kind_ = tmp.kind_;
     this->timeout_ = tmp.timeout_;
+    this->reqeust_ = tmp.reqeust_;
+    this->response_ = tmp.response_;
+    this->client_ip_ = tmp.client_ip_;
+    this->file_fd_ = tmp.file_fd_;
+    this->pipe_fd[0] = tmp.pipe_fd[0];
+    this->pipe_fd[1] = tmp.pipe_fd[1];
     return *this;
 }
 
 bool Connection::makeRequest()
 {
-    readSocket();
+    this->reqeust_.readSocket(this->socket_);
     
-    std::cout << this->_buffer << std::endl;
+    std::cout << this->reqeust_._buffer << std::endl;
     return true;
 }
 
-void Connection::readSocket()
+void Connection::addFile(MainServer& tmp)
 {
-    char buf[BUF_SIZE];
-    int strLen;
-
-    while (true)
-    {
-        strLen = read(socket_, buf, BUF_SIZE);
-        if (strLen == 0)
-        {
-            std::cout << "all data receive" << std::endl;
-            break;
-        }
-        else if (strLen > 0)
-        {
-            _buffer.append(buf, strLen);
-            continue;
-        }
-        else
-            break;
-    }
-}
-
-std::string Connection::readLine()
-{
-    /*
-    std::string str = "I want to convert string to char*";
-    std::vector<char> writable(_buffer.begin(), _buffer.end());
-    writable.push_back('\0');
-    char *ptr = &writable[0];
-    std::cout << ptr;
-    */
-    std::string ret("");
-    size_t      index = _buffer.find("\r\n");
-    if (index != std::string::npos)
-    {
-        ret = _buffer.substr(0, index + 2);
-        _buffer.erase(0, index + 2);
-    }
-    return (ret);
+    pipe(pipe_fd);
+    this->file_fd_ = open(this->response_.file_path_.c_str(), O_RDONLY);
+    tmp.pipe_to_fd_[this->pipe_fd[0]] = this->file_fd_;
+    tmp.cons_.addConnection(pipe_fd[0], FILE_READ, "FILE");
+    write(pipe_fd[1], "a", 1);
 }

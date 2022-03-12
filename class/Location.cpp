@@ -1,22 +1,5 @@
 #include "Location.hpp"
 
-std::string &ltrim(std::string &s)
-{
-    s.erase(0, s.find_first_not_of(" \t\n\r\f\v"));
-    return s;
-}
-
-std::string &rtrim(std::string &s)
-{
-    s.erase(s.find_last_not_of(" \t\n\r\f\v") + 1);
-    return s;
-}
-
-std::string &trim(std::string &s)
-{
-    return ltrim(rtrim(s));
-}
-
 Location::Location()
 {
 }
@@ -45,10 +28,10 @@ Location& Location::operator=(const Location& location)
 void Location::dataSetting(std::string data)
 {
     std::string key, value;
-    data = trim(data);
+    data = ft_trim(data);
     key = data.substr(0, data.find_first_of(' '));
     data = data.erase(0, data.find_first_of(' '));
-    value = trim(data);
+    value = ft_trim(data);
     if (key.compare("method") == 0)
         method_ = value;
     else if (key.compare("redirection") == 0)

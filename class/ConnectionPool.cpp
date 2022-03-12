@@ -10,10 +10,24 @@ ConnectionPool::~ConnectionPool()
 
 }
 
-void ConnectionPool::addConnection(int socket, int indicate)
+ConnectionPool::ConnectionPool(const ConnectionPool& tmp)
+{
+    *this = tmp;
+}
+
+ConnectionPool& ConnectionPool::operator=(const ConnectionPool& tmp)
+{
+    this->epfd_ = tmp.epfd_;
+    this->cons_ = tmp.cons_;
+    return *this;
+}
+
+void ConnectionPool::addConnection(int socket, int kind, std::string client_ip)
 {
     struct epoll_event userevent;      // 등록하기 위한 변수!
-    Connection con(socket, indicate);
+
+    Connection con(socket, kind);
+    con.client_ip_ = client_ip;
 
     this->cons_.push_back(con);
     
@@ -26,14 +40,19 @@ void ConnectionPool::addConnection(int socket, int indicate)
         _exit(1);
     }
 
-    // 클라이언트의 fd를 등록해주는 과정
-    userevent.events = EPOLLIN | EPOLLET;
+    if (kind == SERVER || kind == FILE_READ)
+        userevent.events = EPOLLIN | EPOLLET;
+    else if (kind == CLIENT)
+        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT;
+
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
-    if (indicate == SERVER)
+    if (kind == SERVER)
         std::cout << "make server : " << socket << std::endl;
-    else
+    else if (kind == CLIENT)
         std::cout << "connected client : " << socket << std::endl;
+    else if (kind == FILE_READ) 
+        std::cout << "file fd add" << std::endl;
 }
 
 void ConnectionPool::deleteConnection(int socket)
@@ -82,6 +101,20 @@ Connection& ConnectionPool::getConnection(int socket)
     for (it = its; it != ite; it++)
     {
         if (it->socket_ == socket)
+            break;
+    }
+    return *it;
+}
+
+Connection& ConnectionPool::getPipeConnection(int pipe_fd)
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator its = cons_.begin();
+    std::vector<Connection>::iterator ite = cons_.end();
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->pipe_fd[0] == pipe_fd)
             break;
     }
     return *it;
