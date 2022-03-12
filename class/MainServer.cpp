@@ -29,8 +29,6 @@ void TestCode(Connection &tmp, Server server)
     req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
 
     server.handleRequest(req, tmp);
-
-
 }
 
 MainServer::MainServer(std::string fileName)
@@ -303,4 +301,7 @@ void MainServer::handleReadEvent(int event_fd)
 void MainServer::handleWriteEvent(int event_fd)
 {
     (void)event_fd;
+    //커넥션 들고와서
+    //얘가 완성 되있나? 
+    //send ~ 하고 정리해주고
 }
