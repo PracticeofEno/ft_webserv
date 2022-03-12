@@ -2,6 +2,7 @@
 #define EXCEPTIONCODE_HPP
 
 #include "Total.hpp"
+#include "Connection.hpp"
 
 class ExceptionCode : public std::exception
 {
@@ -12,8 +13,11 @@ class ExceptionCode : public std::exception
         virtual const char* what() const throw();
         int getCode() const;
 
+        Connection con;
+
     private:
         int _code;
+        
         //int _socket;
 };
 #endif

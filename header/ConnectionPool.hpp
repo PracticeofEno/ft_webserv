@@ -22,6 +22,7 @@ class ConnectionPool
         void deleteConnection(int socket);
         bool CheckSocket(int socket, int kind);
         Connection& getConnection(int socket);
+        Connection& getPipeConnection(int pipe_fd);
 
     private:
         

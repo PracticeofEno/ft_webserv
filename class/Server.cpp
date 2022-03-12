@@ -51,7 +51,7 @@ void Server::dataSetting(std::string data)
 
 Response Server::handleRequest(Request &request, Connection& tmp)
 {
-    Response response;
+    Response& response = tmp.response_;
     int index = findLocation(request.url_);
 
     if (index == NOTEXIST)

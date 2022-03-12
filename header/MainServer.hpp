@@ -6,12 +6,14 @@
 #include "ConnectionPool.hpp"
 #include "Location.hpp"
 #include "ExceptionCode.hpp"
+#include "Response.hpp"
 
 class MainServer
 {
     public :
         ServerPool sp_;
         ConnectionPool cons_;
+        std::map<int, int> pipe_to_fd_;
         
         MainServer();
         MainServer(std::string file_name);
@@ -28,6 +30,8 @@ class MainServer
         Server makeServer(std::string& data);
         Location makeLocation(std::string& data);
         void    makeMimeType(std::string data);
+        void handleReadEvent(int event_fd);
+        void handleWriteEvent(int event_fd);
 
 };
 extern MainServer main_server;

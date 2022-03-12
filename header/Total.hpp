@@ -3,9 +3,11 @@
 
 #define EPOLL_SIZE 50 // 실제론 사용되지 않음
 #define BUF_SIZE 4096
+
 #define SERVER 1
 #define CLIENT 2
-#define READFILE 3
+#define FILE_READ 3
+
 #define NOTEXIST -1
 #define EXIST -2
 

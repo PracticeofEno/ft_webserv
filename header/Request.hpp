@@ -16,8 +16,15 @@ class Request
 		std::string	version_;
 		std::map<std::string, std::string> header_;
 		std::string query_;
+		
+		int getState();
+		std::string readLine();
+		void readSocket(int socket);
 
+		std::string _buffer;
 	private:
+		
+		int	state;
 		
 };
 

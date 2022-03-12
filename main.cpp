@@ -1,5 +1,6 @@
 #include "Total.hpp"
 #include "MainServer.hpp"
+
 MainServer main_server;
 std::map<std::string, std::string> mime;
 int	main()

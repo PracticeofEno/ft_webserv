@@ -7,8 +7,8 @@
 
 #include "Total.hpp"
 #include "Request.hpp"
-
-//epoll에 등록한 fd
+#include "Response.hpp"
+class MainServer;
 
 class Connection
 {
@@ -17,9 +17,12 @@ public:
     int kind_;
     int timeout_;
     Request reqeust_;
+    Response response_;
     std::string client_ip_;
-    int pipe[2];
+    int pipe_fd[2];
+    int file_fd_;
 
+    Connection();
     Connection(int socket, int kind);
     ~Connection();
     Connection(const Connection& con);
@@ -28,11 +31,8 @@ public:
     bool makeRequest();
     void readSocket();
     std::string readLine();
-
+    void addFile(MainServer& tmp);
 private:
-    std::string _buffer;
-    string _file_buffer;
-
 };
 
 #endif
