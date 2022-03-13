@@ -41,9 +41,9 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip)
     }
 
     if (kind == SERVER || kind == FILE_READ)
-        userevent.events = EPOLLIN | EPOLLET;
+        userevent.events = EPOLLIN | EPOLLET | EPOLLHUP | EPOLLERR;
     else if (kind == CLIENT)
-        userevent.events = EPOLLIN | EPOLLOUT;
+        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLHUP | EPOLLERR;
 
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
@@ -52,7 +52,7 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip)
     else if (kind == CLIENT)
         std::cout << "connected client : " << socket << std::endl;
     else if (kind == FILE_READ) 
-        std::cout << "file fd add" << std::endl;
+        std::cout << "cons_ add pipe_fd : " << socket << std::endl;
 }
 
 void ConnectionPool::deleteConnection(int socket)
@@ -106,7 +106,7 @@ Connection& ConnectionPool::getConnection(int socket)
     return *it;
 }
 
-Connection& ConnectionPool::getPipeConnection(int pipe_fd)
+Connection& ConnectionPool::getPipeConnection(int pipefd)
 {
     std::vector<Connection>::iterator it;
     std::vector<Connection>::iterator its = cons_.begin();
@@ -114,7 +114,7 @@ Connection& ConnectionPool::getPipeConnection(int pipe_fd)
 
     for (it = its; it != ite; it++)
     {
-        if (it->pipe_fd[0] == pipe_fd)
+        if (it->pipe_fd[0] == pipefd)
             return *it;
     }
     return *it;

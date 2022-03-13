@@ -30,6 +30,7 @@ bool Connection::makeRequest()
     this->reqeust_.readSocket(this->socket_);
     
     std::cout << this->reqeust_._buffer << std::endl;
+    this->reqeust_._buffer.clear();
     return true;
 }
 
@@ -39,7 +40,7 @@ void Connection::addFile(MainServer& tmp)
     this->file_fd_ = open(this->response_.file_path_.c_str(), O_RDONLY);
     tmp.pipe_to_fd_[this->pipe_fd[0]] = this->file_fd_;
     tmp.cons_.addConnection(pipe_fd[0], FILE_READ, "FILE");
-    std::cout << "pipe_fd[0] : " << pipe_fd[0] << std::endl;
+    //std::cout << "pipe_fd[0] : " << pipe_fd[0] << std::endl;
     write(pipe_fd[1], "ab", 2);
 }
 

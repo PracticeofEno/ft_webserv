@@ -215,24 +215,35 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-            std::cout << "Recieve Events count : " << _event_cnt << std::endl;
+            //std::cout << "Recieve Events count : " << _event_cnt << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
+                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
+                {
+                    cons_.deleteConnection(_ep_events_buf[i].data.fd);
+                }
+                /*
                 Connection con = cons_.getConnection(_ep_events_buf[i].data.fd);
                 if (con.kind_ == CLIENT || con.kind_ == FILE_READ)
                 {
                     std::cout << "event fd =  " << _ep_events_buf[i].data.fd << std::endl;
                     std::cout << "kinds event =  " << _ep_events_buf[i].events << std::endl;
                 }
+                */
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
-                else if (_ep_events_buf[i].events & EPOLLOUT)
+                if (_ep_events_buf[i].events & EPOLLOUT)
                 {
-                    std::cout << "EPOLLOUT SHIT" << std::endl;
+                    //std::cout << "EPOLLOUT SHIT" << std::endl;
                     handleWriteEvent(_ep_events_buf[i].data.fd);
+                    struct epoll_event userevent;      // 등록하기 위한 변수!
+                    userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLHUP | EPOLLERR;
+                    userevent.data.fd = _ep_events_buf[i].data.fd;
+                    epoll_ctl(this->cons_.epfd_, EPOLL_CTL_MOD, _ep_events_buf[i].data.fd, &userevent);
                 }
+
             }
         }
         catch (const ExceptionCode &e)
@@ -301,23 +312,27 @@ void MainServer::handleReadEvent(int event_fd)
     }
     else if (con.kind_ == FILE_READ)
     {
+        /*
         std::cout << std::endl
                   << std::endl;
         std::cout << "this is file Read" << std::endl;
 
         std::cout << "pipe_fd available" << std::endl;
+        */
         Connection &con2 = cons_.getPipeConnection(con.socket_);
+        /*
         std::cout << "clinet : " << con2.socket_ << std::endl;
         std::cout << "pipe_fd : " << con2.pipe_fd[0] << std::endl;
+        */
         if (con2.response_.readFileData(con2.file_fd_) == false)
         {
-            std::cout << "more file data !" << std::endl;
+            //std::cout << "more file data !" << std::endl;
             write(con2.pipe_fd[1], "a", 1);
         }
         else
         {
-            std::cout << "file data read done" << std::endl;
-            std::cout << con.response_.file_data_.c_str() << std::endl;
+            //std::cout << "file data read done" << std::endl;
+            //std::cout << con.response_.file_data_.c_str() << std::endl;
             con.response_.state = READY;
         }
     }
@@ -328,8 +343,8 @@ void MainServer::handleWriteEvent(int event_fd)
     Connection &con = cons_.getConnection(event_fd);
     if (con.response_.state == READY)
     {
-        std::cout << "write gogo" << std::endl;
-        con.response_.send(1);
+        //std::cout << "write gogo" << std::endl;
+        //con.response_.send(1);
         con.response_.send(con.socket_);
         con.resetData();
         cons_.deleteConnection(con.pipe_fd[0]);
