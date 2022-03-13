@@ -60,3 +60,8 @@ void Request::readSocket(int socket)
             break;
     }
 }
+
+void Request::resetData()
+{
+    
+}

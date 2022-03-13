@@ -42,3 +42,12 @@ void Connection::addFile(MainServer& tmp)
     std::cout << "pipe_fd[0] : " << pipe_fd[0] << std::endl;
     write(pipe_fd[1], "ab", 2);
 }
+
+void Connection::resetData()
+{
+    response_.resetData();
+    reqeust_.resetData();
+    close(file_fd_);
+    close(pipe_fd[0]);
+    close(pipe_fd[1]);
+}

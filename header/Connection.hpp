@@ -32,6 +32,7 @@ public:
     void readSocket();
     std::string readLine();
     void addFile(MainServer& tmp);
+    void resetData();
 private:
 };
 

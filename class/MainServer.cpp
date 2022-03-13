@@ -331,7 +331,7 @@ void MainServer::handleWriteEvent(int event_fd)
         std::cout << "write gogo" << std::endl;
         con.response_.send(1);
         con.response_.send(con.socket_);
-        con.response_.resetData();
+        con.resetData();
         cons_.deleteConnection(con.pipe_fd[0]);
     }
     else
