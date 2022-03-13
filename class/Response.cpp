@@ -1,6 +1,6 @@
 #include "Response.hpp"
 
-Response::Response() : state(0) {}
+Response::Response() : state(NOT_READY) {}
 Response::~Response() {}
 
 Response::Response(const Response &tmp)
@@ -52,22 +52,7 @@ void Response::writeHeader(int fd)
 
 void Response::writeFile(int fd)
 {
-    unsigned char *buffer;
-    int length = 0;
-    std::ifstream in(this->file_path_.c_str(), std::ifstream::binary);
-    if (in.is_open())
-    {
-        in.seekg(0, in.end);
-        length = (int)in.tellg();
-        in.seekg(0, in.beg);
-        buffer = new unsigned char[length];
-        in.read((char*)buffer, length);
-        in.close();
-        write(fd, (char*)buffer, length);
-    }
-    else
-        std::cout << "Config file open fail" << std::endl;
-
+    write(fd, file_data_.c_str() , file_data_.size());
 }
 
 void Response::addHeader(std::string key, std::string value)
@@ -77,6 +62,40 @@ void Response::addHeader(std::string key, std::string value)
 
 bool Response::readFileData(int fd)
 {
-    (void)fd;
+    unsigned char buf[BUF_SIZE];
+    int read_size;
+
+    read_size = read(fd, buf, BUF_SIZE);
+    if (read_size == -1)
+    {
+        std::cout << "file read fail" << std::endl;
+    }
+    else if (read_size == 0)
+    {
+        std::cout << "no data in file" << std::endl;
+    }
+    else
+    {
+        if (read_size == BUF_SIZE)
+        {
+            file_data_.append(buf);
+            return false;
+        }
+        else
+        {
+            file_data_.append(buf);
+            this->state = READY;
+        }
+    }
     return true;
+}
+
+void Response::resetData()
+{
+    http_version_.clear();
+    this->status_ = ResponseStatus();
+    this->header_.clear();
+    this->file_path_.clear();
+    this->file_data_.clear();
+    this->state = NOT_READY;
 }

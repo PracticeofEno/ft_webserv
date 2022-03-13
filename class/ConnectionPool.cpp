@@ -43,7 +43,7 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip)
     if (kind == SERVER || kind == FILE_READ)
         userevent.events = EPOLLIN | EPOLLET;
     else if (kind == CLIENT)
-        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT;
+        userevent.events = EPOLLIN | EPOLLOUT;
 
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
@@ -101,7 +101,7 @@ Connection& ConnectionPool::getConnection(int socket)
     for (it = its; it != ite; it++)
     {
         if (it->socket_ == socket)
-            break;
+            return *it;
     }
     return *it;
 }
@@ -115,9 +115,23 @@ Connection& ConnectionPool::getPipeConnection(int pipe_fd)
     for (it = its; it != ite; it++)
     {
         if (it->pipe_fd[0] == pipe_fd)
-            break;
+            return *it;
     }
     return *it;
+}
+
+bool ConnectionPool::checkPipe(int pipe_fd)
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator its = cons_.begin();
+    std::vector<Connection>::iterator ite = cons_.end();
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->pipe_fd[0] == pipe_fd)
+            return true;
+    }
+    return false;
 }
 
 void ConnectionPool::setEpfd(int epfd)

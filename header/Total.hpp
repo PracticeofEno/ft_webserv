@@ -11,6 +11,10 @@
 #define NOTEXIST -1
 #define EXIST -2
 
+// Response Ready not ready
+#define NOT_READY 1
+#define READY 2
+
 #include <iostream>
 #include <fstream>
 #include <sys/types.h>

@@ -39,5 +39,6 @@ void Connection::addFile(MainServer& tmp)
     this->file_fd_ = open(this->response_.file_path_.c_str(), O_RDONLY);
     tmp.pipe_to_fd_[this->pipe_fd[0]] = this->file_fd_;
     tmp.cons_.addConnection(pipe_fd[0], FILE_READ, "FILE");
-    write(pipe_fd[1], "a", 1);
+    std::cout << "pipe_fd[0] : " << pipe_fd[0] << std::endl;
+    write(pipe_fd[1], "ab", 2);
 }

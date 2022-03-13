@@ -32,6 +32,8 @@ class MainServer
         void    makeMimeType(std::string data);
         void handleReadEvent(int event_fd);
         void handleWriteEvent(int event_fd);
+        
+        void TestCode(Connection& tmp, Server server);
 
 };
 extern MainServer main_server;

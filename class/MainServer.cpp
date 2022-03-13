@@ -20,15 +20,16 @@ MainServer &MainServer::operator=(const MainServer &tmp)
     return *this;
 }
 
-void TestCode(Connection &tmp, Server server)
+void MainServer::TestCode(Connection &tmp, Server server)
 {
     Request req;
     req.method_ = "GET";
     req.version_ = "HTTP/1.1";
-    req.url_ = "/cgi-bin/aa.cgi";
+    req.url_ = "/index.html";
     req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
 
     server.handleRequest(req, tmp);
+    tmp.addFile(*this);
 }
 
 MainServer::MainServer(std::string fileName)
@@ -214,15 +215,22 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-            std::cout << "Recieve Events count : " <<  _event_cnt << std::endl;
+            std::cout << "Recieve Events count : " << _event_cnt << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
-                if (_ep_events_buf[i].events == EPOLLIN)
+                Connection con = cons_.getConnection(_ep_events_buf[i].data.fd);
+                if (con.kind_ == CLIENT || con.kind_ == FILE_READ)
+                {
+                    std::cout << "event fd =  " << _ep_events_buf[i].data.fd << std::endl;
+                    std::cout << "kinds event =  " << _ep_events_buf[i].events << std::endl;
+                }
+                if (_ep_events_buf[i].events & EPOLLIN)
                 {
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
-                else if (_ep_events_buf[i].events == EPOLLOUT)
+                else if (_ep_events_buf[i].events & EPOLLOUT)
                 {
+                    std::cout << "EPOLLOUT SHIT" << std::endl;
                     handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
             }
@@ -278,7 +286,7 @@ void MainServer::handleReadEvent(int event_fd)
     std::string client_ip;
     char ip_tmp[16];
 
-    Connection& con = cons_.getConnection(event_fd);
+    Connection &con = cons_.getConnection(event_fd);
     if (con.kind_ == SERVER)
     {
         addr_sz = sizeof(clnt_addr);
@@ -293,15 +301,41 @@ void MainServer::handleReadEvent(int event_fd)
     }
     else if (con.kind_ == FILE_READ)
     {
-        con = cons_.getPipeConnection(con.socket_);
-        con.response_.readFileData(con.file_fd_);
+        std::cout << std::endl
+                  << std::endl;
+        std::cout << "this is file Read" << std::endl;
+
+        std::cout << "pipe_fd available" << std::endl;
+        Connection &con2 = cons_.getPipeConnection(con.socket_);
+        std::cout << "clinet : " << con2.socket_ << std::endl;
+        std::cout << "pipe_fd : " << con2.pipe_fd[0] << std::endl;
+        if (con2.response_.readFileData(con2.file_fd_) == false)
+        {
+            std::cout << "more file data !" << std::endl;
+            write(con2.pipe_fd[1], "a", 1);
+        }
+        else
+        {
+            std::cout << "file data read done" << std::endl;
+            std::cout << con.response_.file_data_.c_str() << std::endl;
+            con.response_.state = READY;
+        }
     }
 }
 
 void MainServer::handleWriteEvent(int event_fd)
 {
-    (void)event_fd;
-    //커넥션 들고와서
-    //얘가 완성 되있나? 
-    //send ~ 하고 정리해주고
+    Connection &con = cons_.getConnection(event_fd);
+    if (con.response_.state == READY)
+    {
+        std::cout << "write gogo" << std::endl;
+        con.response_.send(1);
+        con.response_.send(con.socket_);
+        con.response_.resetData();
+        cons_.deleteConnection(con.pipe_fd[0]);
+    }
+    else
+    {
+        // write(event_fd, "a", 1);
+    }
 }
