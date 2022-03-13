@@ -133,7 +133,6 @@ Response Server::GETHandler(Request &request)
     res.addHeader("Content-Length", getFileSize(request.url_));
     //res.addHeader("Accpet-Ranges", "bytes");
     res.file_path_ = getFilePath(request.url_);
-
     return (res);
 }
 

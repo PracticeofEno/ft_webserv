@@ -42,7 +42,10 @@ void Request::readSocket(int socket)
 {
     char buf[BUF_SIZE];
     int strLen;
+    
+    strLen = read(socket, buf, BUF_SIZE);
 
+/*
     while (true)
     {
         strLen = read(socket, buf, BUF_SIZE);
@@ -59,6 +62,7 @@ void Request::readSocket(int socket)
         else
             break;
     }
+    */
 }
 
 void Request::resetData()

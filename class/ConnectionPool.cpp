@@ -106,34 +106,6 @@ Connection& ConnectionPool::getConnection(int socket)
     return *it;
 }
 
-Connection& ConnectionPool::getPipeConnection(int pipefd)
-{
-    std::vector<Connection>::iterator it;
-    std::vector<Connection>::iterator its = cons_.begin();
-    std::vector<Connection>::iterator ite = cons_.end();
-
-    for (it = its; it != ite; it++)
-    {
-        if (it->pipe_fd[0] == pipefd)
-            return *it;
-    }
-    return *it;
-}
-
-bool ConnectionPool::checkPipe(int pipe_fd)
-{
-    std::vector<Connection>::iterator it;
-    std::vector<Connection>::iterator its = cons_.begin();
-    std::vector<Connection>::iterator ite = cons_.end();
-
-    for (it = its; it != ite; it++)
-    {
-        if (it->pipe_fd[0] == pipe_fd)
-            return true;
-    }
-    return false;
-}
-
 void ConnectionPool::setEpfd(int epfd)
 {
     this->epfd_ = epfd;

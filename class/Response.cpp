@@ -1,6 +1,6 @@
 #include "Response.hpp"
 
-Response::Response() : state(NOT_READY) {}
+Response::Response() {}
 Response::~Response() {}
 
 Response::Response(const Response &tmp)
@@ -14,7 +14,6 @@ Response &Response::operator=(const Response &tmp)
     this->header_ = tmp.header_;
     this->status_ = tmp.status_;
     this->file_data_ = tmp.file_data_;
-    this->state = tmp.state;
     return *this;
 }
 
@@ -52,7 +51,21 @@ void Response::writeHeader(int fd)
 
 void Response::writeFile(int fd)
 {
-    write(fd, file_data_.c_str() , file_data_.size());
+    std::ifstream is(file_path_.c_str(), std::ifstream::binary);
+	if (is) {
+		// seekg를 이용한 파일 크기 추출
+		is.seekg(0, is.end);
+		int length = (int)is.tellg();
+		is.seekg(0, is.beg);
+
+		// malloc으로 메모리 할당
+		unsigned char * buffer = new unsigned char[length];
+		// read data as a block:
+		is.read((char*)buffer, length);
+		is.close();
+        write(fd, buffer, length);
+        delete[] buffer;
+	}
 }
 
 void Response::addHeader(std::string key, std::string value)
@@ -84,7 +97,6 @@ bool Response::readFileData(int fd)
         else
         {
             file_data_.append(buf);
-            this->state = READY;
         }
     }
     return true;
@@ -97,5 +109,4 @@ void Response::resetData()
     this->header_.clear();
     this->file_path_.clear();
     this->file_data_.clear();
-    this->state = NOT_READY;
 }

@@ -12,7 +12,6 @@ class Response
         std::map<std::string, std::string> header_;
         std::string file_path_;
         string file_data_;
-        int state;
 
         Response();
         ~Response();

@@ -13,7 +13,6 @@ class MainServer
     public :
         ServerPool sp_;
         ConnectionPool cons_;
-        std::map<int, int> pipe_to_fd_;
         
         MainServer();
         MainServer(std::string file_name);

@@ -19,8 +19,6 @@ public:
     Request reqeust_;
     Response response_;
     std::string client_ip_;
-    int pipe_fd[2];
-    int file_fd_;
 
     Connection();
     Connection(int socket, int kind);
@@ -31,7 +29,6 @@ public:
     bool makeRequest();
     void readSocket();
     std::string readLine();
-    void addFile(MainServer& tmp);
     void resetData();
 private:
 };
