@@ -29,7 +29,6 @@ void MainServer::TestCode(Connection &tmp, Server server)
     req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
 
     server.handleRequest(req, tmp);
-    //tmp.response_.send(tmp.socket_);
 }
 
 MainServer::MainServer(std::string fileName)

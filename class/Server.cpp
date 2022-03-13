@@ -292,7 +292,7 @@ void Server::CGIHandler(Request& request, Connection& tmp)
     pid = fork();
     if (pid == 0)
     {
-
+        
     }
     (void)request;
 }
