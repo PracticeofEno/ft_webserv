@@ -221,7 +221,7 @@ void MainServer::start()
                     cons_.deleteConnection(_ep_events_buf[i].data.fd);
                 }
                 Connection& con = cons_.getConnection(_ep_events_buf[i].data.fd);
-                if (con.kind_ == CLIENT || con.kind_ == FILE_READ)
+                if (con.kind_ == CLIENT || con.kind_ == CGI)
                 {
                     std::cout << "event fd =  " << _ep_events_buf[i].data.fd << std::endl;
                     std::cout << "kinds event =  " << _ep_events_buf[i].events << std::endl;

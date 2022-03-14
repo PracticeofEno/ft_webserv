@@ -40,9 +40,9 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip)
         _exit(1);
     }
 
-    if (kind == SERVER || kind == FILE_READ)
+    if (kind == SERVER )
         userevent.events = EPOLLIN | EPOLLET | EPOLLHUP | EPOLLERR;
-    else if (kind == CLIENT)
+    else if (kind == CLIENT || kind == CGI)
         userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLHUP | EPOLLERR;
 
     userevent.data.fd = socket;
@@ -51,7 +51,7 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip)
         std::cout << "make server : " << socket << std::endl;
     else if (kind == CLIENT)
         std::cout << "connected client : " << socket << std::endl;
-    else if (kind == FILE_READ) 
+    else if (kind == CGI) 
         std::cout << "cons_ add pipe_fd : " << socket << std::endl;
 }
 
