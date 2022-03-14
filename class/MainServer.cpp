@@ -1,5 +1,6 @@
 #include "MainServer.hpp"
 
+
 MainServer::MainServer()
 {
 }
@@ -50,6 +51,7 @@ MainServer::MainServer(std::string fileName)
     }
     else
         std::cout << "Config file open fail" << std::endl;
+
 
     std::ifstream mimeFile(std::string("mime.types").c_str());
     if (true == mimeFile.is_open())
