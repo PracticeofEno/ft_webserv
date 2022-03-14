@@ -21,10 +21,12 @@ class Response
         void send(int fd);
         void addHeader(std::string key, std::string value);
         bool readFileData(int fd);
+        void resetData();
     private:
-        int state;
+        
         void writeStartLine(int fd);
         void writeHeader(int fd);
         void writeFile(int fd);
+        
 };
 #endif

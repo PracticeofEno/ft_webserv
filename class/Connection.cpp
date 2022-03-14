@@ -19,9 +19,6 @@ Connection &Connection::operator=(const Connection &tmp)
     this->reqeust_ = tmp.reqeust_;
     this->response_ = tmp.response_;
     this->client_ip_ = tmp.client_ip_;
-    this->file_fd_ = tmp.file_fd_;
-    this->pipe_fd[0] = tmp.pipe_fd[0];
-    this->pipe_fd[1] = tmp.pipe_fd[1];
     return *this;
 }
 
@@ -30,14 +27,12 @@ bool Connection::makeRequest()
     this->reqeust_.readSocket(this->socket_);
     
     std::cout << this->reqeust_._buffer << std::endl;
+    this->reqeust_._buffer.clear();
     return true;
 }
 
-void Connection::addFile(MainServer& tmp)
+void Connection::resetData()
 {
-    pipe(pipe_fd);
-    this->file_fd_ = open(this->response_.file_path_.c_str(), O_RDONLY);
-    tmp.pipe_to_fd_[this->pipe_fd[0]] = this->file_fd_;
-    tmp.cons_.addConnection(pipe_fd[0], FILE_READ, "FILE");
-    write(pipe_fd[1], "a", 1);
+    response_.resetData();
+    reqeust_.resetData();
 }

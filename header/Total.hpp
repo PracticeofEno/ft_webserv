@@ -6,10 +6,14 @@
 
 #define SERVER 1
 #define CLIENT 2
-#define FILE_READ 3
+#define CGI 3
 
 #define NOTEXIST -1
 #define EXIST -2
+
+// Response Ready not ready
+#define NOT_READY 1
+#define READY 2
 
 #include <iostream>
 #include <fstream>

@@ -1,5 +1,37 @@
 #include "MainServer.hpp"
 
+
+MainServer::MainServer()
+{
+}
+
+MainServer::~MainServer()
+{
+}
+
+MainServer::MainServer(const MainServer &tmp)
+{
+    *this = tmp;
+}
+
+MainServer &MainServer::operator=(const MainServer &tmp)
+{
+    this->sp_ = tmp.sp_;
+    this->cons_ = tmp.cons_;
+    return *this;
+}
+
+void MainServer::TestCode(Connection &tmp, Server server)
+{
+    Request req;
+    req.method_ = "GET";
+    req.version_ = "HTTP/1.1";
+    req.url_ = "/index.html";
+    req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
+
+    server.handleRequest(req, tmp);
+}
+
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -20,6 +52,23 @@ MainServer::MainServer(std::string fileName)
     else
         std::cout << "Config file open fail" << std::endl;
 
+
+    std::ifstream mimeFile(std::string("mime.types").c_str());
+    if (true == mimeFile.is_open())
+    {
+        std::string s;
+        std::string data;
+        while (mimeFile)
+        {
+            getline(mimeFile, s);
+            data.append(s);
+            data.append("\r\n");
+        }
+        mimeFile.close();
+        makeMimeType(data);
+    }
+    else
+        std::cout << "MimeType file open fail" << std::endl;
 }
 
 void MainServer::init(void)
@@ -166,14 +215,24 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-            std::cout << "Recieve Events count : " <<  _event_cnt << std::endl;
+            //std::cout << "Recieve Events count : " << _event_cnt << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
-                if (_ep_events_buf[i].events == EPOLLIN)
+                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
+                {
+                    cons_.deleteConnection(_ep_events_buf[i].data.fd);
+                }
+                Connection& con = cons_.getConnection(_ep_events_buf[i].data.fd);
+                if (con.kind_ == CLIENT || con.kind_ == CGI)
+                {
+                    std::cout << "event fd =  " << _ep_events_buf[i].data.fd << std::endl;
+                    std::cout << "kinds event =  " << _ep_events_buf[i].events << std::endl;
+                }
+                if (_ep_events_buf[i].events & EPOLLIN)
                 {
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
-                else if (_ep_events_buf[i].events == EPOLLOUT)
+                if (_ep_events_buf[i].events & EPOLLOUT)
                 {
                     handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
@@ -230,7 +289,7 @@ void MainServer::handleReadEvent(int event_fd)
     std::string client_ip;
     char ip_tmp[16];
 
-    Connection& con = cons_.getConnection(event_fd);
+    Connection &con = cons_.getConnection(event_fd);
     if (con.kind_ == SERVER)
     {
         addr_sz = sizeof(clnt_addr);
@@ -243,14 +302,11 @@ void MainServer::handleReadEvent(int event_fd)
         this->cons_.getConnection(con.socket_).makeRequest();
         TestCode(this->cons_.getConnection(con.socket_), sp_.serverPool_.at(0));
     }
-    else if (con.kind_ == FILE_READ)
-    {
-        con = cons_.getPipeConnection(con.socket_);
-        con.response_.readFileData(con.file_fd_);
-    }
 }
 
 void MainServer::handleWriteEvent(int event_fd)
 {
-    (void)event_fd;
+    Connection &con = cons_.getConnection(event_fd);
+    con.response_.send(con.socket_);
+    con.resetData();
 }

@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "MainServer.hpp"
 
 Server::Server()
 {
@@ -287,14 +288,19 @@ void Server::CGIHandler(Request& request, Connection& tmp)
 {
     char** env;
     pid_t pid;
-    
+    int pipe_fd[2];
     env = getCgiVariable(request, tmp);
+    pipe(pipe_fd);
+    main_server.cons_.addConnection(pipe_fd[0], CGI, "CGI");
     pid = fork();
     if (pid == 0)
     {
-
+        
     }
-    (void)request;
+
+    for (int i = 0 ; i < 20; i++)
+        delete[] env[i];
+    delete[] env;
 }
 
 //env 동적 할당해서 끝나고 해제해줘야함
@@ -331,7 +337,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp)
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "ft_webserv"));
     env_tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
 
-    env = new char*[env_tmp.size()];
+    env = new char*[env_tmp.size() + 1];
     for (it = its; it != ite; it++)
     {
         tmp2 = it->first + "=" + it->second;

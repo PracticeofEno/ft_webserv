@@ -13,7 +13,6 @@ class MainServer
     public :
         ServerPool sp_;
         ConnectionPool cons_;
-        std::map<int, int> pipe_to_fd_;
         
         MainServer();
         MainServer(std::string file_name);
@@ -32,6 +31,8 @@ class MainServer
         void    makeMimeType(std::string data);
         void handleReadEvent(int event_fd);
         void handleWriteEvent(int event_fd);
+        
+        void TestCode(Connection& tmp, Server server);
 
 };
 extern MainServer main_server;

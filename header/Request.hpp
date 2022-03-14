@@ -20,6 +20,7 @@ class Request
 		int getState();
 		std::string readLine();
 		void readSocket(int socket);
+		void resetData();
 
 		std::string _buffer;
 	private:
