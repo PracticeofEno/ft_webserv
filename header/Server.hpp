@@ -53,6 +53,7 @@ class Server
         bool CheckCGI(std::string url, int index);
         char** getCgiVariable(Request& request, Connection& tmp);
         std::string getCgiUri(Request& req);
+        
 
 };
 
