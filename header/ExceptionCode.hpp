@@ -17,7 +17,7 @@ class ExceptionCode : public std::exception
 
     private:
         int _code;
-        
+
         //int _socket;
 };
 #endif

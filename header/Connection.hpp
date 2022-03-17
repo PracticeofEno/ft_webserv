@@ -27,7 +27,6 @@ public:
     Connection &operator=(const Connection &tmp);
 
     bool makeRequest();
-    void readSocket();
     std::string readLine();
     void resetData();
 private:

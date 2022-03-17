@@ -2,6 +2,7 @@
 #define REQUEST_HPP
 
 #include "Total.hpp"
+// #include "ExceptionCode.hpp"
 
 class Request
 {
@@ -16,17 +17,19 @@ class Request
 		std::string	version_;
 		std::map<std::string, std::string> header_;
 		std::string query_;
-		
+
 		int getState();
 		std::string readLine();
 		void readSocket(int socket);
+		bool parseSocket();
+		bool checkMethod(std::string method);
 		void resetData();
 
 		std::string _buffer;
 	private:
-		
+
 		int	state;
-		
+
 };
 
 #endif

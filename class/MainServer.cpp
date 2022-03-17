@@ -297,8 +297,9 @@ void MainServer::handleReadEvent(int event_fd)
     }
     else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
     {
-        this->cons_.getConnection(con.socket_).makeRequest();
-        TestCode(this->cons_.getConnection(con.socket_), sp_.serverPool_.at(0));
+        con.makeRequest();
+        sp_.serverPool_.at(0).handleRequest(con.reqeust_, con);
+        //TestCode(this->cons_.getConnection(con.socket_), sp_.serverPool_.at(0));
     }
 }
 
