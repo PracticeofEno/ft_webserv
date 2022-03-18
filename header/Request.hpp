@@ -4,6 +4,8 @@
 #include "Total.hpp"
 // #include "ExceptionCode.hpp"
 
+#define FILL_START_LINE 1
+#define DONE_REQUEST 2
 class Request
 {
 	public:

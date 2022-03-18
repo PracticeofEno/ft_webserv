@@ -76,47 +76,87 @@ bool Request::parseSocket()
     if (method_ == "")
     {
         endPos = _buffer.find(" ");
-        method_ = _buffer.substr(0, endPos);
-        _buffer.erase(0, endPos + 1);
-        if (checkMethod(method_) == false)
+        if (endPos != std::string::npos) // 공백이 있을 경우
         {
-            throw ExceptionCode(405);
-        }
-        endPos = _buffer.find(" ");
-        url_ = _buffer.substr(0, endPos);
-        _buffer.erase(0, endPos + 1);
-        if (url_ == "")
-        {
+            method_ = _buffer.substr(0, endPos);
+            _buffer.erase(0, endPos + 1);
+            if (checkMethod(method_) == false)
+                throw ExceptionCode(405);
             url_ = "/index.html";
             version_ = "HTTP/1.1";
-            return true;
+            endPos = _buffer.find(" ");
+            if (endPos != std::string::npos)
+            {
+                url_ = _buffer.substr(0, endPos);
+                _buffer.erase(0, endPos + 1);
+                if (url_ == "" || url_== "/")
+                {
+                    url_ = "/index.html";
+                    version_ = "HTTP/1.1";
+                }
+                endPos = _buffer.find("\r\n");
+                if (endPos != std::string::npos)
+                {
+                    version_ = _buffer.substr(0, endPos);
+                    _buffer.erase(0, endPos + 2);
+                    if (version_ == "")
+                        version_ = "HTTP/1.1";
+                }
+                std::cout << _buffer << std::endl;
+            }
         }
-        endPos = _buffer.find("\r\n");
-        version_ = _buffer.substr(0, endPos);
-        _buffer.erase(0, endPos + 2);
-        if (version_ == "")
+        else // 스타트 라인이 비정상적으로 들어왔거나 method만 들어온 경우
         {
+            endPos = _buffer.find("\r\n");
+            if (endPos == std::string::npos)
+            {
+                throw ExceptionCode(405);
+            }
+            method_ = _buffer.substr(0, endPos);
+            _buffer.erase(0, endPos + 2);
+            if (checkMethod(method_) == false)
+                throw ExceptionCode(405);
+            url_ = "/index.html";
             version_ = "HTTP/1.1";
-            return true;
         }
     }
-    else
+    else // 스타트 라인이 정상적으로 들어온 이후
     {
+        if (_buffer.compare("\r\n") == 0)
+        {
+            state = DONE_REQUEST;
+            return true;
+        }
+
         std::string host;
         std::string server;
 
         endPos = _buffer.find(": ");
-        host = _buffer.substr(0, endPos);
-        _buffer.erase(0, endPos + 2);
-        endPos = _buffer.find("\r\n");
-        server = _buffer.substr(0, endPos);
-        _buffer.erase(0, endPos + 2);
-        header_.insert(std::pair<std::string, std::string>(host, server));
+        std::cout << "buffer : " << _buffer << std::endl;
+        std::cout << host << " : " << server << std::endl;
+        if (endPos != std::string::npos)
+        {
+            host = _buffer.substr(0, endPos);
+            _buffer.erase(0, endPos + 2);
+            endPos = _buffer.find("\r\n");
+            if (endPos != std::string::npos)
+            {
+                server = _buffer.substr(0, endPos);
+                _buffer.erase(0, endPos + 2);
+                header_.insert(std::pair<std::string, std::string>(host, server));
+            }
+        }
+        else
+            state = DONE_REQUEST;
     }
     return true;
 }
 
 void Request::resetData()
 {
-
+    state = 0;
+    method_.clear();
+    url_.clear();
+    version_.clear();
+    header_.clear();
 }
