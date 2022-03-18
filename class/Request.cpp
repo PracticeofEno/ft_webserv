@@ -91,7 +91,7 @@ bool Request::parseSocket()
                 _buffer.erase(0, endPos + 1);
                 if (url_ == "" || url_== "/")
                 {
-                    url_ = "/index.html";
+                    url_ = "/";
                     version_ = "HTTP/1.1";
                 }
                 endPos = _buffer.find("\r\n");
