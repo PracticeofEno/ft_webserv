@@ -145,7 +145,7 @@ void Response::writeDirectory(int fd)
     { 
         file_list.append("<a href=\"./");
         file_list.append(file->d_name);
-        file_list.append(">");
+        file_list.append("\">");
         file_list.append(file->d_name);
         file_list.append("</a>\r\n");
     }
