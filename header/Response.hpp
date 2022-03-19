@@ -27,6 +27,7 @@ class Response
         void writeStartLine(int fd);
         void writeHeader(int fd);
         void writeFile(int fd);
+        void writeDirectory(int fd);
         
 };
 #endif

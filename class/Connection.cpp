@@ -28,7 +28,6 @@ bool Connection::makeRequest()
     this->reqeust_.parseSocket();
 
     std::cout << this->reqeust_._buffer << std::endl;
-    this->reqeust_._buffer.clear();
     return true;
 }
 

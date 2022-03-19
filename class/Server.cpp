@@ -89,8 +89,6 @@ int Server::findLocation(std::string& url)
     realpath(".", buf);
     std::string current_path(buf);
 
-    if (url == "/")
-        url = url + "index.html";
     for (it = its; it != ite; it++)
     {
         if (it->root_.compare(url) == 0)
