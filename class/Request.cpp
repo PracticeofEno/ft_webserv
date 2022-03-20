@@ -33,7 +33,7 @@ std::string Request::readLine()
     size_t      index = _buffer.find("\r\n");
     if (index != std::string::npos)
     {
-        ret = _buffer.substr(0, index + 2);
+        ret = _buffer.substr(0, index);
         _buffer.erase(0, index + 2);
     }
     return (ret);
