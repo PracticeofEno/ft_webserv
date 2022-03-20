@@ -63,7 +63,7 @@ Response Server::handleRequest(Request &request, Connection& tmp)
         {
             if (this->locations_[index].methodCheck(request.method_))
             {
-                tryHandle(request, index, tmp);
+                response = tryHandle(request, index, tmp);
             }
             else
                 throw ExceptionCode(405);
