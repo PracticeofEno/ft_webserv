@@ -1,7 +1,7 @@
 #include "Request.hpp"
 #include "ExceptionCode.hpp"
 
-Request::Request(void) : state(0) {}
+Request::Request(void) : state(START_LINE) {}
 
 Request::~Request(void) {}
 
@@ -85,66 +85,12 @@ bool Request::checkVersion(std::string version)
 
 bool Request::parseSocket()
 {
-    size_t endPos;
-    std::string tmp;
-
-    while ((tmp = readLine()).compare("") != 0)
-    {
-        if (state == FILL_START_LINE)
-        {
-            std::string host;
-            std::string server;
-
-            endPos = tmp.find(": ");
-            if (endPos != std::string::npos)
-            {
-                host = tmp.substr(0, endPos);
-                tmp.erase(0, endPos + 2);
-                server = tmp;
-                header_.insert(std::pair<std::string, std::string>(host, server));
-            }
-            state = FILL_REQUEST;
-        }
-        else if (state == FILL_HEADERS)
-        {
-            state = FILL_REQUEST;
-        }
-        else
-        {
-            endPos = tmp.find(" ");
-            if (endPos != std::string::npos)
-            {
-                method_ = tmp.substr(0, endPos);
-                tmp.erase(0, endPos + 1);
-                if (checkMethod(method_) == false)
-                    throw ExceptionCode(405);
-                url_ = "/";
-                version_ = "HTTP/1.1";
-                endPos = tmp.find(" ");
-                if (endPos != std::string::npos)
-                {
-                    url_ = tmp.substr(0, endPos);
-                    tmp.erase(0, endPos + 1);
-                    version_ = tmp;
-                }
-            }
-            else
-            {
-                method_ = tmp;
-                if (checkMethod(method_) == false)
-                    throw ExceptionCode(405);
-                url_ = "/";
-                version_ = "HTTP/1.1";
-            }
-            state = FILL_START_LINE;
-        }
-    }
     return true;
 }
 
 void Request::resetData()
 {
-    state = 0;
+    state = START_LINE;
     method_.clear();
     url_.clear();
     version_.clear();

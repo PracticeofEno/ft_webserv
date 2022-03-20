@@ -150,11 +150,16 @@ Response Server::DELETEHandler(Request &request)
     std::string path;
 
     path = getFilePath(request.url_);
+    
+    //이게 디렉토리인가 ? 
+
+    //파일인가?
+
     if (path.find("..") == std::string::npos)
     {
         if (unlink(path.c_str()) == -1)
         {
-            //throw ExceptionCode()
+            throw ExceptionCode(403);
         }
     }
     else
