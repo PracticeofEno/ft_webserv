@@ -88,57 +88,48 @@ bool Request::parseSocket()
     size_t endPos;
     std::string tmp;
 
-    while ((tmp = this->readLine()).compare("") != 0)
+    while ((tmp = readLine()).compare("") != 0)
     {
         if (state == FILL_START_LINE)
         {
-            if (_buffer.compare("\r\n") == 0)
-                state = FILL_HEADERS;
-            else
-            {
-                std::string host;
-                std::string server;
+            std::string host;
+            std::string server;
 
-                endPos = _buffer.find(": ");
-                if (endPos != std::string::npos)
-                {
-                    host = _buffer.substr(0, endPos);
-                    _buffer.erase(0, endPos + 2);
-                    server = _buffer;
-                    header_.insert(std::pair<std::string, std::string>(host, server));
-                }
+            endPos = tmp.find(": ");
+            if (endPos != std::string::npos)
+            {
+                host = tmp.substr(0, endPos);
+                tmp.erase(0, endPos + 2);
+                server = tmp;
+                header_.insert(std::pair<std::string, std::string>(host, server));
             }
-            _buffer.clear();
         }
         else if (state == FILL_HEADERS)
         {
-            _buffer.clear();
             state = FILL_REQUEST;
         }
         else
         {
-            endPos = _buffer.find(" ");
+            endPos = tmp.find(" ");
             if (endPos != std::string::npos)
             {
-                method_ = _buffer.substr(0, endPos);
-                _buffer.erase(0, endPos + 1);
+                method_ = tmp.substr(0, endPos);
+                tmp.erase(0, endPos + 1);
                 if (checkMethod(method_) == false)
                     throw ExceptionCode(405);
                 url_ = "/";
                 version_ = "HTTP/1.1";
-                endPos = _buffer.find(" ");
+                endPos = tmp.find(" ");
                 if (endPos != std::string::npos)
                 {
-                    url_ = _buffer.substr(0, endPos);
-                    _buffer.erase(0, endPos + 1);
-                    version_ = _buffer;
-                    _buffer.clear();
+                    url_ = tmp.substr(0, endPos);
+                    tmp.erase(0, endPos + 1);
+                    version_ = tmp;
                 }
             }
             else
             {
-                method_ = _buffer;
-                _buffer.clear();
+                method_ = tmp;
                 if (checkMethod(method_) == false)
                     throw ExceptionCode(405);
                 url_ = "/";
