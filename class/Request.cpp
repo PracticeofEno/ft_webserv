@@ -33,7 +33,7 @@ std::string Request::readLine()
     size_t      index = _buffer.find("\r\n");
     if (index != std::string::npos)
     {
-        ret = _buffer.substr(0, index);
+        ret = _buffer.substr(0, index + 2);
         _buffer.erase(0, index + 2);
     }
     return (ret);
@@ -123,24 +123,43 @@ bool Request::parseSocket()
         }
         else if (state == HEADERS)
         {
-            std::string host;
-            std::string server;
-
-            endPos = tmp.find(": ");
-            if (endPos != std::string::npos)
+            if (tmp.compare("\r\n") == 0)
             {
-                host = tmp.substr(0, endPos);
-                tmp.erase(0, endPos + 2);
-                server = tmp;
-                header_.insert(std::pair<std::string, std::string>(host, server));
+                if (header_.size() == 0)  //헤더가 없고
+                    throw ExceptionCode(400);
+                else  //헤더가 있고
+                {
+                    if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
+                    {
+                        state = DONE_REQUST;
+                    }
+                    else
+                    {
+                        state = BODY;
+                    }
+                }
             }
             else
-                throw ExceptionCode(404);
-            state = BODY;
+            {
+                std::string header_key;
+                std::string header_value;
+
+                endPos = tmp.find(": ");
+                if (endPos != std::string::npos)
+                {
+                    header_key = tmp.substr(0, endPos);
+                    tmp.erase(0, endPos + 2);
+                    header_value = tmp;
+                    header_.insert(std::pair<std::string, std::string>(header_key, header_value));
+                }
+                else
+                    throw ExceptionCode(404);
+            }
         }
         else if (state == BODY)
         {
-            state = DONE_REQUST;
+            if (tmp.compare("\r\n") == 0)
+                state = DONE_REQUST;
         }
     }
     return true;
