@@ -4,9 +4,11 @@
 #include "Total.hpp"
 // #include "ExceptionCode.hpp"
 
-#define FILL_START_LINE 1
-#define FILL_HEADERS 2
-#define FILL_REQUEST 3
+// #define START_LINE 0
+#define HEADERS 1
+// #define BODY_LINE 2
+#define DONE_REQUST 3
+
 class Request
 {
 	public:

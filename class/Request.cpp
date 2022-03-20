@@ -1,7 +1,7 @@
 #include "Request.hpp"
 #include "ExceptionCode.hpp"
 
-Request::Request(void) : state(0) {}
+Request::Request(void) : state(START_LINE) {}
 
 Request::~Request(void) {}
 
@@ -88,28 +88,11 @@ bool Request::parseSocket()
     size_t endPos;
     std::string tmp;
 
+    if (_buffer.compare("\r\n") == 0)
+        state = DONE_REQUST;
     while ((tmp = readLine()).compare("") != 0)
     {
-        if (state == FILL_START_LINE)
-        {
-            std::string host;
-            std::string server;
-
-            endPos = tmp.find(": ");
-            if (endPos != std::string::npos)
-            {
-                host = tmp.substr(0, endPos);
-                tmp.erase(0, endPos + 2);
-                server = tmp;
-                header_.insert(std::pair<std::string, std::string>(host, server));
-            }
-            state = FILL_REQUEST;
-        }
-        else if (state == FILL_HEADERS)
-        {
-            state = FILL_REQUEST;
-        }
-        else
+        if (state == START_LINE)
         {
             endPos = tmp.find(" ");
             if (endPos != std::string::npos)
@@ -136,7 +119,28 @@ bool Request::parseSocket()
                 url_ = "/";
                 version_ = "HTTP/1.1";
             }
-            state = FILL_START_LINE;
+            state = HEADER;
+        }
+        else if (state == HEADER)
+        {
+            std::string host;
+            std::string server;
+
+            endPos = tmp.find(": ");
+            if (endPos != std::string::npos)
+            {
+                host = tmp.substr(0, endPos);
+                tmp.erase(0, endPos + 2);
+                server = tmp;
+                header_.insert(std::pair<std::string, std::string>(host, server));
+            }
+            else
+                throw ExceptionCode(404);
+            state = BODY;
+        }
+        else if (state == BODY)
+        {
+            state = DONE_REQUST;
         }
     }
     return true;
@@ -144,7 +148,7 @@ bool Request::parseSocket()
 
 void Request::resetData()
 {
-    state = 0;
+    state = START_LINE;
     method_.clear();
     url_.clear();
     version_.clear();
