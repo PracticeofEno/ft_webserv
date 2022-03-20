@@ -147,7 +147,18 @@ Response Server::POSTHandler(Request &request)
 Response Server::DELETEHandler(Request &request)
 {
     Response res;
-    (void)request;
+    std::string path;
+
+    path = getFilePath(request.url_);
+    if (path.find("..") == std::string::npos)
+    {
+        if (unlink(path.c_str()) == -1)
+        {
+            throw ExceptionCode()
+        }
+    }
+    else
+        throw ExceptionCode(404);
     return (res);
 }
 std::string Server::searchMimeType(std::string url)

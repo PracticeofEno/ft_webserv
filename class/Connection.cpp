@@ -27,7 +27,7 @@ bool Connection::makeRequest()
     this->reqeust_.readSocket(this->socket_);
     this->reqeust_.parseSocket();
 
-    std::cout << this->reqeust_._buffer << std::endl;
+    //std::cout << this->reqeust_._buffer << std::endl;
     return true;
 }
 

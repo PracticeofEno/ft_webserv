@@ -20,7 +20,6 @@ class Response
 
         void send(int fd);
         void addHeader(std::string key, std::string value);
-        bool readFileData(int fd);
         void resetData();
     private:
         

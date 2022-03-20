@@ -90,35 +90,6 @@ void Response::addHeader(std::string key, std::string value)
     this->header_.insert(std::pair<std::string, std::string>(key, value));
 }
 
-bool Response::readFileData(int fd)
-{
-    unsigned char buf[BUF_SIZE];
-    int read_size;
-
-    read_size = read(fd, buf, BUF_SIZE);
-    if (read_size == -1)
-    {
-        std::cout << "file read fail" << std::endl;
-    }
-    else if (read_size == 0)
-    {
-        std::cout << "no data in file" << std::endl;
-    }
-    else
-    {
-        if (read_size == BUF_SIZE)
-        {
-            file_data_.append(buf);
-            return false;
-        }
-        else
-        {
-            file_data_.append(buf);
-        }
-    }
-    return true;
-}
-
 void Response::resetData()
 {
     http_version_.clear();
@@ -147,7 +118,7 @@ void Response::writeDirectory(int fd)
         file_list.append(file->d_name);
         file_list.append("\">");
         file_list.append(file->d_name);
-        file_list.append("</a>\r\n");
+        file_list.append("</a><br>\r\n");
     }
     buf.append("<!DOCTYPE html>\r\n");
     buf.append("<html>\r\n");

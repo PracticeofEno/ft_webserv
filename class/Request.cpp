@@ -107,6 +107,10 @@ bool Request::parseSocket()
                     _buffer.clear();
                     header_.insert(std::pair<std::string, std::string>(host, server));
                 }
+<<<<<<< Updated upstream
+=======
+                //std::cout << _buffer << std::endl;
+>>>>>>> Stashed changes
             }
         }
         else if (state == FILL_HEADERS)
@@ -114,7 +118,26 @@ bool Request::parseSocket()
             _buffer.clear();
             state = FILL_REQUEST;
         }
+<<<<<<< Updated upstream
         else
+=======
+    }
+    else // 스타트 라인이 정상적으로 들어온 이후
+    {
+        if (_buffer.compare("\r\n") == 0)
+        {
+            state = DONE_REQUEST;
+            return true;
+        }
+
+        std::string host;
+        std::string server;
+
+        endPos = _buffer.find(": ");
+        //std::cout << "buffer : " << _buffer << std::endl;
+        //std::cout << host << " : " << server << std::endl;
+        if (endPos != std::string::npos)
+>>>>>>> Stashed changes
         {
             endPos = _buffer.find(" ");
             if (endPos != std::string::npos)
