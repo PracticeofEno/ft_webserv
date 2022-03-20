@@ -107,10 +107,7 @@ bool Request::parseSocket()
                     _buffer.clear();
                     header_.insert(std::pair<std::string, std::string>(host, server));
                 }
-<<<<<<< Updated upstream
-=======
                 //std::cout << _buffer << std::endl;
->>>>>>> Stashed changes
             }
         }
         else if (state == FILL_HEADERS)
@@ -118,59 +115,8 @@ bool Request::parseSocket()
             _buffer.clear();
             state = FILL_REQUEST;
         }
-<<<<<<< Updated upstream
-        else
-=======
     }
-    else // 스타트 라인이 정상적으로 들어온 이후
-    {
-        if (_buffer.compare("\r\n") == 0)
-        {
-            state = DONE_REQUEST;
-            return true;
-        }
-
-        std::string host;
-        std::string server;
-
-        endPos = _buffer.find(": ");
-        //std::cout << "buffer : " << _buffer << std::endl;
-        //std::cout << host << " : " << server << std::endl;
-        if (endPos != std::string::npos)
->>>>>>> Stashed changes
-        {
-            endPos = _buffer.find(" ");
-            if (endPos != std::string::npos)
-            {
-                method_ = _buffer.substr(0, endPos);
-                _buffer.erase(0, endPos + 1);
-                if (checkMethod(method_) == false)
-                    throw ExceptionCode(405);
-                url_ = "/";
-                version_ = "HTTP/1.1";
-                endPos = _buffer.find(" ");
-                if (endPos != std::string::npos)
-                {
-                    url_ = _buffer.substr(0, endPos);
-                    _buffer.erase(0, endPos + 1);
-                    if (checkUrl(url_) == false)
-                        throw ExceptionCode(404);
-                    version_ = _buffer;
-                    _buffer.clear();
-                }
-            }
-            else
-            {
-                method_ = _buffer;
-                _buffer.clear();
-                if (checkMethod(method_) == false)
-                    throw ExceptionCode(405);
-                url_ = "/";
-                version_ = "HTTP/1.1";
-            }
-            state = FILL_START_LINE;
-        }
-    }
+    
     return true;
 }
 

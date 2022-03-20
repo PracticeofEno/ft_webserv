@@ -154,7 +154,7 @@ Response Server::DELETEHandler(Request &request)
     {
         if (unlink(path.c_str()) == -1)
         {
-            throw ExceptionCode()
+            //throw ExceptionCode()
         }
     }
     else
