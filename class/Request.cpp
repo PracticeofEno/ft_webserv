@@ -86,8 +86,9 @@ bool Request::checkVersion(std::string version)
 bool Request::parseSocket()
 {
     size_t endPos;
+    std::string tmp;
 
-    while (_buffer != "")
+    while ((tmp = this->readLine()).compare("") != 0)
     {
         if (state == FILL_START_LINE)
         {
@@ -130,8 +131,6 @@ bool Request::parseSocket()
                 {
                     url_ = _buffer.substr(0, endPos);
                     _buffer.erase(0, endPos + 1);
-                    if (checkUrl(url_) == false)
-                        throw ExceptionCode(404);
                     version_ = _buffer;
                     _buffer.clear();
                 }
@@ -150,87 +149,6 @@ bool Request::parseSocket()
     }
     return true;
 }
-
-// bool Request::parseSocket()
-// {
-//     size_t endPos;
-
-//     if (method_ == "")
-//     {
-//         endPos = _buffer.find(" ");
-//         if (endPos != std::string::npos) // 공백이 있을 경우
-//         {
-//             method_ = _buffer.substr(0, endPos);
-//             _buffer.erase(0, endPos + 1);
-//             if (checkMethod(method_) == false)
-//                 throw ExceptionCode(405);
-//             url_ = "/index.html";
-//             version_ = "HTTP/1.1";
-//             endPos = _buffer.find(" ");
-//             if (endPos != std::string::npos)
-//             {
-//                 url_ = _buffer.substr(0, endPos);
-//                 _buffer.erase(0, endPos + 1);
-//                 if (url_ == "")
-//                 {
-//                     url_ = "/";
-//                     version_ = "HTTP/1.1";
-//                 }
-//                 endPos = _buffer.find("\r\n");
-//                 if (endPos != std::string::npos)
-//                 {
-//                     version_ = _buffer.substr(0, endPos);
-//                     _buffer.erase(0, endPos + 2);
-//                     if (version_ == "")
-//                         version_ = "HTTP/1.1";
-//                 }
-//                 std::cout << _buffer << std::endl;
-//             }
-//         }
-//         else // 스타트 라인이 비정상적으로 들어왔거나 method만 들어온 경우
-//         {
-//             endPos = _buffer.find("\r\n");
-//             if (endPos == std::string::npos)
-//             {
-//                 throw ExceptionCode(405);
-//             }
-//             method_ = _buffer.substr(0, endPos);
-//             _buffer.erase(0, endPos + 2);
-//             if (checkMethod(method_) == false)
-//                 throw ExceptionCode(405);
-//             url_ = "/";
-//             version_ = "HTTP/1.1";
-//         }
-//     }
-//     else // 스타트 라인이 정상적으로 들어온 이후
-//     {
-//         if (_buffer.compare("\r\n") == 0)
-//         {
-//             state = DONE_REQUEST;
-//             return true;
-//         }
-
-//         std::string host;
-//         std::string server;
-
-//         endPos = _buffer.find(": ");
-//         if (endPos != std::string::npos)
-//         {
-//             host = _buffer.substr(0, endPos);
-//             _buffer.erase(0, endPos + 2);
-//             endPos = _buffer.find("\r\n");
-//             if (endPos != std::string::npos)
-//             {
-//                 server = _buffer.substr(0, endPos);
-//                 _buffer.erase(0, endPos + 2);
-//                 header_.insert(std::pair<std::string, std::string>(host, server));
-//             }
-//         }
-//         else
-//             state = DONE_REQUEST;
-//     }
-//     return true;
-// }
 
 void Request::resetData()
 {
