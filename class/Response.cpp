@@ -25,8 +25,11 @@ void Response::send(int fd)
     struct stat sb;
     if (stat(file_path_.c_str(), &sb) == -1)
     {
-        std::cout << "Stat Error" << std::endl;
-        throw ExceptionCode(999);
+        if (this->status_.code_ != "200")
+        {
+            std::cout << "Stat Error" << std::endl;
+            throw ExceptionCode(999);
+        }
     }
     writeStartLine(fd);
     if (sb.st_mode & S_IFDIR)

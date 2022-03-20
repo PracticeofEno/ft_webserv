@@ -126,6 +126,9 @@ std::string Server::generateTime()
 Response Server::GETHandler(Request &request)
 {
     Response res;
+
+    if (request.url_ == "/")
+        request.url_.append("index.html");
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
     res.addHeader("Server", this->server_name_);
@@ -134,6 +137,7 @@ Response Server::GETHandler(Request &request)
     res.addHeader("Last-Modified", getRecentTime(request.url_));
     res.addHeader("Content-Length", getFileSize(request.url_));
     //res.addHeader("Accpet-Ranges", "bytes");
+    
     res.file_path_ = getFilePath(request.url_);
     return (res);
 }
@@ -170,6 +174,7 @@ Response Server::DELETEHandler(Request &request)
         }
     }
     res.status_ = ResponseStatus(200);
+    res.http_version_ = "HTTP/1.1";
     res.header_.insert(std::pair<std::string, std::string>("Date", generateTime()));
     return (res);
 }
