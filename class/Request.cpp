@@ -104,10 +104,10 @@ bool Request::parseSocket()
                     host = _buffer.substr(0, endPos);
                     _buffer.erase(0, endPos + 2);
                     server = _buffer;
-                    _buffer.clear();
                     header_.insert(std::pair<std::string, std::string>(host, server));
                 }
             }
+            _buffer.clear();
         }
         else if (state == FILL_HEADERS)
         {
