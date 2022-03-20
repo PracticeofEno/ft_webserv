@@ -77,7 +77,7 @@ Response Server::handleRequest(Request &request, Connection& tmp)
     return (response);
 }
 
-int Server::findLocation(std::string url)
+int Server::findLocation(std::string& url)
 {
     std::vector<Location>::iterator it;
     std::vector<Location>::iterator its = this->locations_.begin();
@@ -89,6 +89,8 @@ int Server::findLocation(std::string url)
     realpath(".", buf);
     std::string current_path(buf);
 
+    if (url == "/")
+        url = url + "index.html";
     for (it = its; it != ite; it++)
     {
         if (it->root_.compare(url) == 0)

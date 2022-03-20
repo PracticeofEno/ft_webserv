@@ -37,7 +37,7 @@ class Server
         Response handleRequest(Request& request, Connection& tmp);
         
     private :
-        int findLocation(std::string root);
+        int findLocation(std::string& root);
         std::string generateTime();
         Response GETHandler(Request& request);
         Response POSTHandler(Request& request);
