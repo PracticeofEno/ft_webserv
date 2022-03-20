@@ -305,11 +305,10 @@ void MainServer::handleReadEvent(int event_fd)
 void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
-    if (con.reqeust_.getState() == DONE_REQUEST)
+    if (con.reqeust_.getState() == FILL_REQUEST)
     {
         sp_.serverPool_.at(0).handleRequest(con.reqeust_, con);
         con.response_.send(con.socket_);
         con.resetData();
     }
-    
 }

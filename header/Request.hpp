@@ -5,7 +5,8 @@
 // #include "ExceptionCode.hpp"
 
 #define FILL_START_LINE 1
-#define DONE_REQUEST 2
+#define FILL_HEADERS 2
+#define FILL_REQUEST 3
 class Request
 {
 	public:
@@ -25,6 +26,8 @@ class Request
 		void readSocket(int socket);
 		bool parseSocket();
 		bool checkMethod(std::string method);
+		bool checkUrl(std::string url);
+		bool checkVersion(std::string version);
 		void resetData();
 
 		std::string _buffer;
