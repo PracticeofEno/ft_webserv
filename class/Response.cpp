@@ -1,9 +1,7 @@
 #include "Response.hpp"
 #include "ExceptionCode.hpp"
-#include <sys/types.h>
-#include <dirent.h>
 
-Response::Response() {}
+Response::Response() : http_version_("HTTP/1.1") {}
 Response::~Response() {}
 
 Response::Response(const Response &tmp)
@@ -16,31 +14,18 @@ Response &Response::operator=(const Response &tmp)
     this->http_version_ = tmp.http_version_;
     this->header_ = tmp.header_;
     this->status_ = tmp.status_;
-    this->file_data_ = tmp.file_data_;
+    this->response_data_ = tmp.response_data_;
     return *this;
 }
 
 void Response::send(int fd)
 {
-    struct stat sb;
-    if (stat(file_path_.c_str(), &sb) == -1)
-    {
-        if (this->status_.code_ != "200")
-        {
-            std::cout << "Stat Error" << std::endl;
-            throw ExceptionCode(999);
-        }
-    }
     writeStartLine(fd);
-    if (sb.st_mode & S_IFDIR)
-    {
-        writeDirectory(fd);
-    }
-    else
-    {
-        writeHeader(fd);
+    writeHeader(fd);
+    if (file_path_ != "")
         writeFile(fd);
-    }
+    else
+        write(fd, response_data_.c_str(), response_data_.size());
 }
 
 void Response::writeStartLine(int fd)
@@ -99,42 +84,5 @@ void Response::resetData()
     this->status_ = ResponseStatus();
     this->header_.clear();
     this->file_path_.clear();
-    this->file_data_.clear();
-}
-
-void Response::writeDirectory(int fd)
-{
-    std::string buf;
-    std::string file_list;
-    DIR *dir_ptr = NULL;
-    struct dirent *file = NULL;
-    std::stringstream ss;
-
-    if ((dir_ptr = opendir(file_path_.c_str())) == NULL)
-    {
-        std::cout << "opendir error" << std::endl;
-        throw ExceptionCode(999);
-    }
-    while ((file = readdir(dir_ptr)) != NULL)
-    {
-        file_list.append("<a href=\"./");
-        file_list.append(file->d_name);
-        file_list.append("\">");
-        file_list.append(file->d_name);
-        file_list.append("</a><br>\r\n");
-    }
-    buf.append("<!DOCTYPE html>\r\n");
-    buf.append("<html>\r\n");
-    buf.append("<head>\r\n");
-    buf.append("</head>\r\n");
-    buf.append("<body>\r\n");
-    buf.append(file_list);
-    buf.append("</body>\r\n");
-    buf.append("</html>\r\n");
-
-    ss << buf.size();
-    header_["Content-Type"] = "text/html";
-    header_["Content-Length"] = ss.str();
-    writeHeader(fd);
-    write(fd, buf.c_str(), buf.size());
+    this->response_data_.clear();
 }

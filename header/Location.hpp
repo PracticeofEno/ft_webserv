@@ -24,7 +24,14 @@ class Location
 
         void dataSetting(std::string data);
         bool methodCheck(std::string method);
-
+        bool redirectionCheck();
+        bool existFile(std::string url);
+        bool isDir(std::string url);
+        std::string getFilePath(std::string url);
+        std::string getFileSize(std::string url);
+        std::string getRecentTime(std::string url);
+        std::string getDirectoryList(std::string url);
+        std::string getDirectoryDefaultFile();
     private:
 };
 

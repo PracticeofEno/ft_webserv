@@ -11,7 +11,7 @@ class Response
         ResponseStatus status_;
         std::map<std::string, std::string> header_;
         std::string file_path_;
-        string file_data_;
+        std::string response_data_;
 
         Response();
         ~Response();
@@ -26,7 +26,6 @@ class Response
         void writeStartLine(int fd);
         void writeHeader(int fd);
         void writeFile(int fd);
-        void writeDirectory(int fd);
         
 };
 #endif

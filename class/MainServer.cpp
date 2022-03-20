@@ -154,6 +154,18 @@ Server MainServer::makeServer(std::string &data)
     Server server;
     size_t endPos;
 
+    //////////////// 루트에 대한 기본 설정  //////////////
+    Location root_location;
+    root_location.method_ = "GET POST DELETE";
+    root_location.redirection_ = "";
+    root_location.root_ = "/www";
+    root_location.directory_listing_ = false;
+    root_location.dl_default_ = "default_error_page.html";
+    root_location.cgi_extension_ = "cgi";
+    root_location.upload_path_ = "tmp";
+    server.locations_.push_back(root_location);
+    //////////////////////////////////////////////////
+
     endPos = data.find("\r\n");
     while (endPos != std::string::npos)
     {
@@ -174,6 +186,8 @@ Server MainServer::makeServer(std::string &data)
             server.dataSetting(tmp);
         }
     }
+
+    
     return server;
 }
 
@@ -258,10 +272,10 @@ void MainServer::makeMimeType(std::string data)
 
         if (tmp.find("}") == std::string::npos)
         {
-            tmp = ft_trim(tmp);
+            tmp = ft_trim(tmp, " \t\n\r\f\v");
             value = tmp.substr(0, tmp.find_first_of(' '));
             tmp = tmp.erase(0, tmp.find_first_of(' '));
-            key = ft_trim(tmp);
+            key = ft_trim(tmp, " \t\n\r\f\v");
             if (key != "" && value != "")
             {
                 while (key.find(" ") != std::string::npos)
