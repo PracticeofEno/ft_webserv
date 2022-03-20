@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "MainServer.hpp"
+#include "ResponseStatus.hpp"
 
 Server::Server()
 {
@@ -147,23 +148,29 @@ Response Server::POSTHandler(Request &request)
 Response Server::DELETEHandler(Request &request)
 {
     Response res;
+    struct stat sb;
     std::string path;
 
     path = getFilePath(request.url_);
-    
-    //이게 디렉토리인가 ? 
-
-    //파일인가?
-
-    if (path.find("..") == std::string::npos)
+    if (stat(path.c_str(), &sb) == -1)
+    {
+        std::cout << "Stat Error" << std::endl;
+        throw ExceptionCode(999);
+    }
+    if (sb.st_mode & S_IFDIR)
+    {
+        if (rmdir(path.c_str()) == -1)
+            throw ExceptionCode(403);
+    }
+    else
     {
         if (unlink(path.c_str()) == -1)
         {
             throw ExceptionCode(403);
         }
     }
-    else
-        throw ExceptionCode(404);
+    res.status_ = ResponseStatus(200);
+    res.header_.insert(std::pair<std::string, std::string>("Date", generateTime()));
     return (res);
 }
 std::string Server::searchMimeType(std::string url)

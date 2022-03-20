@@ -1,10 +1,6 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
-#define START_LINE 11
-#define HEADER 22
-#define BODY 33
-
 #include "Total.hpp"
 #include "Request.hpp"
 #include "Response.hpp"

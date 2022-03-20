@@ -103,17 +103,17 @@ void Response::writeDirectory(int fd)
 {
     std::string buf;
     std::string file_list;
-    DIR * dir_ptr = NULL; 
+    DIR *dir_ptr = NULL;
     struct dirent *file = NULL;
     std::stringstream ss;
 
-    if((dir_ptr = opendir(file_path_.c_str())) == NULL) 
-    { 
+    if ((dir_ptr = opendir(file_path_.c_str())) == NULL)
+    {
         std::cout << "opendir error" << std::endl;
         throw ExceptionCode(999);
     }
-    while((file = readdir(dir_ptr)) != NULL) 
-    { 
+    while ((file = readdir(dir_ptr)) != NULL)
+    {
         file_list.append("<a href=\"./");
         file_list.append(file->d_name);
         file_list.append("\">");
@@ -134,5 +134,4 @@ void Response::writeDirectory(int fd)
     header_["Content-Length"] = ss.str();
     writeHeader(fd);
     write(fd, buf.c_str(), buf.size());
-
 }

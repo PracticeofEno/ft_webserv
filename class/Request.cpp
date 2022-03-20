@@ -85,6 +85,64 @@ bool Request::checkVersion(std::string version)
 
 bool Request::parseSocket()
 {
+    size_t endPos;
+    std::string tmp;
+
+    if (_buffer.compare("\r\n") == 0)
+        state = DONE_REQUST;
+    while ((tmp = readLine()).compare("") != 0)
+    {
+        if (state == START_LINE)
+        {
+            endPos = tmp.find(" ");
+            if (endPos != std::string::npos)
+            {
+                method_ = tmp.substr(0, endPos);
+                tmp.erase(0, endPos + 1);
+                if (checkMethod(method_) == false)
+                    throw ExceptionCode(405);
+                url_ = "/";
+                version_ = "HTTP/1.1";
+                endPos = tmp.find(" ");
+                if (endPos != std::string::npos)
+                {
+                    url_ = tmp.substr(0, endPos);
+                    tmp.erase(0, endPos + 1);
+                    version_ = tmp;
+                }
+            }
+            else
+            {
+                method_ = tmp;
+                if (checkMethod(method_) == false)
+                    throw ExceptionCode(405);
+                url_ = "/";
+                version_ = "HTTP/1.1";
+            }
+            state = HEADERS;
+        }
+        else if (state == HEADERS)
+        {
+            std::string host;
+            std::string server;
+
+            endPos = tmp.find(": ");
+            if (endPos != std::string::npos)
+            {
+                host = tmp.substr(0, endPos);
+                tmp.erase(0, endPos + 2);
+                server = tmp;
+                header_.insert(std::pair<std::string, std::string>(host, server));
+            }
+            else
+                throw ExceptionCode(404);
+            state = BODY;
+        }
+        else if (state == BODY)
+        {
+            state = DONE_REQUST;
+        }
+    }
     return true;
 }
 

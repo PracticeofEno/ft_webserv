@@ -4,10 +4,10 @@
 #include "Total.hpp"
 // #include "ExceptionCode.hpp"
 
-#define START_LINE 1
-#define HEADER 2
-#define BODY 3
-#define DONE 4
+#define START_LINE 0
+#define HEADERS 1
+#define BODY 2
+#define DONE_REQUST 3
 
 class Request
 {
