@@ -107,7 +107,6 @@ bool Request::parseSocket()
                     _buffer.clear();
                     header_.insert(std::pair<std::string, std::string>(host, server));
                 }
-                //std::cout << _buffer << std::endl;
             }
         }
         else if (state == FILL_HEADERS)
@@ -115,8 +114,40 @@ bool Request::parseSocket()
             _buffer.clear();
             state = FILL_REQUEST;
         }
+        else
+        {
+            endPos = _buffer.find(" ");
+            if (endPos != std::string::npos)
+            {
+                method_ = _buffer.substr(0, endPos);
+                _buffer.erase(0, endPos + 1);
+                if (checkMethod(method_) == false)
+                    throw ExceptionCode(405);
+                url_ = "/";
+                version_ = "HTTP/1.1";
+                endPos = _buffer.find(" ");
+                if (endPos != std::string::npos)
+                {
+                    url_ = _buffer.substr(0, endPos);
+                    _buffer.erase(0, endPos + 1);
+                    if (checkUrl(url_) == false)
+                        throw ExceptionCode(404);
+                    version_ = _buffer;
+                    _buffer.clear();
+                }
+            }
+            else
+            {
+                method_ = _buffer;
+                _buffer.clear();
+                if (checkMethod(method_) == false)
+                    throw ExceptionCode(405);
+                url_ = "/";
+                version_ = "HTTP/1.1";
+            }
+            state = FILL_START_LINE;
+        }
     }
-    
     return true;
 }
 
