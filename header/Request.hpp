@@ -7,6 +7,8 @@
 #define START_LINE 1
 #define HEADER 2
 #define BODY 3
+#define DONE 4
+
 class Request
 {
 	public:
