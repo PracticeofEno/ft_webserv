@@ -298,12 +298,6 @@ void MainServer::handleReadEvent(int event_fd)
     else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
     {
         con.makeRequest();
-        std::cout << con.reqeust_.getState() << std::endl;
-        if (con.reqeust_.getState() == DONE_REQUEST)
-        {
-            sp_.serverPool_.at(0).handleRequest(con.reqeust_, con);
-            con.reqeust_.resetData();
-        }
         //TestCode(this->cons_.getConnection(con.socket_), sp_.serverPool_.at(0));
     }
 }
@@ -311,6 +305,10 @@ void MainServer::handleReadEvent(int event_fd)
 void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
-    con.response_.send(con.socket_);
-    con.resetData();
+    if (con.reqeust_.getState() == FILL_REQUEST)
+    {
+        sp_.serverPool_.at(0).handleRequest(con.reqeust_, con);
+        con.response_.send(con.socket_);
+        con.resetData();
+    }
 }
