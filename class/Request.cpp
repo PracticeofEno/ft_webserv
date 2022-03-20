@@ -33,7 +33,7 @@ std::string Request::readLine()
     size_t      index = _buffer.find("\r\n");
     if (index != std::string::npos)
     {
-        ret = _buffer.substr(0, index + 2);
+        ret = _buffer.substr(0, index);
         _buffer.erase(0, index + 2);
     }
     return (ret);
@@ -103,6 +103,7 @@ bool Request::parseSocket()
                 server = tmp;
                 header_.insert(std::pair<std::string, std::string>(host, server));
             }
+            state = FILL_REQUEST;
         }
         else if (state == FILL_HEADERS)
         {
