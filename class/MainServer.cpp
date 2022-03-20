@@ -160,7 +160,7 @@ Server MainServer::makeServer(std::string &data)
     root_location.redirection_ = "";
     root_location.root_ = "/www";
     root_location.directory_listing_ = false;
-    root_location.dl_default_ = "default_error_page.html";
+    root_location.dl_default_ = "dlfile1.html";
     root_location.cgi_extension_ = "cgi";
     root_location.upload_path_ = "tmp";
     server.locations_.push_back(root_location);
