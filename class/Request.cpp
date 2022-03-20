@@ -103,6 +103,7 @@ bool Request::parseSocket()
                 server = tmp;
                 header_.insert(std::pair<std::string, std::string>(host, server));
             }
+            state = FILL_REQUEST;
         }
         else if (state == FILL_HEADERS)
         {
