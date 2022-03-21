@@ -2,7 +2,6 @@
 #define REQUEST_HPP
 
 #include "Total.hpp"
-// #include "ExceptionCode.hpp"
 
 #define START_LINE 0
 #define HEADERS 1
@@ -21,6 +20,7 @@ class Request
 		std::string	url_;
 		std::string	version_;
 		std::map<std::string, std::string> header_;
+		std::string body_;
 		std::string query_;
 
 		int getState();

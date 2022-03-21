@@ -16,6 +16,7 @@ Request& Request::operator= (const Request& tmp)
     this->method_ = tmp.method_;
     this->header_ = tmp.header_;
     this->version_ = tmp.version_;
+    this->body_ = tmp.body_;
     this->query_ = tmp.query_;
     this->_buffer = tmp._buffer;
     this->state = tmp.state;
@@ -88,11 +89,13 @@ bool Request::parseSocket()
     size_t endPos;
     std::string tmp;
 
-    if (_buffer.compare("\r\n") == 0)
-        state = DONE_REQUST;
     while ((tmp = readLine()).compare("") != 0)
     {
-        if (state == START_LINE)
+        if (tmp.compare("\r\n") == 0)
+        {
+            state = DONE_REQUST;
+        }
+        else if (state == START_LINE)
         {
             endPos = tmp.find(" ");
             if (endPos != std::string::npos)
@@ -113,53 +116,38 @@ bool Request::parseSocket()
             }
             else
             {
-                method_ = tmp;
-                if (checkMethod(method_) == false)
-                    throw ExceptionCode(405);
-                url_ = "/";
-                version_ = "HTTP/1.1";
+                endPos = tmp.find("\r\n");
+                if (endPos != std::string::npos)
+                {
+                    method_ = tmp.substr(0, endPos);
+                    tmp.erase(0, endPos + 2);
+                    if (checkMethod(method_) == false)
+                        throw ExceptionCode(405);
+                    url_ = "/";
+                    version_ = "HTTP/1.1";
+                }
             }
             state = HEADERS;
         }
         else if (state == HEADERS)
         {
-            if (tmp.compare("\r\n") == 0)
+            std::string header_key;
+            std::string header_value;
+
+            endPos = tmp.find(": ");
+            if (endPos != std::string::npos)
             {
-                if (header_.size() == 0)  //헤더가 없고
-                    throw ExceptionCode(400);
-                else  //헤더가 있고
-                {
-                    if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
-                    {
-                        state = DONE_REQUST;
-                    }
-                    else
-                    {
-                        state = BODY;
-                    }
-                }
+                header_key = tmp.substr(0, endPos);
+                tmp.erase(0, endPos + 2);
+                header_value = tmp;
+                header_.insert(std::pair<std::string, std::string>(header_key, header_value));
             }
             else
-            {
-                std::string header_key;
-                std::string header_value;
-
-                endPos = tmp.find(": ");
-                if (endPos != std::string::npos)
-                {
-                    header_key = tmp.substr(0, endPos);
-                    tmp.erase(0, endPos + 2);
-                    header_value = tmp;
-                    header_.insert(std::pair<std::string, std::string>(header_key, header_value));
-                }
-                else
-                    throw ExceptionCode(404);
-            }
+                throw ExceptionCode(404);
         }
-        else if (state == BODY)
+        else if (state == DONE_REQUST)
         {
-            if (tmp.compare("\r\n") == 0)
-                state = DONE_REQUST;
+            body_ = tmp;
         }
     }
     return true;
@@ -172,4 +160,6 @@ void Request::resetData()
     url_.clear();
     version_.clear();
     header_.clear();
+    body_.clear();
+    query_.clear();
 }
