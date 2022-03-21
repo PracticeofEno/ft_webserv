@@ -33,6 +33,7 @@ class MainServer
         void handleWriteEvent(int event_fd);
         
         void TestCode(Connection& tmp, Server server);
+        bool openSocket(int port);
 
 };
 extern MainServer main_server;

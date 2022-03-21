@@ -22,11 +22,11 @@ ConnectionPool& ConnectionPool::operator=(const ConnectionPool& tmp)
     return *this;
 }
 
-void ConnectionPool::addConnection(int socket, int kind, std::string client_ip)
+void ConnectionPool::addConnection(int socket, int kind, std::string client_ip, int port)
 {
     struct epoll_event userevent;      // 등록하기 위한 변수!
 
-    Connection con(socket, kind);
+    Connection con(socket, kind, port);
     con.client_ip_ = client_ip;
 
     this->cons_.push_back(con);
