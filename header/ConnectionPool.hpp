@@ -18,7 +18,7 @@ class ConnectionPool
 
 
         void setEpfd(int epfd);
-        void addConnection(int socket, int indicate, std::string client_ip);
+        void addConnection(int socket, int indicate, std::string client_ip, int port);
         void deleteConnection(int socket);
         bool CheckSocket(int socket, int kind);
         Connection& getConnection(int socket);

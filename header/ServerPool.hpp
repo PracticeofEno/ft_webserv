@@ -13,6 +13,8 @@ class ServerPool
         ~ServerPool();
         ServerPool(const ServerPool& tmp);
         ServerPool& operator=(const ServerPool& tmp);
+
+        Server& getServer(std::string host, int port);
     private :
 
 };

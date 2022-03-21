@@ -41,7 +41,15 @@ void Server::dataSetting(std::string data)
     else if (key.compare("errorPagePath") == 0)
         error_page_path_ = value;
     else if (key.compare("port") == 0)
-        std::stringstream(value) >> port_;
+    {
+        int c;
+        std::istringstream ss(value);
+        std::string token;
+        while(std::getline(ss, token, ' ')) {
+            std::stringstream(token) >> c;
+            port_.push_back(c);
+        }
+    }
     else if (key.compare("clientBodySize") == 0)
         std::stringstream(value) >> client_body_size_;
     else if (key.compare("HTTP") == 0)
@@ -63,7 +71,6 @@ Response Server::handleRequest(Request &request, Connection& tmp)
         if (request.method_ != "POST")
             throw ExceptionCode(404);
     }
-
     if (CheckCGI(request.url_, location))
     {
         CGIHandler(request, tmp, location);
@@ -193,7 +200,7 @@ void Server::CGIHandler(Request& request, Connection& tmp, Location& location)
     int pipe_fd[2];
     env = getCgiVariable(request, tmp, location);
     pipe(pipe_fd);
-    main_server.cons_.addConnection(pipe_fd[0], CGI, "CGI");
+    main_server.cons_.addConnection(pipe_fd[0], CGI, "CGI", NONE);
     pid = fork();
     if (pid == 0)
     {
@@ -216,7 +223,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     std::map<std::string, std::string>::iterator its;
     std::map<std::string, std::string>::iterator ite;
     std::stringstream ss;
-    ss << this->port_;
+    ss << tmp.port_;
     std::string tmp2;
 
     env_tmp.insert(std::pair<std::string, std::string>("AUTH_TYPE", "null"));
@@ -231,7 +238,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_USER", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", request.method_));
-    env_tmp.insert(std::pair<std::string, std::string>("REQUEST_URI", getCgiUri(request)));
+    env_tmp.insert(std::pair<std::string, std::string>("REQUEST_URI", getCgiUri(request, tmp.port_)));
     env_tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", request.url_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_NAME", this->server_name_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", ss.str()));
@@ -251,11 +258,11 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     return env;
 }
 
-std::string Server::getCgiUri(Request& req)
+std::string Server::getCgiUri(Request& req, int port)
 {
     std::string tmp;
     std::stringstream ss;
-    ss << port_;
+    ss << port;
     tmp = "http://" + server_name_ + ":" + ss.str() + "/" + req.url_ + "/" + req.query_;
     tmp = replace_all(tmp, "//", "/");
     return tmp;

@@ -1,5 +1,6 @@
 #include "Request.hpp"
 #include "ExceptionCode.hpp"
+#include "Util.hpp"
 
 Request::Request(void) : state(START_LINE) {}
 
@@ -121,6 +122,26 @@ void Request::parseStartline(std::string tmp)
     state = HEADERS;
 }
 
+void Request::parseHeaders(std::string tmp)
+{
+    size_t endPos;
+
+    std::string key;
+    std::string value;
+
+    endPos = tmp.find(": ");
+    if (endPos != std::string::npos)
+    {
+        key = tmp.substr(0, endPos);
+        tmp.erase(0, endPos + 2);
+        tmp = ft_rtrim(tmp, "\r\n");
+        value = tmp;
+        header_.insert(std::pair<std::string, std::string>(key, value));
+    }
+    else
+        throw ExceptionCode(404);
+}
+
 bool Request::parseSocket()
 {
     size_t endPos;
@@ -138,19 +159,7 @@ bool Request::parseSocket()
         }
         else if (state == HEADERS)
         {
-            std::string header_key;
-            std::string header_value;
 
-            endPos = tmp.find(": ");
-            if (endPos != std::string::npos)
-            {
-                header_key = tmp.substr(0, endPos);
-                tmp.erase(0, endPos + 2);
-                header_value = tmp;
-                header_.insert(std::pair<std::string, std::string>(header_key, header_value));
-            }
-            else
-                throw ExceptionCode(404);
         }
         else if (state == DONE_REQUST)
         {

@@ -15,6 +15,7 @@
 #define ON 1
 #define NO_EXIST_FILE 0
 #define DIRECTORY 1
+#define NONE 0
 
 class Server
 {
@@ -25,7 +26,7 @@ class Server
         int                     client_body_size_;
         std::vector<Location>   locations_;
         int                     socket_;
-        int                     port_;
+        std::vector<int>        port_;
 
         /*                      OCCF                             */
         Server();
@@ -45,7 +46,7 @@ class Server
         void CGIHandler(Request& request, Connection& tmp, Location& location);
         bool CheckCGI(std::string url, Location& location);
         char** getCgiVariable(Request& request, Connection& tmp, Location& location);
-        std::string getCgiUri(Request& req);
+        std::string getCgiUri(Request& req, int port);
 
 };
 
