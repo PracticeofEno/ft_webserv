@@ -91,7 +91,7 @@ bool Request::parseSocket()
 
     while ((tmp = readLine()).compare("") != 0)
     {
-        if (tmp.compare("\r\n") == 0)
+        if (tmp.compare("\r\n") == 0 && method_ != "")
         {
             state = DONE_REQUST;
         }
@@ -147,7 +147,7 @@ bool Request::parseSocket()
         }
         else if (state == DONE_REQUST)
         {
-            body_ = tmp;
+            body_ = _buffer;
         }
     }
     return true;
