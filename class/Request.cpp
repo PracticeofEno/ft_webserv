@@ -144,7 +144,6 @@ void Request::parseHeaders(std::string tmp)
 
 bool Request::parseSocket()
 {
-    size_t endPos;
     std::string tmp;
 
     while ((tmp = readLine()).compare("") != 0)
@@ -159,7 +158,7 @@ bool Request::parseSocket()
         }
         else if (state == HEADERS)
         {
-
+            parseHeaders(tmp);
         }
         else if (state == DONE_REQUST)
         {
