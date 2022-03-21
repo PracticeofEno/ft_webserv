@@ -27,6 +27,8 @@ class Request
 		std::string readLine();
 		void readSocket(int socket);
 		bool parseSocket();
+		void parseStartline(std::string tmp);
+		void parseHeaders(std::string tmp);
 		bool checkMethod(std::string method);
 		bool checkUrl(std::string url);
 		bool checkVersion(std::string version);

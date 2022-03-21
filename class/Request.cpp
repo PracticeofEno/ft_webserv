@@ -84,6 +84,43 @@ bool Request::checkVersion(std::string version)
     return false;
 }
 
+void Request::parseStartline(std::string tmp)
+{
+    size_t endPos;
+
+    endPos = tmp.find(" ");
+    if (endPos != std::string::npos)
+    {
+        method_ = tmp.substr(0, endPos);
+        tmp.erase(0, endPos + 1);
+        if (checkMethod(method_) == false)
+            throw ExceptionCode(405);
+        url_ = "/";
+        version_ = "HTTP/1.1";
+        endPos = tmp.find(" ");
+        if (endPos != std::string::npos)
+        {
+            url_ = tmp.substr(0, endPos);
+            tmp.erase(0, endPos + 1);
+            version_ = tmp;
+        }
+    }
+    else
+    {
+        endPos = tmp.find("\r\n");
+        if (endPos != std::string::npos)
+        {
+            method_ = tmp.substr(0, endPos);
+            tmp.erase(0, endPos + 2);
+            if (checkMethod(method_) == false)
+                throw ExceptionCode(405);
+            url_ = "/";
+            version_ = "HTTP/1.1";
+        }
+    }
+    state = HEADERS;
+}
+
 bool Request::parseSocket()
 {
     size_t endPos;
@@ -97,37 +134,7 @@ bool Request::parseSocket()
         }
         else if (state == START_LINE)
         {
-            endPos = tmp.find(" ");
-            if (endPos != std::string::npos)
-            {
-                method_ = tmp.substr(0, endPos);
-                tmp.erase(0, endPos + 1);
-                if (checkMethod(method_) == false)
-                    throw ExceptionCode(405);
-                url_ = "/";
-                version_ = "HTTP/1.1";
-                endPos = tmp.find(" ");
-                if (endPos != std::string::npos)
-                {
-                    url_ = tmp.substr(0, endPos);
-                    tmp.erase(0, endPos + 1);
-                    version_ = tmp;
-                }
-            }
-            else
-            {
-                endPos = tmp.find("\r\n");
-                if (endPos != std::string::npos)
-                {
-                    method_ = tmp.substr(0, endPos);
-                    tmp.erase(0, endPos + 2);
-                    if (checkMethod(method_) == false)
-                        throw ExceptionCode(405);
-                    url_ = "/";
-                    version_ = "HTTP/1.1";
-                }
-            }
-            state = HEADERS;
+            parseStartline(tmp);
         }
         else if (state == HEADERS)
         {
