@@ -125,7 +125,6 @@ void Request::parseStartline(std::string tmp)
 void Request::parseHeaders(std::string tmp)
 {
     size_t endPos;
-
     std::string key;
     std::string value;
 
