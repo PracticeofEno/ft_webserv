@@ -1,5 +1,6 @@
 #include "Request.hpp"
 #include "ExceptionCode.hpp"
+#include "Util.hpp"
 
 Request::Request(void) : state(START_LINE) {}
 
@@ -140,6 +141,7 @@ bool Request::parseSocket()
             {
                 header_key = tmp.substr(0, endPos);
                 tmp.erase(0, endPos + 2);
+                tmp = ft_rtrim(tmp, "\r\n");
                 header_value = tmp;
                 header_.insert(std::pair<std::string, std::string>(header_key, header_value));
             }

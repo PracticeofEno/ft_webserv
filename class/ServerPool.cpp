@@ -24,22 +24,14 @@ Server& ServerPool::getServer(std::string host, int port)
 {
     std::vector<Server>::iterator it;
     std::vector<Server>::iterator tmp;
-    std::vector<Server>::iterator its = serverPool_.begin();
-    std::vector<Server>::iterator ite = serverPool_.end();
-    std::vector<int>::iterator p;
-    std::vector<int>::iterator ps;
-    std::vector<int>::iterator pe;
+    std::vector<int>::iterator port_iterator;
 
     bool first = true;
-
-    for (it = its; it != ite; it++)
+    for (it = serverPool_.begin(); it != serverPool_.end(); it++)
     {
-        ps = (it->port_).begin();
-        pe = (it->port_).end();
-
-        for (p = ps; p != pe; p++)
+        for (port_iterator = it->port_.begin(); port_iterator != it->port_.end(); port_iterator++)
         {
-            if (*p == port)
+            if (*port_iterator == port)
             {
                 if (first)
                 {
