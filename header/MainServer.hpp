@@ -31,9 +31,9 @@ class MainServer
         void    makeMimeType(std::string data);
         void handleReadEvent(int event_fd);
         void handleWriteEvent(int event_fd);
-        
         void TestCode(Connection& tmp, Server server);
         bool openSocket(int port);
+        void ExceptionHandler(ExceptionCode e);
 
 };
 extern MainServer main_server;

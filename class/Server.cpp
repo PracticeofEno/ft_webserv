@@ -63,13 +63,16 @@ Response Server::handleRequest(Request &request, Connection& tmp)
     Location& location = findLocation(request.url_);
 
     if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
-        throw ExceptionCode(405);
+        throw ExceptionCode(405, tmp);
     if (location.redirectionCheck() == ON)
-        throw ExceptionCode(302);
+    {
+        ExceptionCode ex(302, tmp);
+        throw ex;
+    }
     if (location.existFile(request.url_) == NO_EXIST_FILE) 
     {
         if (request.method_ != "POST")
-            throw ExceptionCode(404);
+            throw ExceptionCode(404, tmp);
     }
     if (CheckCGI(request.url_, location))
     {
@@ -82,7 +85,16 @@ Response Server::handleRequest(Request &request, Connection& tmp)
         else if (request.method_ == "POST")
             response = POSTHandler(request, location);
         else if (request.method_ == "DELETE")
-            response = DELETEHandler(request, location);
+        {
+            try
+            {
+                response = DELETEHandler(request, location);
+            }
+            catch (std::exception e)
+            {                
+                throw ExceptionCode(403, tmp);
+            }
+        }
     }    
     return response;
 }
@@ -169,13 +181,13 @@ Response Server::DELETEHandler(Request &request, Location& location)
     if (location.isDir(request.url_) == DIRECTORY)
     {
         if (rmdir(path.c_str()) == -1)
-            throw ExceptionCode(403);
+            throw std::exception();
     }
     else
     {
         if (unlink(path.c_str()) == -1)
         {
-            throw ExceptionCode(403);
+            throw std::exception();
         }
     }
     res.status_ = ResponseStatus(200);

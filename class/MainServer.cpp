@@ -266,6 +266,7 @@ void MainServer::start()
         }
         catch (const ExceptionCode &e)
         {
+            ExceptionHandler(e);
         }
     }
 }
@@ -340,4 +341,9 @@ void MainServer::handleWriteEvent(int event_fd)
         con.response_.send(con.socket_);
         con.resetData();
     }
+}
+
+void ExceptionHandler(ExceptionCode e)
+{
+    (void)e;
 }
