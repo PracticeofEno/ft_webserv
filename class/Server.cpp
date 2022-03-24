@@ -2,6 +2,7 @@
 #include "MainServer.hpp"
 #include "ResponseStatus.hpp"
 #include "Util.hpp"
+#include <unistd.h>
 
 Server::Server()
 {
@@ -213,11 +214,24 @@ void Server::CGIHandler(Request& request, Connection& tmp, Location& location)
     env = getCgiVariable(request, tmp, location);
     pipe(pipe_fd);
     main_server.cons_.addConnection(pipe_fd[0], CGI, "CGI", NONE);
-    pid = fork();
-    if (pid == 0)
-    {
-        
-    }
+
+/*
+    char arg1[] = "/usr/bin/php-cgi";
+    char arg2[] = "/root/ft_webserv/www/cgi-bin/a.php";
+    char **arg = (char**) malloc(sizeof(char*) * 3);
+    arg[0] = arg1;
+    arg[1] = arg2;
+    arg[2] = 0;
+    (void)pid;
+    std::string b("PATH_TRANSLATED=/root/ft_webserv/www/cgi-bin/a.php");
+    strncpy(env[5], b.c_str(), b.size());
+    env[5][b.size()] = 0;
+    */
+    //pid = fork();
+    //if (pid == 0)
+    //{
+    //execve("/usr/bin/php-cgi", arg, env);
+    //}
 
     for (int i = 0 ; i < 20; i++)
         delete[] env[i];
@@ -231,9 +245,6 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     char* buf;
     int i = 0;
     std::map<std::string, std::string> env_tmp;
-    std::map<std::string, std::string>::iterator it;
-    std::map<std::string, std::string>::iterator its;
-    std::map<std::string, std::string>::iterator ite;
     std::stringstream ss;
     ss << tmp.port_;
     std::string tmp2;
@@ -257,13 +268,17 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", this->http_version_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "ft_webserv"));
     env_tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
+    env_tmp.insert(std::pair<std::string, std::string>("REDIRECT_STATUS", "200"));
 
     env = new char*[env_tmp.size() + 1];
+    std::map<std::string, std::string>::iterator it;
+    std::map<std::string, std::string>::iterator its = env_tmp.begin();
+    std::map<std::string, std::string>::iterator ite = env_tmp.end();
     for (it = its; it != ite; it++)
     {
         tmp2 = it->first + "=" + it->second;
         buf = new char[tmp2.size() + 1];
-        strncpy(buf, tmp2.c_str(), tmp2.size());
+        strncpy(buf, tmp2.c_str(), tmp2.size() + 1);
         env[i] = buf;
         i++;
     }

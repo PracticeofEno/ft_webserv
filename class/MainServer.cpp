@@ -343,7 +343,7 @@ void MainServer::handleWriteEvent(int event_fd)
     }
 }
 
-void ExceptionHandler(ExceptionCode e)
+void MainServer::ExceptionHandler(ExceptionCode e)
 {
     (void)e;
 }

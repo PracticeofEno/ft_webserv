@@ -3,7 +3,7 @@
         {
             "type": "shell",
             "label": "C/C++: clang++ 활성 파일 빌드",
-            "command": "make re",
+            "command": "make",
             "args": [
             ],
             "options": {

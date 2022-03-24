@@ -127,7 +127,7 @@ bool Location::isDir(std::string url)
     if (stat(this->getFilePath(url).c_str(), &sb) == -1)
     {
         std::cout << "Stat Error" << std::endl;
-        throw ExceptionCode(999);
+        //throw ExceptionCode(999);
     }
     if (sb.st_mode & S_IFDIR)
         return true;
@@ -146,7 +146,7 @@ std::string Location::getDirectoryList(std::string url)
     if ((dir_ptr = opendir(getFilePath(url).c_str())) == NULL)
     {
         std::cout << "opendir error" << std::endl;
-        throw ExceptionCode(999);
+        //throw ExceptionCode(999);
     }
     while ((file = readdir(dir_ptr)) != NULL)
     {
