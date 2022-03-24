@@ -96,9 +96,9 @@ void Request::parseStartline(std::string tmp)
         tmp.erase(0, endPos + 1);
         if (checkMethod(method_) == false)
         {
-            std::cout << "request check method error" << std::endl;
+            ExceptionCode ex(405);
+            throw ex;
         }
-            //throw ExceptionCode(405);
         url_ = "/";
         version_ = "HTTP/1.1";
         endPos = tmp.find(" ");
@@ -118,9 +118,9 @@ void Request::parseStartline(std::string tmp)
             tmp.erase(0, endPos + 2);
             if (checkMethod(method_) == false)
             {
-                std::cout << "request check method error" << std::endl;
+                ExceptionCode ex(405);
+                throw ex;
             }
-                //throw ExceptionCode(405);
             url_ = "/";
             version_ = "HTTP/1.1";
         }
@@ -145,9 +145,9 @@ void Request::parseHeaders(std::string tmp)
     }
     else
     {
-        std::cout << "parse header error" << std::endl;
+        ExceptionCode ex(404);
+        throw ex;
     }
-        //throw ExceptionCode(404, con);
 }
 
 bool Request::parseSocket()

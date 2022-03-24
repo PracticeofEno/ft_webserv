@@ -215,23 +215,10 @@ void Server::CGIHandler(Request& request, Connection& tmp, Location& location)
     pipe(pipe_fd);
     main_server.cons_.addConnection(pipe_fd[0], CGI, "CGI", NONE);
 
-/*
-    char arg1[] = "/usr/bin/php-cgi";
-    char arg2[] = "/root/ft_webserv/www/cgi-bin/a.php";
-    char **arg = (char**) malloc(sizeof(char*) * 3);
-    arg[0] = arg1;
-    arg[1] = arg2;
-    arg[2] = 0;
+    std::string b("PATH_TRANSLATED=/root/ft_webserv/www/cgi-bin/ubuntu_cgi_tester");
+    strncpy(env[5], b.c_str(), b.size() + 1);
     (void)pid;
-    std::string b("PATH_TRANSLATED=/root/ft_webserv/www/cgi-bin/a.php");
-    strncpy(env[5], b.c_str(), b.size());
-    env[5][b.size()] = 0;
-    */
-    //pid = fork();
-    //if (pid == 0)
-    //{
-    //execve("/usr/bin/php-cgi", arg, env);
-    //}
+    execve("/bin/bash", env, env);
 
     for (int i = 0 ; i < 20; i++)
         delete[] env[i];
@@ -265,7 +252,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", request.url_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_NAME", this->server_name_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", ss.str()));
-    env_tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", this->http_version_));
+    env_tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", "HTTP/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "ft_webserv"));
     env_tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("REDIRECT_STATUS", "200"));

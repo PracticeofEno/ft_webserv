@@ -10,6 +10,7 @@ class ExceptionCode : public std::exception
         ExceptionCode();
         ExceptionCode(const ExceptionCode& tmp);
         ExceptionCode& operator=(const ExceptionCode& tmp);
+        ExceptionCode(int code);
         ExceptionCode(int code, Connection& con);
         virtual ~ExceptionCode() throw();
         virtual const char* what() const throw();

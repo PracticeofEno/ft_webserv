@@ -1,6 +1,11 @@
 #include "ExceptionCode.hpp"
 
 ExceptionCode::ExceptionCode() {}
+ExceptionCode::ExceptionCode(int code) 
+{
+    status_ = ResponseStatus(code);
+    _code = code;
+}
 ExceptionCode::ExceptionCode(int code, Connection& con) : _code(code) 
 {
     status_ = ResponseStatus(code);
