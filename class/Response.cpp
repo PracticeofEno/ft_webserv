@@ -1,7 +1,7 @@
 #include "Response.hpp"
 #include "ExceptionCode.hpp"
 
-Response::Response() : http_version_("HTTP/1.1") {}
+Response::Response() : http_version_("HTTP/1.1"), state(NOT_READY) {}
 Response::~Response() {}
 
 Response::Response(const Response &tmp)
@@ -15,6 +15,7 @@ Response &Response::operator=(const Response &tmp)
     this->header_ = tmp.header_;
     this->status_ = tmp.status_;
     this->response_data_ = tmp.response_data_;
+    this->state = tmp.state;
     return *this;
 }
 
@@ -85,4 +86,5 @@ void Response::resetData()
     this->header_.clear();
     this->file_path_.clear();
     this->response_data_.clear();
+    this->state = NOT_READY;
 }

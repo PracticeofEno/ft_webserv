@@ -4,6 +4,9 @@
 #include "Total.hpp"
 #include "ResponseStatus.hpp"
 
+#define NOT_READY 0
+#define SEND 1
+
 class Response 
 {
     public:
@@ -12,6 +15,7 @@ class Response
         std::map<std::string, std::string> header_;
         std::string file_path_;
         std::string response_data_;
+        int state;
 
         Response();
         ~Response();

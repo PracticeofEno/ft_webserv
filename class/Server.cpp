@@ -96,6 +96,7 @@ Response Server::handleRequest(Request &request, Connection& tmp)
                 throw ExceptionCode(403, tmp);
             }
         }
+        response.state = SEND;
     }    
     return response;
 }
@@ -218,7 +219,7 @@ void Server::CGIHandler(Request& request, Connection& tmp, Location& location)
     std::string b("PATH_TRANSLATED=/root/ft_webserv/www/cgi-bin/ubuntu_cgi_tester");
     strncpy(env[5], b.c_str(), b.size() + 1);
     (void)pid;
-    execve("/bin/bash", env, env);
+    execve("/root/ft_webserv/www/cgi-bin/ubuntu_cgi_tester", env, env);
 
     for (int i = 0 ; i < 20; i++)
         delete[] env[i];
@@ -237,10 +238,10 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     std::string tmp2;
 
     env_tmp.insert(std::pair<std::string, std::string>("AUTH_TYPE", "null"));
-    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", "-1"));
+    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", "0"));
     env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
-    env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", request.url_));
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "/"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.url_)));
     env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", tmp.client_ip_));
@@ -248,8 +249,8 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_USER", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", request.method_));
-    env_tmp.insert(std::pair<std::string, std::string>("REQUEST_URI", getCgiUri(request, tmp.port_)));
-    env_tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", request.url_));
+    //env_tmp.insert(std::pair<std::string, std::string>("REQUEST_URI", getCgiUri(request, tmp.port_)));
+    //env_tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", request.url_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_NAME", this->server_name_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", ss.str()));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", "HTTP/1.1"));
@@ -269,6 +270,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
         env[i] = buf;
         i++;
     }
+    env[i] = 0;
     return env;
 }
 

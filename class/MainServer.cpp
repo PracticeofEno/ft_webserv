@@ -73,7 +73,7 @@ bool MainServer::openSocket(int port)
 {
     struct sockaddr_in serv_addr;
     int server_sock;
-    
+
     memset(&serv_addr, 0x00, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -341,12 +341,21 @@ void MainServer::handleReadEvent(int event_fd)
 void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
-    if (con.reqeust_.getState() == DONE_REQUST)
+    if (con.kind_ == CGI)
     {
-        Server& abc = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-        abc.handleRequest(con.reqeust_, con);
-        con.response_.send(con.socket_);
-        con.resetData();
+    }
+    else if (con.kind_ == CLIENT)
+    {
+        if (con.reqeust_.getState() == DONE_REQUST)
+        {
+            Server &abc = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+            abc.handleRequest(con.reqeust_, con);
+            if (con.response_.state == SEND)
+            {
+                con.response_.send(con.socket_);
+                con.resetData();
+            }
+        }
     }
 }
 
