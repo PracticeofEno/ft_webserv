@@ -283,6 +283,22 @@ void MainServer::handleReadEvent(int event_fd)
             throw e;
         }
     }
+    else if (con.kind_ == CGI)
+    {
+        Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+        //CGI실행 결과를 받음. 
+        con.response_.readPipe(con.pipe_read_);
+        std::cout << con.response_.response_data_.size() << std::endl;
+        con.response_ = server.handleRequestCGI(con);
+        con.response_.state = READY;
+
+        epoll_event ep_event;
+        ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+        ep_event.data.fd = con.socket_;
+        epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
+        close(con.pipe_read_);
+        //this->cons_.deletePipeConnection(con.pipe_read_);
+    }
 }
 
 void MainServer::handleWriteEvent(int event_fd)

@@ -34,8 +34,6 @@ bool Connection::makeRequest()
 void Connection::resetData()
 {
     this->kind_ = CLIENT;
-    close(this->pipe_read_);
-    this->pipe_read_ = 0;
     response_.resetData();
     reqeust_.resetData();
 }

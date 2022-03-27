@@ -96,7 +96,6 @@ void ConnectionPool::deleteConnection(int socket)
     {
         std::cout << "delete connection : " << it->socket_ << std::endl;
         close(it->socket_);
-        close(ite->pipe_read_);
         cons_.erase(it);
     }
     epoll_event ep_event;
