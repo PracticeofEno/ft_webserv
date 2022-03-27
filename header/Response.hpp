@@ -28,6 +28,7 @@ class Response
         
         void writeStartLine(int fd);
         void writeHeader(int fd);
+        void writeHeaderCGI(int fd);
         void writeFile(int fd);
         
 };

@@ -249,6 +249,10 @@ void MainServer::start()
                     cons_.deleteConnection(_ep_events_buf[i].data.fd);
                 }
                 Connection &con = cons_.getConnection(_ep_events_buf[i].data.fd);
+                if (con.pipe_read_ == _ep_events_buf[i].data.fd)
+                {
+                    _ep_events_buf[i].events |= EPOLLOUT;
+                }
                 if (con.kind_ == CLIENT || con.kind_ == CGI)
                 {
                     std::cout << "event fd =  " << _ep_events_buf[i].data.fd << std::endl;
