@@ -65,6 +65,29 @@ void Request::readSocket(int socket)
     }
 }
 
+void Request::readPipe(int pipe)
+{
+    char buf[BUF_SIZE];
+    int strlen;
+
+    while (42)
+    {
+        strlen = read(pipe, buf, BUF_SIZE);
+        if (strlen == 0)
+        {
+            std::cout << "pipe has been empty!" << std::endl;
+            break;
+        }
+        else if (strlen > 0)
+        {
+            this->_buffer_cgi.append(buf);
+        }
+        else
+            break;
+        // 음수일 때 에러 처리 필요할까?
+    }
+}
+
 bool Request::checkMethod(std::string method)
 {
     if (method == "GET" || method == "POST" || method == "DELETE")

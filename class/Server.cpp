@@ -153,6 +153,7 @@ Response Server::GETHandler(Request &request, Location& location)
 Response Server::GETHandlerCGI(Request &request, Location& location)
 {
     Response res;
+    std::stringstream ss;
 
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
@@ -160,7 +161,8 @@ Response Server::GETHandlerCGI(Request &request, Location& location)
     res.addHeader("Date", generateTime());
     // res.addHeader("Content-Type", searchMimeType(request.url_));
     res.addHeader("Last-Modified", location.getRecentTime(request.url_));
-    // res.addHeader("Content-Length", "");
+    ss << request._buffer_cgi.size();
+    res.addHeader("Content-Length", ss.str());
     res.file_path_ = location.getFilePath(request.url_);
 
     return (res);
@@ -236,6 +238,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	strncpy(arg[1], "index.php", 10);
 
     env = getCgiVariable(request, con, location);
+
     pipe(pip);
     con.pipe_read_ = pip[0];
     con.pipe_event_ = pip[1];

@@ -249,14 +249,9 @@ void MainServer::start()
                     cons_.deleteConnection(_ep_events_buf[i].data.fd);
                 }
                 Connection &con = cons_.getConnection(_ep_events_buf[i].data.fd);
-                if (con.pipe_read_ == _ep_events_buf[i].data.fd)
+                if (con.kind_ == CGI)
                 {
                     _ep_events_buf[i].events |= EPOLLOUT;
-                }
-                if (con.kind_ == CLIENT || con.kind_ == CGI)
-                {
-                    std::cout << "event fd =  " << _ep_events_buf[i].data.fd << std::endl;
-                    std::cout << "kinds event =  " << _ep_events_buf[i].events << std::endl;
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {
@@ -334,8 +329,12 @@ void MainServer::handleReadEvent(int event_fd)
     }
     else if (con.kind_ == CGI)
     {
-        read(con.pipe_read_, con.buf_CGI_, BUF_SIZE);
-        close(con.pipe_read_);
+        con.reqeust_.readPipe(con.pipe_read_);
+        // epoll_event ep_event;
+
+        // ep_event.events = EPOLLIN | EPOLLOUT;
+        // epoll_ctl(_epfd, EPOLL_CTL_MOD, event_fd, &ep_event);
+        // close(con.pipe_read_);
     }
 }
 
@@ -352,16 +351,16 @@ void MainServer::handleWriteEvent(int event_fd)
         {
             server.CGIHandler(con.reqeust_, con, location);
         }
-        else if (con.kind_ == CGI)
-        {
-            con.response_ = server.handleRequestCGI(con.reqeust_, con);
-            con.response_.sendCGI(con.socket_, con);
-        }
         else if (con.kind_ == CLIENT)
         {
             con.response_ = server.handleRequest(con.reqeust_, con);
             con.response_.send(con.socket_);
             con.resetData();
+        }
+        else if (con.kind_ == CGI)
+        {
+            con.response_ = server.handleRequestCGI(con.reqeust_, con);
+            con.response_.sendCGI(con.socket_, con);
         }
     }
 }

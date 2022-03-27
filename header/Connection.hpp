@@ -14,12 +14,13 @@ public:
     int kind_;
     int timeout_;
     int port_;
-    int pipe_read_;
-    int pipe_event_;
+    int pipe_read_;//1
+    int pipe_event_;//2
     Request reqeust_;
     Response response_;
     std::string client_ip_;
-    char buf_CGI_[BUF_SIZE];
+    std::string buf_cgi_;
+    char buf_CGI_[BUF_SIZE];//3
     
     Connection();
     Connection(int socket, int kind, int port);

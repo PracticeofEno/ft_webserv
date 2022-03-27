@@ -30,6 +30,7 @@ class Request
 		int getState();
 		std::string readLine();
 		void readSocket(int socket);
+		void readPipe(int socket);
 		bool parseSocket();
 		void parseStartline(std::string tmp);
 		void parseHeaders(std::string tmp);
@@ -40,6 +41,7 @@ class Request
 		void resetData();
 
 		std::string _buffer;
+		std::string _buffer_cgi;
 	private:
 
 		int	state;

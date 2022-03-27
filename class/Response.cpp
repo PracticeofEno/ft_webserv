@@ -34,7 +34,7 @@ void Response::sendCGI(int fd, Connection& con)
     // writeStartLine(STDOUT_FILENO);
     writeStartLine(fd);
     writeHeaderCGI(fd);
-    write(fd, con.buf_CGI_, BUF_SIZE);
+    write(fd, con.reqeust_._buffer_cgi.c_str(), con.reqeust_._buffer_cgi.size());
 }
 
 void Response::writeStartLine(int fd)
