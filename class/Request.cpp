@@ -67,13 +67,13 @@ void Request::readSocket(int socket)
 
 void Request::readPipe(int pipe)
 {
-    char buf[70000];
-    memset(buf, 0, 70000);
+    int tmp = 4000;
+    char buf[tmp];
     int strlen;
-
     while (42)
     {
-        strlen = read(pipe, buf, 70000);
+        strlen = read(pipe, buf, tmp);
+        buf[strlen] = 0;
         if (strlen == 0)
         {
             std::cout << "pipe has been empty!" << std::endl;
@@ -87,6 +87,7 @@ void Request::readPipe(int pipe)
             break;
         // 음수일 때 에러 처리 필요할까?
     }
+    std::cout << _buffer_cgi.size() << std::endl;
 }
 
 bool Request::checkMethod(std::string method)
