@@ -3,6 +3,7 @@
 
 #include "Total.hpp"
 #include "ResponseStatus.hpp"
+class Connection;
 
 #define NOT_READY 0
 #define SEND 1
@@ -25,11 +26,14 @@ class Response
         void send(int fd);
         void addHeader(std::string key, std::string value);
         void resetData();
+        void readPipe(int pipe);
     private:
         
         void writeStartLine(int fd);
         void writeHeader(int fd);
+        void writeHeaderCGI(int fd);
         void writeFile(int fd);
+
         
 };
 #endif

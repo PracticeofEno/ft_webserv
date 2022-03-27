@@ -1,6 +1,7 @@
 #include "Request.hpp"
 #include "ExceptionCode.hpp"
 #include "Util.hpp"
+#include "Server.hpp"
 
 Request::Request(void) : state(START_LINE) {}
 
@@ -44,24 +45,28 @@ std::string Request::readLine()
 void Request::readSocket(int socket)
 {
     char buf[BUF_SIZE];
-    int strLen;
+    int strlen;
 
     while (true)
     {
-        strLen = read(socket, buf, BUF_SIZE);
-        if (strLen == 0)
+        strlen = read(socket, buf, BUF_SIZE);
+        if (strlen == 0)
         {
-            std::cout << "all data receive" << std::endl;
+            std::cout << "fd : " << socket << " all data receive" << std::endl;
             break;
         }
-        else if (strLen > 0)
+        else if (strlen > 0)
         {
-            _buffer.append(buf, strLen);
+            _buffer.append(buf, strlen);
             continue;
         }
         else
             break;
     }
+
+    int tmp = 0;
+    tmp = 5;
+    (void)tmp;
 }
 
 bool Request::checkMethod(std::string method)
@@ -185,4 +190,9 @@ void Request::resetData()
     header_.clear();
     body_.clear();
     query_.clear();
+}
+
+void Request::printStartLine()
+{
+    std::cout << this->method_ << " | " << this->url_ << " | " << this->version_ << std::endl;
 }

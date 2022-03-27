@@ -2,7 +2,7 @@
 #include "MainServer.hpp"
 #include "ResponseStatus.hpp"
 #include "Util.hpp"
-#include <unistd.h>
+#include <sys/wait.h>
 
 Server::Server()
 {
@@ -66,38 +66,36 @@ Response Server::handleRequest(Request &request, Connection& tmp)
     if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
         throw ExceptionCode(405, tmp);
     if (location.redirectionCheck() == ON)
-    {
-        ExceptionCode ex(302, tmp);
-        throw ex;
-    }
-    if (location.existFile(request.url_) == NO_EXIST_FILE) 
+        throw ExceptionCode(302);
+    if (location.existFile(request.url_) == NO_EXIST_FILE)
     {
         if (request.method_ != "POST")
             throw ExceptionCode(404, tmp);
     }
-    if (CheckCGI(request.url_, location))
+
+    if (this->CheckCGI(tmp.reqeust_.url_, location))
     {
-        CGIHandler(request, tmp, location);
+        this->CGIHandler(tmp.reqeust_, tmp, location);
     }
-    else
-    {
-        if (request.method_ == "GET")
-            response = GETHandler(request, location);
-        else if (request.method_ == "POST")
-            response = POSTHandler(request, location);
-        else if (request.method_ == "DELETE")
-        {
-            try
-            {
-                response = DELETEHandler(request, location);
-            }
-            catch (std::exception e)
-            {                
-                throw ExceptionCode(403, tmp);
-            }
-        }
-        response.state = SEND;
-    }    
+    if (request.method_ == "GET")
+        response = GETHandler(request, location);
+    else if (request.method_ == "POST")
+        response = POSTHandler(request, location);
+    else if (request.method_ == "DELETE")
+        response = DELETEHandler(request, location);    
+    return response;
+}
+
+Response Server::handleRequestCGI(Connection& tmp)
+{
+    Response& response = tmp.response_;
+
+    if (tmp.reqeust_.method_ == "GET")
+        response = GETHandlerCGI(tmp.response_);
+    // else if (request.method_ == "POST")
+    //     response = POSTHandlerCGI(request, location);
+    // else if (request.method_ == "DELETE")
+    //     response = DELETEHandlerCGI(request, location);    
     return response;
 }
 
@@ -135,6 +133,7 @@ Response Server::GETHandler(Request &request, Location& location)
     res.addHeader("Content-Type", searchMimeType(request.url_));
     res.addHeader("Last-Modified", location.getRecentTime(request.url_));
     res.addHeader("Content-Length", location.getFileSize(request.url_));
+    res.addHeader("Connection", "Keep-Alive");
     res.file_path_ = location.getFilePath(request.url_);
 
     //디렉토리라면 content-type 텍스트로 바꿔주고 response_data에 
@@ -165,11 +164,45 @@ Response Server::GETHandler(Request &request, Location& location)
     return (res);
 }
 
-Response Server::POSTHandler(Request &request, Location& location)
+Response Server::GETHandlerCGI(Response &res)
+{
+    std::stringstream ss;
+    int size = res.response_data_.size();
+    int sub_size = 0;
+
+    res.status_ = ResponseStatus(200);
+    res.http_version_ = "HTTP/1.1";
+    res.header_["Content-Type"] = "text/html";
+    res.addHeader("Connection", "Keep-Alive");
+    sub_size = res.response_data_.find("\r\n");
+    size = size - sub_size - 4;
+    ss << size;
+    res.response_data_.erase(0, sub_size + 4);
+    res.header_["Content-Length"] = ss.str();
+    res.file_path_ = "";
+
+    return (res);
+}
+
+Response Server::POSTHandler(Request &request, Location &location)
 {
     Response res;
-    (void)request;
-    (void)location;
+    res.file_path_ = location.getFilePath(request.url_);
+
+    std::ofstream file;
+    file.open(res.file_path_.c_str(), std::ios::out | std::ios::app);
+    if (file.fail() == true)
+        throw ExceptionCode(520);
+    file << request._buffer;
+    file.close();
+    res.status_ = ResponseStatus(201);
+    res.http_version_ = "HTTP/1.1";
+    res.addHeader("Server", this->server_name_);
+    res.addHeader("Date", generateTime());
+    res.addHeader("Connection", "Keep-Alive");
+    // res.addHeader("Content-Type", searchMimeType(request.url_));
+    // res.addHeader("Last-Modified", getRecentTime(request.url_));
+    // res.addHeader("Content-Length", getFileSize(request.url_));
     return (res);
 }
 
@@ -207,23 +240,49 @@ bool Server::CheckCGI(std::string url, Location& location)
     return false;
 }
 
-void Server::CGIHandler(Request& request, Connection& tmp, Location& location)
+void Server::CGIHandler(Request& request, Connection& con, Location& location)
 {
     char** env;
     pid_t pid;
-    int pipe_fd[2];
-    env = getCgiVariable(request, tmp, location);
-    pipe(pipe_fd);
-    main_server.cons_.addConnection(pipe_fd[0], CGI, "CGI", NONE);
+    int pip[2];
 
-    std::string b("PATH_TRANSLATED=/root/ft_webserv/www/cgi-bin/ubuntu_cgi_tester");
-    strncpy(env[5], b.c_str(), b.size() + 1);
-    (void)pid;
-    execve("/root/ft_webserv/www/cgi-bin/ubuntu_cgi_tester", env, env);
+    char **arg = new char*[3];
+	arg[0] = new char[10];
+	arg[1] = new char[10];
+    arg[2] = NULL;
+
+	strncpy(arg[0], "php-cgi", 8);
+	strncpy(arg[1], "index.php", 10);
+
+    env = getCgiVariable(request, con, location);
+
+    pipe(pip);
+    con.pipe_read_ = pip[0];
+    con.pipe_event_ = pip[1];
+    con.kind_ = CGI;
+    main_server.cons_.appConnection(con, pip[0], CGI, "CGI");
+
+    pid = fork();
+    if (pid == 0)
+    {
+        close(pip[0]);
+        dup2(pip[1], STDOUT_FILENO);
+        execvpe(arg[0], arg, env);
+    }
+    else
+    {
+        int status;
+        close(pip[1]);
+        waitpid(pid, &status, WNOHANG);
+    }
 
     for (int i = 0 ; i < 20; i++)
         delete[] env[i];
     delete[] env;
+    delete arg[0];
+    delete arg[1];
+    delete arg[2];
+    delete[] arg;
 }
 
 //env 동적 할당해서 끝나고 해제해줘야함
@@ -255,13 +314,13 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", ss.str()));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", "HTTP/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "ft_webserv"));
+    env_tmp.insert(std::pair<std::string, std::string>("REDIRECT_STATUS", "200"));
     env_tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("REDIRECT_STATUS", "200"));
 
     env = new char*[env_tmp.size() + 1];
-    std::map<std::string, std::string>::iterator it;
-    std::map<std::string, std::string>::iterator its = env_tmp.begin();
-    std::map<std::string, std::string>::iterator ite = env_tmp.end();
+    its = env_tmp.begin();
+    ite = env_tmp.end();
     for (it = its; it != ite; it++)
     {
         tmp2 = it->first + "=" + it->second;

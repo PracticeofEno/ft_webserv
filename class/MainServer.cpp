@@ -20,17 +20,6 @@ MainServer &MainServer::operator=(const MainServer &tmp)
     return *this;
 }
 
-void MainServer::TestCode(Connection &tmp, Server server)
-{
-    Request req;
-    req.method_ = "GET";
-    req.version_ = "HTTP/1.1";
-    req.url_ = "/index.html";
-    req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
-
-    server.handleRequest(req, tmp);
-}
-
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -88,7 +77,7 @@ bool MainServer::openSocket(int port)
     flags |= O_NONBLOCK;
     if (fcntl(server_sock, F_SETFL, flags) < 0)
     {
-        std::cout << "server_fd fcntl() error" << std::endl;
+        std::cout << "opensocket server_fd fcntl() error" << std::endl;
         close(server_sock);
         return false;
     }
@@ -176,7 +165,7 @@ Server MainServer::makeServer(std::string &data)
     root_location.root_ = "/www";
     root_location.directory_listing_ = false;
     root_location.dl_default_ = "dlfile1.html";
-    root_location.cgi_extension_ = "cgi";
+    root_location.cgi_extension_ = "php";
     root_location.upload_path_ = "tmp";
     server.locations_.push_back(root_location);
     //////////////////////////////////////////////////
@@ -227,48 +216,6 @@ Location MainServer::makeLocation(std::string &data)
         }
     }
     return location;
-}
-
-void MainServer::start()
-{
-    while (1)
-    {
-        _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
-        try
-        {
-            if (_event_cnt == -1)
-            {
-                std::cout << "wait() error!" << std::endl;
-                break;
-            }
-            // std::cout << "Recieve Events count : " << _event_cnt << std::endl;
-            for (int i = 0; i < _event_cnt; i++)
-            {
-                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
-                {
-                    cons_.deleteConnection(_ep_events_buf[i].data.fd);
-                }
-                Connection &con = cons_.getConnection(_ep_events_buf[i].data.fd);
-                if (con.kind_ == CLIENT || con.kind_ == CGI)
-                {
-                    std::cout << "event fd =  " << _ep_events_buf[i].data.fd << std::endl;
-                    std::cout << "kinds event =  " << _ep_events_buf[i].events << std::endl;
-                }
-                if (_ep_events_buf[i].events & EPOLLIN)
-                {
-                    handleReadEvent(_ep_events_buf[i].data.fd);
-                }
-                if (_ep_events_buf[i].events & EPOLLOUT)
-                {
-                    handleWriteEvent(_ep_events_buf[i].data.fd);
-                }
-            }
-        }
-        catch (const ExceptionCode &e)
-        {
-            ExceptionHandler(e);
-        }
-    }
 }
 
 void MainServer::makeMimeType(std::string data)
@@ -341,25 +288,70 @@ void MainServer::handleReadEvent(int event_fd)
 void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
-    if (con.kind_ == CGI)
+
+    if (con.response_.state == READY)
     {
+        con.response_.send(con.socket_);
+        con.resetData();
+
     }
-    else if (con.kind_ == CLIENT)
+    else if (con.reqeust_.getState() == DONE_REQUST)
     {
-        if (con.reqeust_.getState() == DONE_REQUST)
+        if (con.kind_ == CLIENT)
         {
-            Server &abc = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-            abc.handleRequest(con.reqeust_, con);
-            if (con.response_.state == SEND)
+            Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+            con.response_ = server.handleRequest(con.reqeust_, con);
+            if (con.kind_ != CGI)
             {
                 con.response_.send(con.socket_);
                 con.resetData();
             }
         }
     }
+    else
+    {
+        this->cons_.printPool();
+        std::cout << "None Activity" << std::endl;
+    }
 }
 
-void MainServer::ExceptionHandler(ExceptionCode e)
+void MainServer::start()
 {
-    (void)e;
+    while (1)
+    {
+        _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
+        try
+        {
+            if (_event_cnt == -1)
+            {
+                std::cout << "wait() error!" << std::endl;
+                break;
+            }
+            std::cout << "Recieve Events count : " << _event_cnt << std::endl;
+            for (int i = 0; i < _event_cnt; i++)
+            {
+                 std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
+                // std::cout << "event kinds : ";
+                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
+                {
+                    //std::cout << "deleteCon" << std::endl;
+                    cons_.deleteConnection(_ep_events_buf[i].data.fd);
+                }
+                if (_ep_events_buf[i].events & EPOLLIN)
+                {
+                    //std::cout << "EPOLLIN ";
+                    handleReadEvent(_ep_events_buf[i].data.fd);
+                }
+                if (_ep_events_buf[i].events & EPOLLOUT)
+                {
+                    //std::cout << "EPOLLOUT ";
+                    handleWriteEvent(_ep_events_buf[i].data.fd);
+                }
+                //std::cout << std::endl;
+            }
+        }
+        catch (const ExceptionCode &e)
+        {
+        }
+    }
 }

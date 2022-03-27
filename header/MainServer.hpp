@@ -23,17 +23,16 @@ class MainServer
         void start();
 
     private:
-        struct epoll_event *_ep_events_buf; // 변화를 담을 버퍼의 주소!
-        int     _event_cnt, _epfd;
-        void makeServerPool(std::string data);
-        Server makeServer(std::string& data);
-        Location makeLocation(std::string& data);
-        void    makeMimeType(std::string data);
-        void handleReadEvent(int event_fd);
-        void handleWriteEvent(int event_fd);
-        void TestCode(Connection& tmp, Server server);
-        bool openSocket(int port);
-        void ExceptionHandler(ExceptionCode e);
+        struct      epoll_event *_ep_events_buf; // 변화를 담을 버퍼의 주소!
+        int         _event_cnt, _epfd;
+        void        makeServerPool(std::string data);
+        Server      makeServer(std::string& data);
+        Location    makeLocation(std::string& data);
+        void        makeMimeType(std::string data);
+        void        handleReadEvent(int event_fd);
+        void        handleWriteEvent(int event_fd);
+
+        bool        openSocket(int port);
 
 };
 extern MainServer main_server;

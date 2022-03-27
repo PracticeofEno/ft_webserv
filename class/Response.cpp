@@ -54,6 +54,21 @@ void Response::writeHeader(int fd)
     write(fd, "\r\n", 2);
 }
 
+void Response::writeHeaderCGI(int fd)
+{
+    std::map<std::string, std::string>::iterator it;
+    std::map<std::string, std::string>::iterator its = this->header_.begin();
+    std::map<std::string, std::string>::iterator ite = this->header_.end();
+    for (it = its; it != ite; it++)
+    {
+        write(fd, it->first.c_str(), it->first.size());
+        write(fd, ": ", 2);
+        write(fd, it->second.c_str(), it->second.size());
+        write(fd, "\r\n", 2);
+    }
+    // write(fd, "\r\n", 2);
+}
+
 void Response::writeFile(int fd)
 {
     std::ifstream is(file_path_.c_str(), std::ifstream::binary);
@@ -87,4 +102,28 @@ void Response::resetData()
     this->file_path_.clear();
     this->response_data_.clear();
     this->state = NOT_READY;
+}
+
+void Response::readPipe(int pipe)
+{
+    int tmp = 4000;
+    char buf[tmp];
+    int strlen;
+    while (42)
+    {
+        strlen = read(pipe, buf, tmp);
+        buf[strlen] = 0;
+        if (strlen == 0)
+        {
+            std::cout << "pipe has been empty!" << std::endl;
+            break;
+        }
+        else if (strlen > 0)
+        {
+            this->response_data_.append(buf);
+        }
+        else
+            break;
+        // 음수일 때 에러 처리 필요할까?
+    }
 }
