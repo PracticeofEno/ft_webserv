@@ -67,12 +67,13 @@ void Request::readSocket(int socket)
 
 void Request::readPipe(int pipe)
 {
-    char buf[BUF_SIZE];
+    char buf[70000];
+    memset(buf, 0, 70000);
     int strlen;
 
     while (42)
     {
-        strlen = read(pipe, buf, BUF_SIZE);
+        strlen = read(pipe, buf, 70000);
         if (strlen == 0)
         {
             std::cout << "pipe has been empty!" << std::endl;

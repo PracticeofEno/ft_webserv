@@ -229,46 +229,6 @@ Location MainServer::makeLocation(std::string &data)
     return location;
 }
 
-void MainServer::start()
-{
-    while (1)
-    {
-        _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
-        try
-        {
-            if (_event_cnt == -1)
-            {
-                std::cout << "wait() error!" << std::endl;
-                break;
-            }
-            // std::cout << "Recieve Events count : " << _event_cnt << std::endl;
-            for (int i = 0; i < _event_cnt; i++)
-            {
-                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
-                {
-                    cons_.deleteConnection(_ep_events_buf[i].data.fd);
-                }
-                Connection &con = cons_.getConnection(_ep_events_buf[i].data.fd);
-                if (con.kind_ == CGI)
-                {
-                    _ep_events_buf[i].events |= EPOLLOUT;
-                }
-                if (_ep_events_buf[i].events & EPOLLIN)
-                {
-                    handleReadEvent(_ep_events_buf[i].data.fd);
-                }
-                if (_ep_events_buf[i].events & EPOLLOUT)
-                {
-                    handleWriteEvent(_ep_events_buf[i].data.fd);
-                }
-            }
-        }
-        catch (const ExceptionCode &e)
-        {
-        }
-    }
-}
-
 void MainServer::makeMimeType(std::string data)
 {
     size_t endPos;
@@ -330,11 +290,12 @@ void MainServer::handleReadEvent(int event_fd)
     else if (con.kind_ == CGI)
     {
         con.reqeust_.readPipe(con.pipe_read_);
-        // epoll_event ep_event;
+        epoll_event ep_event;
 
-        // ep_event.events = EPOLLIN | EPOLLOUT;
-        // epoll_ctl(_epfd, EPOLL_CTL_MOD, event_fd, &ep_event);
-        // close(con.pipe_read_);
+        ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+        ep_event.data.fd = con.socket_;
+        epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
+        close(con.pipe_read_);
     }
 }
 
@@ -361,6 +322,43 @@ void MainServer::handleWriteEvent(int event_fd)
         {
             con.response_ = server.handleRequestCGI(con.reqeust_, con);
             con.response_.sendCGI(con.socket_, con);
+            con.kind_ = CLIENT;
+            con.resetData();
+        }
+    }
+}
+
+void MainServer::start()
+{
+    while (1)
+    {
+        _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
+        try
+        {
+            if (_event_cnt == -1)
+            {
+                std::cout << "wait() error!" << std::endl;
+                break;
+            }
+            // std::cout << "Recieve Events count : " << _event_cnt << std::endl;
+            for (int i = 0; i < _event_cnt; i++)
+            {
+                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
+                {
+                    cons_.deleteConnection(_ep_events_buf[i].data.fd);
+                }
+                if (_ep_events_buf[i].events & EPOLLIN)
+                {
+                    handleReadEvent(_ep_events_buf[i].data.fd);
+                }
+                if (_ep_events_buf[i].events & EPOLLOUT)
+                {
+                    handleWriteEvent(_ep_events_buf[i].data.fd);
+                }
+            }
+        }
+        catch (const ExceptionCode &e)
+        {
         }
     }
 }
