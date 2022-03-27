@@ -1,6 +1,7 @@
 #include "Request.hpp"
 #include "ExceptionCode.hpp"
 #include "Util.hpp"
+#include "Server.hpp"
 
 Request::Request(void) : state(START_LINE) {}
 
@@ -165,6 +166,20 @@ bool Request::parseSocket()
         }
     }
     return true;
+}
+
+void Request::checkRequest(Connection& con, Request& request, Location& location)
+{
+    (void)con;
+    if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
+        throw ExceptionCode(405);
+    if (location.redirectionCheck() == ON)
+        throw ExceptionCode(302);
+    if (location.existFile(request.url_) == NO_EXIST_FILE)
+    {
+        if (request.method_ != "POST")
+            throw ExceptionCode(404);
+    }
 }
 
 void Request::resetData()

@@ -8,6 +8,10 @@
 #define BODY 2
 #define DONE_REQUST 3
 
+class Connection;
+class request;
+class Location;
+
 class Request
 {
 	public:
@@ -32,6 +36,7 @@ class Request
 		bool checkMethod(std::string method);
 		bool checkUrl(std::string url);
 		bool checkVersion(std::string version);
+		void checkRequest(Connection& con, Request& request, Location& location);
 		void resetData();
 
 		std::string _buffer;

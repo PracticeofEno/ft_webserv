@@ -28,6 +28,13 @@ void Response::send(int fd)
         write(fd, response_data_.c_str(), response_data_.size());
 }
 
+void Response::sendCGI(int fd, Connection& con)
+{
+    writeStartLine(fd);
+    writeHeader(fd);
+    write(fd, con.buf_CGI_, BUF_SIZE);
+}
+
 void Response::writeStartLine(int fd)
 {
     write(fd, this->http_version_.c_str(), this->http_version_.size());

@@ -4,6 +4,8 @@
 #include "Total.hpp"
 #include "ResponseStatus.hpp"
 
+class Connection;
+
 class Response 
 {
     public:
@@ -19,6 +21,7 @@ class Response
         Response& operator=(const Response& tmp);
 
         void send(int fd);
+        void sendCGI(int fd, Connection& con);
         void addHeader(std::string key, std::string value);
         void resetData();
     private:

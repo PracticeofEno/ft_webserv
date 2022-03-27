@@ -176,7 +176,7 @@ Server MainServer::makeServer(std::string &data)
     root_location.root_ = "/www";
     root_location.directory_listing_ = false;
     root_location.dl_default_ = "dlfile1.html";
-    root_location.cgi_extension_ = "cgi";
+    root_location.cgi_extension_ = "php";
     root_location.upload_path_ = "tmp";
     server.locations_.push_back(root_location);
     //////////////////////////////////////////////////
@@ -328,6 +328,11 @@ void MainServer::handleReadEvent(int event_fd)
         con.makeRequest();
         // TestCode(this->cons_.getConnection(con.socket_), sp_.serverPool_.at(0));
     }
+    else if (con.kind_ == CGI)
+    {
+        read(con.pipe_read_, con.buf_CGI_, BUF_SIZE);
+        close(con.pipe_read_);
+    }
 }
 
 void MainServer::handleWriteEvent(int event_fd)
@@ -335,9 +340,24 @@ void MainServer::handleWriteEvent(int event_fd)
     Connection &con = cons_.getConnection(event_fd);
     if (con.reqeust_.getState() == DONE_REQUST)
     {
-        Server& abc = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-        abc.handleRequest(con.reqeust_, con);
-        con.response_.send(con.socket_);
-        con.resetData();
+        Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+        Location& location = server.findLocation(con.reqeust_.url_);
+        con.reqeust_.checkRequest(con, con.reqeust_, location);
+
+        if (con.pipe_event_ == 0 && server.CheckCGI(con.reqeust_.url_, location))
+        {
+            server.CGIHandler(con.reqeust_, con, location);
+        }
+        else if (con.kind_ == CGI)
+        {
+            con.response_ = server.handleRequestCGI(con.reqeust_, con);
+            con.response_.sendCGI(con.socket_, con);
+        }
+        else if (con.kind_ == CLIENT)
+        {
+            con.response_ = server.handleRequest(con.reqeust_, con);
+            con.response_.send(con.socket_);
+            con.resetData();
+        }
     }
 }

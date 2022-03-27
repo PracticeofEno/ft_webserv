@@ -2,7 +2,7 @@
 #define TOTAL_HPP
 
 #define EPOLL_SIZE 50 // 실제론 사용되지 않음
-#define BUF_SIZE 4096
+#define BUF_SIZE 4000
 
 #define SERVER 1
 #define CLIENT 2

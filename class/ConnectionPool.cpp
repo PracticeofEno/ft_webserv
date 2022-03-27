@@ -51,8 +51,42 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip, 
         std::cout << "make server : " << socket << std::endl;
     else if (kind == CLIENT)
         std::cout << "connected client : " << socket << std::endl;
-    else if (kind == CGI) 
+    else if (kind == CGI)
+    {
         std::cout << "cons_ add pipe_fd : " << socket << std::endl;
+    }
+}
+
+void ConnectionPool::appConnection(Connection &con, int socket, int kind, std::string client_ip)
+{
+    struct epoll_event userevent;      // 등록하기 위한 변수!
+
+    con.client_ip_ = client_ip;
+    
+    int flags = fcntl(socket, F_GETFL);
+    flags |= O_NONBLOCK;
+    if (fcntl(socket, F_SETFL, flags) < 0)
+    {
+        std::cout << "server_fd fcntl() error" << std::endl;
+        close(socket);
+        _exit(1);
+    }
+
+    if (kind == SERVER )
+        userevent.events = EPOLLIN | EPOLLET | EPOLLHUP | EPOLLERR;
+    else if (kind == CLIENT || kind == CGI)
+        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLHUP | EPOLLERR;
+
+    userevent.data.fd = socket;
+    epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
+    if (kind == SERVER)
+        std::cout << "make server : " << socket << std::endl;
+    else if (kind == CLIENT)
+        std::cout << "connected client : " << socket << std::endl;
+    else if (kind == CGI)
+    {
+        std::cout << "cons_ add pipe_fd : " << socket << std::endl;
+    }
 }
 
 void ConnectionPool::deleteConnection(int socket)
@@ -100,7 +134,7 @@ Connection& ConnectionPool::getConnection(int socket)
 
     for (it = its; it != ite; it++)
     {
-        if (it->socket_ == socket)
+        if (it->socket_ == socket || it->pipe_read_ == socket)
             return *it;
     }
     return *it;
