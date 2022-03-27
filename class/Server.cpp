@@ -319,6 +319,9 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("REDIRECT_STATUS", "200"));
 
     env = new char*[env_tmp.size() + 1];
+    std::map<std::string, std::string>::iterator it;
+    std::map<std::string, std::string>::iterator its;
+    std::map<std::string, std::string>::iterator ite;
     its = env_tmp.begin();
     ite = env_tmp.end();
     for (it = its; it != ite; it++)
