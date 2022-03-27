@@ -3,7 +3,6 @@
 
 #include "Total.hpp"
 #include "ResponseStatus.hpp"
-
 class Connection;
 
 class Response 

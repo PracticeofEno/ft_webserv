@@ -154,6 +154,8 @@ Response Server::GETHandlerCGI(Request &request, Location& location)
 {
     Response res;
     std::stringstream ss;
+    int size = request._buffer_cgi.size();
+    int sub_size = 0;
 
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
@@ -161,7 +163,9 @@ Response Server::GETHandlerCGI(Request &request, Location& location)
     res.addHeader("Date", generateTime());
     // res.addHeader("Content-Type", searchMimeType(request.url_));
     res.addHeader("Last-Modified", location.getRecentTime(request.url_));
-    ss << request._buffer_cgi.size();
+    sub_size = request._buffer_cgi.find("\r\n");
+    size = size - sub_size - 4;
+    ss << size;
     res.addHeader("Content-Length", ss.str());
     res.file_path_ = location.getFilePath(request.url_);
 
