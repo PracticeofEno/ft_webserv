@@ -45,19 +45,19 @@ std::string Request::readLine()
 void Request::readSocket(int socket)
 {
     char buf[BUF_SIZE];
-    int strLen;
+    int strlen;
 
     while (true)
     {
-        strLen = read(socket, buf, BUF_SIZE);
-        if (strLen == 0)
+        strlen = read(socket, buf, BUF_SIZE);
+        if (strlen == 0)
         {
             std::cout << "all data receive" << std::endl;
             break;
         }
-        else if (strLen > 0)
+        else if (strlen > 0)
         {
-            _buffer.append(buf, strLen);
+            _buffer.append(buf, strlen);
             continue;
         }
         else
