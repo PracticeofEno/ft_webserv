@@ -21,8 +21,11 @@ class ConnectionPool
         void addConnection(int socket, int indicate, std::string client_ip, int port);
         void appConnection(Connection &con, int socket, int kind, std::string client_ip);
         void deleteConnection(int socket);
+        void deletePipeConnection(int pipe);
         bool CheckSocket(int socket, int kind);
         Connection& getConnection(int socket);
+
+        void printPool();
 
     private:
         

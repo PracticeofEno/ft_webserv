@@ -1,8 +1,9 @@
 #include "Connection.hpp"
 #include "MainServer.hpp"
+#include "unistd.h"
 
 Connection::Connection() {}
-Connection::Connection(int socket, int kind, int port) : socket_(socket), kind_(kind), timeout_(0), port_(port) {}
+Connection::Connection(int socket, int kind, int port) : socket_(socket), kind_(kind), timeout_(0), port_(port), pipe_read_(0) {}
 
 Connection::~Connection() {}
 
@@ -26,13 +27,15 @@ Connection &Connection::operator=(const Connection &tmp)
 bool Connection::makeRequest()
 {
     this->reqeust_.readSocket(this->socket_);
-    std::cout << this->reqeust_._buffer << std::endl;
     this->reqeust_.parseSocket();
     return true;
 }
 
 void Connection::resetData()
 {
+    this->kind_ = CLIENT;
+    close(this->pipe_read_);
+    this->pipe_read_ = 0;
     response_.resetData();
     reqeust_.resetData();
 }

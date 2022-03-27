@@ -37,7 +37,7 @@ class Server
 
         void dataSetting(std::string data);
         Response handleRequest(Request& request, Connection& tmp);
-        Response handleRequestCGI(Request& request, Connection& tmp);
+        Response handleRequestCGI(Connection& tmp);
         Location& findLocation(std::string& root);
         bool CheckCGI(std::string url, Location& location);
         void CGIHandler(Request& request, Connection& tmp, Location& location);
@@ -46,7 +46,7 @@ class Server
         Response GETHandler(Request& request, Location& location);
         Response POSTHandler(Request& request, Location& location);
         Response DELETEHandler(Request& request, Location& location);
-        Response GETHandlerCGI(Request& request, Location& location);
+        Response GETHandlerCGI(Response& res);
         Response POSTHandlerCGI(Request& request, Location& location);
         Response DELETEHandlerCGI(Request& request, Location& location);
         char** getCgiVariable(Request& request, Connection& tmp, Location& location);

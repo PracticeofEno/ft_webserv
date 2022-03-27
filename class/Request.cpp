@@ -52,7 +52,7 @@ void Request::readSocket(int socket)
         strlen = read(socket, buf, BUF_SIZE);
         if (strlen == 0)
         {
-            std::cout << "all data receive" << std::endl;
+            std::cout << "fd : " << socket << " all data receive" << std::endl;
             break;
         }
         else if (strlen > 0)
@@ -63,31 +63,10 @@ void Request::readSocket(int socket)
         else
             break;
     }
-}
 
-void Request::readPipe(int pipe)
-{
-    int tmp = 4000;
-    char buf[tmp];
-    int strlen;
-    while (42)
-    {
-        strlen = read(pipe, buf, tmp);
-        buf[strlen] = 0;
-        if (strlen == 0)
-        {
-            std::cout << "pipe has been empty!" << std::endl;
-            break;
-        }
-        else if (strlen > 0)
-        {
-            this->_buffer_cgi.append(buf);
-        }
-        else
-            break;
-        // 음수일 때 에러 처리 필요할까?
-    }
-    std::cout << _buffer_cgi.size() << std::endl;
+    int tmp = 0;
+    tmp = 5;
+    (void)tmp;
 }
 
 bool Request::checkMethod(std::string method)
@@ -193,20 +172,6 @@ bool Request::parseSocket()
     return true;
 }
 
-void Request::checkRequest(Connection& con, Request& request, Location& location)
-{
-    (void)con;
-    if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
-        throw ExceptionCode(405);
-    if (location.redirectionCheck() == ON)
-        throw ExceptionCode(302);
-    if (location.existFile(request.url_) == NO_EXIST_FILE)
-    {
-        if (request.method_ != "POST")
-            throw ExceptionCode(404);
-    }
-}
-
 void Request::resetData()
 {
     state = START_LINE;
@@ -216,4 +181,9 @@ void Request::resetData()
     header_.clear();
     body_.clear();
     query_.clear();
+}
+
+void Request::printStartLine()
+{
+    std::cout << this->method_ << " | " << this->url_ << " | " << this->version_ << std::endl;
 }

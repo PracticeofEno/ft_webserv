@@ -32,7 +32,6 @@ class MainServer
         void        handleReadEvent(int event_fd);
         void        handleWriteEvent(int event_fd);
 
-        void        TestCode(Connection& tmp, Server server);
         bool        openSocket(int port);
 
 };

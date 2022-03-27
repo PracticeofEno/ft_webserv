@@ -35,7 +35,7 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip, 
     flags |= O_NONBLOCK;
     if (fcntl(socket, F_SETFL, flags) < 0)
     {
-        std::cout << "server_fd fcntl() error" << std::endl;
+        std::cout << "add connection fcntl() error" << std::endl;
         close(socket);
         _exit(1);
     }
@@ -79,14 +79,6 @@ void ConnectionPool::appConnection(Connection &con, int socket, int kind, std::s
 
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
-    if (kind == SERVER)
-        std::cout << "make server : " << socket << std::endl;
-    else if (kind == CLIENT)
-        std::cout << "connected client : " << socket << std::endl;
-    else if (kind == CGI)
-    {
-        std::cout << "cons_ add pipe_fd : " << socket << std::endl;
-    }
 }
 
 void ConnectionPool::deleteConnection(int socket)
@@ -101,8 +93,15 @@ void ConnectionPool::deleteConnection(int socket)
             break;
     }
     if (it != ite)
+    {
+        std::cout << "delete connection : " << it->socket_ << std::endl;
+        close(it->socket_);
+        close(ite->pipe_read_);
         cons_.erase(it);
-    epoll_ctl(this->epfd_, EPOLL_CTL_DEL, socket, NULL);
+    }
+    epoll_event ep_event;
+    ep_event.data.fd = socket;
+    epoll_ctl(this->epfd_, EPOLL_CTL_DEL, socket, &ep_event);
 }
 
 bool ConnectionPool::CheckSocket(int socket, int kind)
@@ -135,7 +134,9 @@ Connection& ConnectionPool::getConnection(int socket)
     for (it = its; it != ite; it++)
     {
         if (it->socket_ == socket || it->pipe_read_ == socket)
+        {
             return *it;
+        }
     }
     return *it;
 }
@@ -143,4 +144,46 @@ Connection& ConnectionPool::getConnection(int socket)
 void ConnectionPool::setEpfd(int epfd)
 {
     this->epfd_ = epfd;
+}
+
+
+void ConnectionPool::deletePipeConnection(int pipe)
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator its = cons_.begin();
+    std::vector<Connection>::iterator ite = cons_.end();
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->pipe_read_ == pipe)
+            break;
+    }
+    if (it != ite)
+    {
+        std::cout << "delete connection : " << it->socket_ << std::endl;
+        cons_.erase(it);
+    }
+    epoll_event ep_event;
+    ep_event.data.fd = pipe;
+    epoll_ctl(this->epfd_, EPOLL_CTL_DEL, pipe, &ep_event);
+    close(pipe);
+}
+
+void ConnectionPool::printPool()
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator its = cons_.begin();
+    std::vector<Connection>::iterator ite = cons_.end();
+
+    std::cout << std::endl << std::endl;
+    for (it = its; it != ite; it++)
+    {
+        std::cout << "fd : " << it->socket_ << " | kinds = ";
+        if (it->kind_  == SERVER) 
+            std::cout << "SERVER" << std::endl;
+        else if (it->kind_  == CLIENT) 
+            std::cout << "CLIENT" << std::endl;
+        else if (it->kind_  == CGI) 
+            std::cout << "CGI" << std::endl;
+    }
 }

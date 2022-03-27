@@ -20,17 +20,6 @@ MainServer &MainServer::operator=(const MainServer &tmp)
     return *this;
 }
 
-void MainServer::TestCode(Connection &tmp, Server server)
-{
-    Request req;
-    req.method_ = "GET";
-    req.version_ = "HTTP/1.1";
-    req.url_ = "/index.html";
-    req.header_.insert(std::pair<std::string, std::string>("Host", "server1"));
-
-    server.handleRequest(req, tmp);
-}
-
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -88,7 +77,7 @@ bool MainServer::openSocket(int port)
     flags |= O_NONBLOCK;
     if (fcntl(server_sock, F_SETFL, flags) < 0)
     {
-        std::cout << "server_fd fcntl() error" << std::endl;
+        std::cout << "opensocket server_fd fcntl() error" << std::endl;
         close(server_sock);
         return false;
     }
@@ -285,46 +274,54 @@ void MainServer::handleReadEvent(int event_fd)
     else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
     {
         con.makeRequest();
-        // TestCode(this->cons_.getConnection(con.socket_), sp_.serverPool_.at(0));
+        con.reqeust_.printStartLine();
     }
     else if (con.kind_ == CGI)
     {
-        con.reqeust_.readPipe(con.pipe_read_);
-        epoll_event ep_event;
+        Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+        //CGI실행 결과를 받음. 
+        con.response_.readPipe(con.pipe_read_);
+        std::cout << con.response_.response_data_.size() << std::endl;
+        con.response_ = server.handleRequestCGI(con);
+        con.response_.state = READY;
 
+        epoll_event ep_event;
         ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET;
         ep_event.data.fd = con.socket_;
         epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
         close(con.pipe_read_);
+
+        //this->cons_.deletePipeConnection(con.pipe_read_);
     }
 }
 
 void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
-    if (con.reqeust_.getState() == DONE_REQUST)
-    {
-        Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-        Location& location = server.findLocation(con.reqeust_.url_);
-        con.reqeust_.checkRequest(con, con.reqeust_, location);
 
-        if (con.pipe_event_ == 0 && server.CheckCGI(con.reqeust_.url_, location))
+    if (con.response_.state == READY)
+    {
+        con.response_.send(con.socket_);
+        con.resetData();
+
+    }
+    else if (con.reqeust_.getState() == DONE_REQUST)
+    {
+        if (con.kind_ == CLIENT)
         {
-            server.CGIHandler(con.reqeust_, con, location);
-        }
-        else if (con.kind_ == CLIENT)
-        {
+            Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
             con.response_ = server.handleRequest(con.reqeust_, con);
-            con.response_.send(con.socket_);
-            con.resetData();
+            if (con.kind_ != CGI)
+            {
+                con.response_.send(con.socket_);
+                con.resetData();
+            }
         }
-        else if (con.kind_ == CGI)
-        {
-            con.response_ = server.handleRequestCGI(con.reqeust_, con);
-            con.response_.sendCGI(con.socket_, con);
-            con.kind_ = CLIENT;
-            con.resetData();
-        }
+    }
+    else
+    {
+        this->cons_.printPool();
+        std::cout << "None Activity" << std::endl;
     }
 }
 
@@ -340,21 +337,27 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-            // std::cout << "Recieve Events count : " << _event_cnt << std::endl;
+            std::cout << "Recieve Events count : " << _event_cnt << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
+                 std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
+                // std::cout << "event kinds : ";
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
                 {
+                    //std::cout << "deleteCon" << std::endl;
                     cons_.deleteConnection(_ep_events_buf[i].data.fd);
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {
+                    //std::cout << "EPOLLIN ";
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
                 if (_ep_events_buf[i].events & EPOLLOUT)
                 {
+                    //std::cout << "EPOLLOUT ";
                     handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
+                //std::cout << std::endl;
             }
         }
         catch (const ExceptionCode &e)

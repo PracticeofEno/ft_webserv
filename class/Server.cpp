@@ -63,6 +63,20 @@ Response Server::handleRequest(Request &request, Connection& tmp)
     Response& response = tmp.response_;
     Location& location = findLocation(request.url_);
 
+    if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
+        throw ExceptionCode(405);
+    if (location.redirectionCheck() == ON)
+        throw ExceptionCode(302);
+    if (location.existFile(request.url_) == NO_EXIST_FILE)
+    {
+        if (request.method_ != "POST")
+            throw ExceptionCode(404);
+    }
+
+    if (this->CheckCGI(tmp.reqeust_.url_, location))
+    {
+        this->CGIHandler(tmp.reqeust_, tmp, location);
+    }
     if (request.method_ == "GET")
         response = GETHandler(request, location);
     else if (request.method_ == "POST")
@@ -72,13 +86,12 @@ Response Server::handleRequest(Request &request, Connection& tmp)
     return response;
 }
 
-Response Server::handleRequestCGI(Request &request, Connection& tmp)
+Response Server::handleRequestCGI(Connection& tmp)
 {
     Response& response = tmp.response_;
-    Location& location = findLocation(request.url_);
 
-    if (request.method_ == "GET")
-        response = GETHandlerCGI(request, location);
+    if (tmp.reqeust_.method_ == "GET")
+        response = GETHandlerCGI(tmp.response_);
     // else if (request.method_ == "POST")
     //     response = POSTHandlerCGI(request, location);
     // else if (request.method_ == "DELETE")
@@ -120,6 +133,7 @@ Response Server::GETHandler(Request &request, Location& location)
     res.addHeader("Content-Type", searchMimeType(request.url_));
     res.addHeader("Last-Modified", location.getRecentTime(request.url_));
     res.addHeader("Content-Length", location.getFileSize(request.url_));
+    res.addHeader("Connection", "Keep-Alive");
     res.file_path_ = location.getFilePath(request.url_);
 
     //디렉토리라면 content-type 텍스트로 바꿔주고 response_data에 
@@ -150,24 +164,22 @@ Response Server::GETHandler(Request &request, Location& location)
     return (res);
 }
 
-Response Server::GETHandlerCGI(Request &request, Location& location)
+Response Server::GETHandlerCGI(Response &res)
 {
-    Response res;
     std::stringstream ss;
-    int size = request._buffer_cgi.size();
+    int size = res.response_data_.size();
     int sub_size = 0;
 
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
-    res.addHeader("Server", this->server_name_);
-    res.addHeader("Date", generateTime());
-    // res.addHeader("Content-Type", searchMimeType(request.url_));
-    res.addHeader("Last-Modified", location.getRecentTime(request.url_));
-    sub_size = request._buffer_cgi.find("\r\n");
+    res.header_["Content-Type"] = "text/html";
+    res.addHeader("Connection", "Keep-Alive");
+    sub_size = res.response_data_.find("\r\n");
     size = size - sub_size - 4;
     ss << size;
-    res.addHeader("Content-Length", ss.str());
-    res.file_path_ = location.getFilePath(request.url_);
+    res.response_data_.erase(0, sub_size + 4);
+    res.header_["Content-Length"] = ss.str();
+    res.file_path_ = "";
 
     return (res);
 }
@@ -187,6 +199,7 @@ Response Server::POSTHandler(Request &request, Location &location)
     res.http_version_ = "HTTP/1.1";
     res.addHeader("Server", this->server_name_);
     res.addHeader("Date", generateTime());
+    res.addHeader("Connection", "Keep-Alive");
     // res.addHeader("Content-Type", searchMimeType(request.url_));
     // res.addHeader("Last-Modified", getRecentTime(request.url_));
     // res.addHeader("Content-Length", getFileSize(request.url_));
@@ -259,7 +272,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
     else
     {
         int status;
-        // close(pip[1]);
+        close(pip[1]);
         waitpid(pid, &status, WNOHANG);
     }
 

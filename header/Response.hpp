@@ -13,6 +13,7 @@ class Response
         std::map<std::string, std::string> header_;
         std::string file_path_;
         std::string response_data_;
+        int state;
 
         Response();
         ~Response();
@@ -20,15 +21,16 @@ class Response
         Response& operator=(const Response& tmp);
 
         void send(int fd);
-        void sendCGI(int fd, Connection& con);
         void addHeader(std::string key, std::string value);
         void resetData();
+        void readPipe(int pipe);
     private:
         
         void writeStartLine(int fd);
         void writeHeader(int fd);
         void writeHeaderCGI(int fd);
         void writeFile(int fd);
+
         
 };
 #endif

@@ -30,7 +30,6 @@ class Request
 		int getState();
 		std::string readLine();
 		void readSocket(int socket);
-		void readPipe(int socket);
 		bool parseSocket();
 		void parseStartline(std::string tmp);
 		void parseHeaders(std::string tmp);
@@ -39,9 +38,9 @@ class Request
 		bool checkVersion(std::string version);
 		void checkRequest(Connection& con, Request& request, Location& location);
 		void resetData();
+		void printStartLine();
 
 		std::string _buffer;
-		std::string _buffer_cgi;
 	private:
 
 		int	state;

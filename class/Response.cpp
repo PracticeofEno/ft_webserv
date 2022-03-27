@@ -1,7 +1,7 @@
 #include "Response.hpp"
 #include "ExceptionCode.hpp"
 
-Response::Response() : http_version_("HTTP/1.1") {}
+Response::Response() : http_version_("HTTP/1.1"), state(NOT_READY) {}
 Response::~Response() {}
 
 Response::Response(const Response &tmp)
@@ -26,15 +26,6 @@ void Response::send(int fd)
         writeFile(fd);
     else
         write(fd, response_data_.c_str(), response_data_.size());
-}
-
-void Response::sendCGI(int fd, Connection& con)
-{
-    (void)fd;
-    // writeStartLine(STDOUT_FILENO);
-    writeStartLine(fd);
-    writeHeaderCGI(fd);
-    write(fd, con.reqeust_._buffer_cgi.c_str(), con.reqeust_._buffer_cgi.size());
 }
 
 void Response::writeStartLine(int fd)
@@ -109,4 +100,29 @@ void Response::resetData()
     this->header_.clear();
     this->file_path_.clear();
     this->response_data_.clear();
+    this->state = NOT_READY;
+}
+
+void Response::readPipe(int pipe)
+{
+    int tmp = 4000;
+    char buf[tmp];
+    int strlen;
+    while (42)
+    {
+        strlen = read(pipe, buf, tmp);
+        buf[strlen] = 0;
+        if (strlen == 0)
+        {
+            std::cout << "pipe has been empty!" << std::endl;
+            break;
+        }
+        else if (strlen > 0)
+        {
+            this->response_data_.append(buf);
+        }
+        else
+            break;
+        // 음수일 때 에러 처리 필요할까?
+    }
 }
