@@ -66,13 +66,12 @@ Response Server::handleRequest(Request &request, Connection& tmp)
     if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
         throw ExceptionCode(405, tmp);
     if (location.redirectionCheck() == ON)
-        throw ExceptionCode(302);
+        throw ExceptionCode(302, tmp);
     if (location.existFile(request.url_) == NO_EXIST_FILE)
     {
         if (request.method_ != "POST")
             throw ExceptionCode(404, tmp);
     }
-
     if (this->CheckCGI(tmp.reqeust_.url_, location))
     {
         this->CGIHandler(tmp.reqeust_, tmp, location);

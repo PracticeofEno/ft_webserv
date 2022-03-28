@@ -349,23 +349,18 @@ void MainServer::start()
             for (int i = 0; i < _event_cnt; i++)
             {
                  std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
-                // std::cout << "event kinds : ";
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
                 {
                     std::cout << "errror" << std::endl;
-                    //cons_.deleteConnection(_ep_events_buf[i].data.fd);
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {
-                    //std::cout << "EPOLLIN ";
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
                 if (_ep_events_buf[i].events & EPOLLOUT)
                 {
-                    //std::cout << "EPOLLOUT ";
                     handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
-                //std::cout << std::endl;
             }
         }
         catch (ExceptionCode &e)
