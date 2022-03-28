@@ -360,7 +360,7 @@ void MainServer::start()
                     //std::cout << "EPOLLIN ";
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
-                if (_ep_events_buf[i].events & EPOLLOUT)
+                else if (_ep_events_buf[i].events & EPOLLOUT)
                 {
                     //std::cout << "EPOLLOUT ";
                     handleWriteEvent(_ep_events_buf[i].data.fd);
