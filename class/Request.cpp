@@ -144,7 +144,7 @@ void Request::parseHeaders(std::string tmp)
     std::string key;
     std::string value;
 
-    if (tmp.compare("\r\n"))
+    if (tmp.compare("\r\n") == 0)
     {
         if (header_.find("Host") == header_.end())
         {
@@ -157,6 +157,7 @@ void Request::parseHeaders(std::string tmp)
             {
                 body_ = "";
                 state = DONE_REQUST;
+                
             }
             else if (header_.find("Transfer-Encoding") != header_.end())
             {
@@ -173,19 +174,22 @@ void Request::parseHeaders(std::string tmp)
             }
         }
     }
-    endPos = tmp.find(": ");
-    if (endPos != std::string::npos)
-    {
-        key = tmp.substr(0, endPos);
-        tmp.erase(0, endPos + 2);
-        tmp = ft_rtrim(tmp, "\r\n");
-        value = tmp;
-        header_.insert(std::pair<std::string, std::string>(key, value));
-    }
     else
     {
-        ExceptionCode ex(404);
-        throw ex;
+        endPos = tmp.find(": ");
+        if (endPos != std::string::npos)
+        {
+            key = tmp.substr(0, endPos);
+            tmp.erase(0, endPos + 2);
+            tmp = ft_rtrim(tmp, "\r\n");
+            value = tmp;
+            header_.insert(std::pair<std::string, std::string>(key, value));
+        }
+        else
+        {
+            ExceptionCode ex(404);
+            throw ex;
+        }
     }
 }
 
@@ -220,6 +224,7 @@ void Request::resetData()
     header_.clear();
     body_.clear();
     query_.clear();
+    _buffer.clear();
 }
 
 void Request::printStartLine()
