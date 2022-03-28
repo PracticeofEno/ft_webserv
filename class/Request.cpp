@@ -157,11 +157,10 @@ void Request::parseHeaders(std::string tmp)
             {
                 body_ = "";
                 state = DONE_REQUST;
-                
             }
             else if (header_.find("Transfer-Encoding") != header_.end())
             {
-                //chunked BODY 
+                state = CHUNKED;
             }
             else if (header_.find("Content-Length") != header_.end())
             {
@@ -206,6 +205,9 @@ bool Request::parseSocket()
         else if (state == HEADERS)
         {
             parseHeaders(tmp);
+        }
+        else if (state == CHUNKED)
+        {
         }
         else if (state == DONE_REQUST)
         {
