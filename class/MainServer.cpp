@@ -275,7 +275,13 @@ void MainServer::handleReadEvent(int event_fd)
     {
         try
         {
+            Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
             con.makeRequest();
+            if (con.reqeust_.getState() == DONE_REQUST)
+            {
+                con.reqeust_.printStartLine();
+                con.response_ = server.handleRequest(con.reqeust_, con);
+            }
         }
         catch (ExceptionCode &e)
         {
@@ -307,26 +313,22 @@ void MainServer::handleWriteEvent(int event_fd)
 
     if (con.response_.state == READY)
     {
-        con.response_.send(con.socket_);
-        con.resetData();
-
-    }
-    else if (con.reqeust_.getState() == DONE_REQUST)
-    {
-        if (con.kind_ == CLIENT)
+        if (con.kind_ != CGI)
         {
-            Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-            con.response_ = server.handleRequest(con.reqeust_, con);
-            if (con.kind_ != CGI)
-            {
-                con.response_.send(con.socket_);
-                con.resetData();
-            }
+            con.response_.send(con.socket_);
+            con.resetData();
+            //this->cons_.deleteConnection(con);
+        }
+        else if (con.kind_ == CGI)
+        {
+            con.response_.send(con.socket_);
+            con.resetData();
         }
     }
     else
     {
         this->cons_.printPool();
+        std::cout << con.socket_ << std::endl;
         std::cout << "None Activity" << std::endl;
     }
 }
@@ -350,8 +352,8 @@ void MainServer::start()
                 // std::cout << "event kinds : ";
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
                 {
-                    //std::cout << "deleteCon" << std::endl;
-                    cons_.deleteConnection(_ep_events_buf[i].data.fd);
+                    std::cout << "errror" << std::endl;
+                    //cons_.deleteConnection(_ep_events_buf[i].data.fd);
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {
@@ -366,8 +368,10 @@ void MainServer::start()
                 //std::cout << std::endl;
             }
         }
-        catch (const ExceptionCode &e)
+        catch (ExceptionCode &e)
         {
+            this->cons_.getConnection(e.con_.socket_).resetData();
+            //this->cons_.deleteConnection(e.con_);
         }
     }
 }

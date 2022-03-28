@@ -94,6 +94,11 @@ void Request::parseStartline(std::string tmp)
 {
     size_t endPos;
 
+    if (tmp.compare("\r\n") == 0 && method_ == "GET")
+    {
+        state = DONE_REQUST;
+        return ;
+    }
     endPos = tmp.find(" ");
     if (endPos != std::string::npos)
     {
@@ -139,6 +144,35 @@ void Request::parseHeaders(std::string tmp)
     std::string key;
     std::string value;
 
+    if (tmp.compare("\r\n"))
+    {
+        if (header_.find("Host") == header_.end())
+        {
+            ExceptionCode ex(500);
+            throw ex;
+        }
+        else
+        {
+            if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
+            {
+                body_ = "";
+                state = DONE_REQUST;
+            }
+            else if (header_.find("Transfer-Encoding") != header_.end())
+            {
+                //chunked BODY 
+            }
+            else if (header_.find("Content-Length") != header_.end())
+            {
+                int length;
+                std::istringstream convert(header_["Content-Length"]);
+                convert >> length;
+                body_ = _buffer.substr(0, length);
+                state = DONE_REQUST;
+                //read content lenghth
+            }
+        }
+    }
     endPos = tmp.find(": ");
     if (endPos != std::string::npos)
     {
@@ -161,11 +195,7 @@ bool Request::parseSocket()
 
     while ((tmp = readLine()).compare("") != 0)
     {
-        if (tmp.compare("\r\n") == 0 && method_ != "")
-        {
-            state = DONE_REQUST;
-        }
-        else if (state == START_LINE)
+        if (state == START_LINE)
         {
             parseStartline(tmp);
         }

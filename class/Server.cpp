@@ -77,12 +77,16 @@ Response Server::handleRequest(Request &request, Connection& tmp)
     {
         this->CGIHandler(tmp.reqeust_, tmp, location);
     }
-    if (request.method_ == "GET")
-        response = GETHandler(request, location);
-    else if (request.method_ == "POST")
-        response = POSTHandler(request, location);
-    else if (request.method_ == "DELETE")
-        response = DELETEHandler(request, location);    
+    else
+    {
+        if (request.method_ == "GET")
+            response = GETHandler(request, location);
+        else if (request.method_ == "POST")
+            response = POSTHandler(request, location);
+        else if (request.method_ == "DELETE")
+            response = DELETEHandler(request, location);    
+        response.state = READY;
+    }
     return response;
 }
 
@@ -167,17 +171,20 @@ Response Server::GETHandler(Request &request, Location& location)
 Response Server::GETHandlerCGI(Response &res)
 {
     std::stringstream ss;
-    int size = res.response_data_.size();
+    int size;
     int sub_size = 0;
+
+    sub_size = res.response_data_.find("\r\n");
+    res.response_data_.erase(0, sub_size + 4);
 
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
-    res.header_["Content-Type"] = "text/html";
+    res.header_["Content-Type"] = res.response_data_.substr(0, sub_size);
     res.addHeader("Connection", "Keep-Alive");
-    sub_size = res.response_data_.find("\r\n");
-    size = size - sub_size - 4;
+    
+    size = res.response_data_.size();
     ss << size;
-    res.response_data_.erase(0, sub_size + 4);
+    
     res.header_["Content-Length"] = ss.str();
     res.file_path_ = "";
 
@@ -260,7 +267,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
     con.pipe_read_ = pip[0];
     con.pipe_event_ = pip[1];
     con.kind_ = CGI;
-    main_server.cons_.appConnection(con, pip[0], CGI, "CGI");
+    main_server.cons_.appConnection(pip[0], CGI);
 
     pid = fork();
     if (pid == 0)
@@ -276,7 +283,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
         waitpid(pid, &status, WNOHANG);
     }
 
-    for (int i = 0 ; i < 20; i++)
+    for (int i = 0 ; i < 18; i++)
         delete[] env[i];
     delete[] env;
     delete arg[0];

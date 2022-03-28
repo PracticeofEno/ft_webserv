@@ -33,7 +33,5 @@ class Response
         void writeHeader(int fd);
         void writeHeaderCGI(int fd);
         void writeFile(int fd);
-
-        
 };
 #endif

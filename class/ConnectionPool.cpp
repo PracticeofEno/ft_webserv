@@ -57,12 +57,10 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip, 
     }
 }
 
-void ConnectionPool::appConnection(Connection &con, int socket, int kind, std::string client_ip)
+void ConnectionPool::appConnection(int socket, int kind)
 {
     struct epoll_event userevent;      // 등록하기 위한 변수!
 
-    con.client_ip_ = client_ip;
-    
     int flags = fcntl(socket, F_GETFL);
     flags |= O_NONBLOCK;
     if (fcntl(socket, F_SETFL, flags) < 0)
@@ -81,7 +79,7 @@ void ConnectionPool::appConnection(Connection &con, int socket, int kind, std::s
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
 }
 
-void ConnectionPool::deleteConnection(int socket)
+void ConnectionPool::deleteConnection(Connection& con)
 {
     std::vector<Connection>::iterator it;
     std::vector<Connection>::iterator its = cons_.begin();
@@ -89,21 +87,23 @@ void ConnectionPool::deleteConnection(int socket)
 
     for (it = its; it != ite; it++)
     {
-        if (it->socket_ == socket)
+        if (it->socket_ == con.socket_)
             break;
     }
     if (it != ite)
     {
-        std::cout << "delete connection : " << it->socket_ << std::endl;
-        close(it->socket_);
-        cons_.erase(it);
+        std::cout << "delete connection : " << it->socket_ << std::endl << std::endl;
+        this->printPool();
+        this->cons_.erase(it);
+        this->printPool();
     }
     epoll_event ep_event;
-    ep_event.data.fd = socket;
-    epoll_ctl(this->epfd_, EPOLL_CTL_DEL, socket, &ep_event);
+    ep_event.data.fd = con.socket_;
+    epoll_ctl(this->epfd_, EPOLL_CTL_DEL, con.socket_, &ep_event);
+    close(con.socket_);
 }
 
-bool ConnectionPool::CheckSocket(int socket, int kind)
+bool ConnectionPool::checkSocket(int socket, int kind)
 {
     std::vector<Connection>::iterator it;
     std::vector<Connection>::iterator its = cons_.begin();
