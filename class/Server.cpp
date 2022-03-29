@@ -69,7 +69,11 @@ Response Server::handleRequest(Request &request, Connection& con)
     if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
         throw ExceptionCode(405, con);
     if (location.redirectionCheck() == ON)
-        throw ExceptionCode(302, con);
+    {
+        ExceptionCode ex(302, con);
+        ex.location_ = "http://google.com";
+        throw ex;
+    }
     if (location.existFile(request.url_) == NO_EXIST_FILE)
         throw ExceptionCode(404, con);
 
