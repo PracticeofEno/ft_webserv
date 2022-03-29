@@ -36,6 +36,7 @@ class Request
 		bool parseSocket();
 		void parseStartline(std::string tmp);
 		void parseHeaders(std::string tmp);
+		void parseChunked(std::string tmp);
 		bool checkMethod(std::string method);
 		bool checkUrl(std::string url);
 		bool checkVersion(std::string version);
@@ -46,9 +47,7 @@ class Request
 
 		std::string _buffer;
 	private:
-
 		int	state;
-
 };
 
 #endif
