@@ -27,10 +27,10 @@ class Response
         void addHeader(std::string key, std::string value);
         void resetData();
         void readPipe(int pipe);
-    private:
-        
         void writeStartLine(int fd);
         void writeHeader(int fd);
+        
+    private:
         void writeHeaderCGI(int fd);
         void writeFile(int fd);
 };

@@ -22,6 +22,7 @@ ExceptionCode &ExceptionCode::operator=(const ExceptionCode &tmp)
     this->con_ = tmp.con_;
     this->status_ = tmp.status_;
     this->_code = tmp._code;
+    this->location_ = tmp.location_;
     return *this;
 }
 
@@ -55,5 +56,14 @@ void ExceptionCode::handleException()
         res.file_path_ = location.getFilePath("/" + server.error_page_);
         res.send(con_.socket_);
     }
+<<<<<<< HEAD
     // else if (_code ==
+=======
+    else if (_code == 302)
+    {
+        res.header_["Location"] = location_;
+        res.writeStartLine(con_.socket_);
+        res.writeHeader(con_.socket_);
+    }
+>>>>>>> 74b04afb5249453ebd8c0c999e7aa81c94fd60b8
 }
