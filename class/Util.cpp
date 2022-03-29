@@ -64,16 +64,18 @@ std::string generateTime()
     return (std::string(buf));
 }
 
-int getSameCount(const char* a, const char* b)
+int	ft_strcmp(const char *s1, const char *s2)
 {
-    int count = 0;
-    while (*a)
-    {
-        if (*a != *b)
-            break;
-        count++;        
-        a++;
-        b++;
-    }
-    return count;
+	int i;
+
+	i = 0;
+	while (s1[i])
+	{
+		if (s1[i] != s2[i])
+			return false;
+		if (s2[i] == 0x00)
+			return false;
+		i++;
+	}
+    return true;
 }

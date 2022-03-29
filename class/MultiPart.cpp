@@ -5,6 +5,7 @@ MultiPart::MultiPart(std::string data, std::string boundary)
 {
     _data = data;
     _boundary = boundary;
+    makeEntity();
 
 }
 

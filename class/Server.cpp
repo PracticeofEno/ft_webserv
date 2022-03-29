@@ -113,7 +113,7 @@ Location& Server::findLocation(Request& request)
     
     for (it = its; it != ite; it++)
     {
-        if (strcmp(it->location_name_.c_str(), request.url_.c_str()) == 0)
+        if (ft_strcmp(it->location_name_.c_str(), request.url_.c_str()) == true)
         {
             match_count = it->location_name_.size();
             if (match_count > max_count)
