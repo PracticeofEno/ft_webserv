@@ -55,5 +55,5 @@ void ExceptionCode::handleException()
         res.file_path_ = location.getFilePath("/" + server.error_page_);
         res.send(con_.socket_);
     }
-    else if (_code == 
+    // else if (_code ==
 }
