@@ -192,6 +192,23 @@ void Request::parseHeaders(std::string tmp)
     }
 }
 
+void Request::parseChunked(std::string tmp)
+{
+    std::stringstream str;
+    static int num;
+
+    if (num == 0)
+    {
+        str.str(tmp);
+        str >> num;
+    }
+    else
+    {
+        body_.append(tmp.substr(0, num));
+        num = 0;
+    }
+}
+
 bool Request::parseSocket()
 {
     std::string tmp;
@@ -208,6 +225,7 @@ bool Request::parseSocket()
         }
         else if (state == CHUNKED)
         {
+            parseChunked(tmp);
         }
         else if (state == DONE_REQUST)
         {
