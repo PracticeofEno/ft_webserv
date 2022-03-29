@@ -255,7 +255,6 @@ void Request::printStartLine()
 {
     std::cout << this->method_ << " | " << this->url_ << " | " << this->version_ << std::endl;
 }
-<<<<<<< HEAD
 
 void Request::setLocationFile()
 {
@@ -264,5 +263,3 @@ void Request::setLocationFile()
         location_ = "/";
     file_ = url_.substr(url_.find_last_of("/") + 1, std::string::npos);
 }
-=======
->>>>>>> 7dd039d257fc16574a2b200c8c18835725192ff6
