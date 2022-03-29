@@ -270,6 +270,7 @@ void MainServer::handleReadEvent(int event_fd)
             con.makeRequest();
             if (con.reqeust_.getState() == DONE_REQUST)
             {
+                con.reqeust_.setLocationFile();
                 con.reqeust_.printStartLine();
                 Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
                 con.response_ = server.handleRequest(con.reqeust_, con);

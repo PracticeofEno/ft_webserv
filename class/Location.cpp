@@ -74,15 +74,17 @@ bool Location::redirectionCheck()
     return true;
 }
 
-bool Location::existFile(std::string url)
+bool Location::existFile(std::string filename)
 {
     std::string tmp;
-    tmp = getFilePath(url);
+    tmp = getFilePath(filename);
 
     if (access(tmp.c_str(), F_OK) == 0)
         return true;
     else
+    {
         return false;
+    }
 }
 
 std::string Location::getFilePath(std::string url)
@@ -91,7 +93,8 @@ std::string Location::getFilePath(std::string url)
     realpath(".", buf);
     std::string current_path(buf);
     current_path.append(this->root_);
-    current_path.append(url);
+    current_path.append("/");
+    current_path.append(url.substr(url.find_last_of("/") + 1, std::string::npos));  
     current_path = replace_all(current_path, "//", "/");
     return current_path;
 }

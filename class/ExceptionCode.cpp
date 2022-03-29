@@ -52,8 +52,8 @@ void ExceptionCode::handleException()
     if (_code == 404)
     {
         res.header_["Content-Type"] = "text/html";
-        res.header_["Content-Length"] = location.getFileSize("/" + server.error_page_);
-        res.file_path_ = location.getFilePath("/" + server.error_page_);
+        res.header_["Content-Length"] = location.getFileSize(server.error_page_);
+        res.file_path_ = location.getFilePath(server.error_page_);
         res.send(con_.socket_);
     }
     else if (_code == 302)

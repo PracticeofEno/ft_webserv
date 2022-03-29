@@ -27,6 +27,8 @@ class Request
 		std::map<std::string, std::string> header_;
 		std::string body_;
 		std::string query_;
+		std::string location_;
+		std::string file_;
 
 		int getState();
 		std::string readLine();
@@ -40,6 +42,7 @@ class Request
 		void checkRequest(Connection& con, Request& request, Location& location);
 		void resetData();
 		void printStartLine();
+		void setLocationFile();
 
 		std::string _buffer;
 	private:

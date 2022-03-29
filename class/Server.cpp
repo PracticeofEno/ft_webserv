@@ -74,7 +74,7 @@ Response Server::handleRequest(Request &request, Connection& con)
         ex.location_ = "http://google.com";
         throw ex;
     }
-    if (location.existFile(request.url_) == NO_EXIST_FILE)
+    if (location.existFile(request.file_) == NO_EXIST_FILE)
         throw ExceptionCode(404, con);
 
     if (this->CheckCGI(con.reqeust_.url_, location))
@@ -115,12 +115,10 @@ Location& Server::findLocation(Request& request)
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
     std::vector<Location>::iterator tmp = this->locations_.begin();
-    if (*(--request.url_.end()) == '/' && request.url_ != "/")
-        request.url_ = ft_rtrim(request.url_, "/");
-    
+
     for (it = its; it != ite; it++)
     {
-        if (ft_strcmp(it->location_name_.c_str(), request.url_.c_str()) == true)
+        if (ft_strcmp(it->location_name_.c_str(), request.location_.c_str()) == true)
         {
             match_count = it->location_name_.size();
             if (match_count > max_count)
@@ -153,7 +151,7 @@ Response Server::GETHandler(Request &request, Location& location)
 
     //디렉토리라면 content-type 텍스트로 바꿔주고 response_data에 
     //디렉토리리스트 html 만들어 넣은뒤에 content-length설정해주고 파일 이름 없앰
-    if (location.isDir(request.url_) == DIRECTORY)
+    if (location.isDir(request.file_) == DIRECTORY)
     {
         if (location.directory_listing_)
         {

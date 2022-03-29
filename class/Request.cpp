@@ -22,6 +22,8 @@ Request& Request::operator= (const Request& tmp)
     this->query_ = tmp.query_;
     this->_buffer = tmp._buffer;
     this->state = tmp.state;
+    this->location_ = tmp.location_;
+    this->file_ = tmp.file_;
     return *this;
 }
 
@@ -227,9 +229,19 @@ void Request::resetData()
     body_.clear();
     query_.clear();
     _buffer.clear();
+    location_.clear();
+    file_.clear();
 }
 
 void Request::printStartLine()
 {
     std::cout << this->method_ << " | " << this->url_ << " | " << this->version_ << std::endl;
+}
+
+void Request::setLocationFile()
+{
+    location_ = url_.substr(0, url_.find_last_of("/"));
+    if (location_ == "")
+        location_ = "/";
+    file_ = url_.substr(url_.find_last_of("/") + 1, std::string::npos);
 }
