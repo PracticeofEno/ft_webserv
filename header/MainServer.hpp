@@ -27,7 +27,7 @@ class MainServer
         int         _event_cnt, _epfd;
         void        makeServerPool(std::string data);
         Server      makeServer(std::string& data);
-        Location    makeLocation(std::string& data);
+        Location    makeLocation(std::string& data, std::string name);
         void        makeMimeType(std::string data);
         void        handleReadEvent(int event_fd);
         void        handleWriteEvent(int event_fd);

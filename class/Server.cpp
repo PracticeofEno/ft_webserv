@@ -3,6 +3,7 @@
 #include "ResponseStatus.hpp"
 #include "Util.hpp"
 #include <sys/wait.h>
+#include "MultiPart.hpp"
 
 Server::Server()
 {
@@ -21,7 +22,6 @@ Server &Server::operator=(const Server &server)
 {
     this->server_name_ = server.server_name_;
     this->http_version_ = server.http_version_;
-    this->error_page_path_ = server.error_page_path_;
     this->client_body_size_ = server.client_body_size_;
     this->locations_ = server.locations_;
     this->socket_ = server.socket_;
@@ -39,8 +39,6 @@ void Server::dataSetting(std::string data)
     value = ft_trim(data, " \t\n\r\f\v");
     if (key.compare("serverName") == 0)
         server_name_ = value;
-    else if (key.compare("errorPagePath") == 0)
-        error_page_path_ = value;
     else if (key.compare("port") == 0)
     {
         int c;
@@ -58,24 +56,22 @@ void Server::dataSetting(std::string data)
     
 }
 
-Response Server::handleRequest(Request &request, Connection& tmp)
+Response Server::handleRequest(Request &request, Connection& con)
 {
-    Response& response = tmp.response_;
-    Location& location = findLocation(request.url_);
+    Response& response = con.response_;
+    Location& location = findLocation(request);
 
+    if (request.body_.size() > (size_t)this->client_body_size_)
+        throw ExceptionCode(413, con);
     if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
-        throw ExceptionCode(405, tmp);
+        throw ExceptionCode(405, con);
     if (location.redirectionCheck() == ON)
-        throw ExceptionCode(302, tmp);
+        throw ExceptionCode(302, con);
     if (location.existFile(request.url_) == NO_EXIST_FILE)
-    {
-        if (request.method_ != "POST")
-            throw ExceptionCode(404, tmp);
-    }
-    if (this->CheckCGI(tmp.reqeust_.url_, location))
-    {
-        this->CGIHandler(tmp.reqeust_, tmp, location);
-    }
+        throw ExceptionCode(404, con);
+
+    if (this->CheckCGI(con.reqeust_.url_, location))
+        this->CGIHandler(con.reqeust_, con, location);
     else
     {
         if (request.method_ == "GET")
@@ -102,23 +98,32 @@ Response Server::handleRequestCGI(Connection& tmp)
     return response;
 }
 
-Location& Server::findLocation(std::string& url)
+Location& Server::findLocation(Request& request)
 {
-    std::string root = "/www";
+    std::string url;
+    int match_count = 0;
+    int max_count = 0;
+
     std::vector<Location>::iterator it;
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
-
-    root.append(url);
-    root = ft_rtrim(root, "/");
+    std::vector<Location>::iterator tmp = this->locations_.begin();
+    if (*(--request.url_.end()) == '/' && request.url_ != "/")
+        request.url_ = ft_rtrim(request.url_, "/");
+    
     for (it = its; it != ite; it++)
     {
-        if (it->root_.compare(root) == 0)
+        if (strcmp(it->location_name_.c_str(), request.url_.c_str()) == 0)
         {
-            return (*it);
+            match_count = it->location_name_.size();
+            if (match_count > max_count)
+            {
+                max_count = match_count;
+                tmp = it;
+            }
         }
     }
-    return (*(this->locations_.begin()));
+    return (*tmp);
 }
 
 Response Server::GETHandler(Request &request, Location& location)
@@ -193,22 +198,21 @@ Response Server::GETHandlerCGI(Response &res)
 Response Server::POSTHandler(Request &request, Location &location)
 {
     Response res;
-    res.file_path_ = location.getFilePath(request.url_);
 
-    std::ofstream file;
-    file.open(res.file_path_.c_str(), std::ios::out | std::ios::app);
-    if (file.fail() == true)
-        throw ExceptionCode(520);
-    file << request._buffer;
-    file.close();
-    res.status_ = ResponseStatus(201);
-    res.http_version_ = "HTTP/1.1";
-    res.addHeader("Server", this->server_name_);
-    res.addHeader("Date", generateTime());
-    res.addHeader("Connection", "Keep-Alive");
-    // res.addHeader("Content-Type", searchMimeType(request.url_));
-    // res.addHeader("Last-Modified", getRecentTime(request.url_));
-    // res.addHeader("Content-Length", getFileSize(request.url_));
+    (void)location;
+    if (request.header_.find("Content-Type") == request.header_.end())
+        throw ExceptionCode(403);
+    if (request.header_["Content-Type"].find("multipart/form-data") == std::string::npos)
+    {
+        //origin POST handle
+    }
+    else
+    {
+        std::string boundary;
+        boundary = request.header_["Content-Type"].substr(request.header_["Content-Type"].find("boundary="), std::string::npos);
+    
+        MultiPart multi(request.body_, boundary);
+    }
     return (res);
 }
 

@@ -157,18 +157,7 @@ Server MainServer::makeServer(std::string &data)
     std::string tmp;
     Server server;
     size_t endPos;
-
-    //////////////// 루트에 대한 기본 설정  //////////////
-    Location root_location;
-    root_location.method_ = "GET POST DELETE";
-    root_location.redirection_ = "";
-    root_location.root_ = "/www";
-    root_location.directory_listing_ = false;
-    root_location.dl_default_ = "dlfile1.html";
-    root_location.cgi_extension_ = "php";
-    root_location.upload_path_ = "tmp";
-    server.locations_.push_back(root_location);
-    //////////////////////////////////////////////////
+    std::string name;
 
     endPos = data.find("\r\n");
     while (endPos != std::string::npos)
@@ -178,7 +167,9 @@ Server MainServer::makeServer(std::string &data)
         endPos = data.find("\r\n");
         if (tmp.find("location") != std::string::npos && tmp.find("{") != std::string::npos)
         {
-            server.locations_.push_back(makeLocation(data));
+            name = tmp.substr(tmp.find("/"), tmp.find("{") - tmp.find("/"));
+            ft_trim(name, " \t\n\r\f\v");
+            server.locations_.push_back(makeLocation(data, name));
             endPos = data.find("\r\n");
         }
         else if (tmp.find("}") != std::string::npos)
@@ -194,13 +185,14 @@ Server MainServer::makeServer(std::string &data)
     return server;
 }
 
-Location MainServer::makeLocation(std::string &data)
+Location MainServer::makeLocation(std::string &data, std::string name)
 {
     std::string tmp;
     Location location;
     size_t endPos;
 
     endPos = data.find("\r\n");
+    location.location_name_ = name;
     while (endPos != std::string::npos)
     {
         tmp = data.substr(0, endPos + 2);
@@ -365,7 +357,7 @@ void MainServer::start()
         }
         catch (ExceptionCode &e)
         {
-            this->cons_.getConnection(e.con_.socket_).resetData();
+            //this->cons_.getConnection(e.con_.socket_).resetData();
             //this->cons_.deleteConnection(e.con_);
         }
     }

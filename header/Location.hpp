@@ -14,6 +14,7 @@ class Location
         std::string                 dl_default_;
         std::string                 cgi_extension_;
         std::string                 upload_path_;
+        std::string                 location_name_;
 
         /*                      OCCF                             */
         Location();

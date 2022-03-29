@@ -63,3 +63,17 @@ std::string generateTime()
     strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
     return (std::string(buf));
 }
+
+int getSameCount(const char* a, const char* b)
+{
+    int count = 0;
+    while (*a)
+    {
+        if (*a != *b)
+            break;
+        count++;        
+        a++;
+        b++;
+    }
+    return count;
+}

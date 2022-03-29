@@ -26,6 +26,7 @@ Location& Location::operator=(const Location& location)
     this->upload_path_ = location.upload_path_;
     this->directory_listing_ = location.directory_listing_;
     this->redirection_ = location.redirection_;
+    this->location_name_ = location.location_name_;
     return *this;
 }
 

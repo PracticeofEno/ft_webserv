@@ -22,7 +22,6 @@ class Server
     public :
         std::string             server_name_;
         std::string             http_version_;
-        std::string             error_page_path_;
         int                     client_body_size_;
         std::vector<Location>   locations_;
         int                     socket_;
@@ -38,7 +37,7 @@ class Server
         void dataSetting(std::string data);
         Response handleRequest(Request& request, Connection& tmp);
         Response handleRequestCGI(Connection& tmp);
-        Location& findLocation(std::string& root);
+        Location& findLocation(Request& reqeust);
         bool CheckCGI(std::string url, Location& location);
         void CGIHandler(Request& request, Connection& tmp, Location& location);
         
