@@ -357,8 +357,7 @@ void MainServer::start()
         }
         catch (ExceptionCode &e)
         {
-            //this->cons_.getConnection(e.con_.socket_).resetData();
-            //this->cons_.deleteConnection(e.con_);
+            e.handleException();
         }
     }
 }

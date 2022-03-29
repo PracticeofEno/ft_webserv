@@ -26,6 +26,7 @@ class Server
         std::vector<Location>   locations_;
         int                     socket_;
         std::vector<int>        port_;
+        std::string             error_page_;
 
         /*                      OCCF                             */
         Server();

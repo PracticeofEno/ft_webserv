@@ -26,6 +26,7 @@ Server &Server::operator=(const Server &server)
     this->locations_ = server.locations_;
     this->socket_ = server.socket_;
     this->port_ = server.port_;
+    this->error_page_ = server.error_page_;
 
     return *this;
 }
@@ -49,6 +50,8 @@ void Server::dataSetting(std::string data)
             port_.push_back(c);
         }
     }
+    else if (key.compare("error_page") == 0)
+        error_page_ = value;
     else if (key.compare("clientBodySize") == 0)
         std::stringstream(value) >> client_body_size_;
     else if (key.compare("HTTP") == 0)
