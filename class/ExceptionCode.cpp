@@ -85,8 +85,6 @@ void ExceptionCode::handleException()
         res.response_data_ = "Request Entity Too Large";
         size << server.client_body_size_;
         res.header_["clinet_body_size"] =  size.str();
-        size << req_.body_.size();
-        res.header_["Request_Size"] = size.str();
         res.header_["Content-Length"] = "24";
         res.send(con_.socket_);
     }

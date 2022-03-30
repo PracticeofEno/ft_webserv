@@ -220,27 +220,55 @@ Response Server::GETHandlerCGI(Response &res)
 
 Response Server::POSTHandler(Request &request, Location &location)
 {
-    Response res;
+    Response response;
 
-    (void)location;
-    if (request.header_.find("Content-Type") == request.header_.end())
+    int post_type = request.checkPostType();
+
+    if (post_type == NONE)
     {
         ExceptionCode ex(400);
         ex.error_str = "Bad Request - Content-Type missing";
         throw ex;
     }
-    if (request.header_["Content-Type"].find("multipart/form-data") == std::string::npos)
+    else if (post_type == STATIC_POST)
     {
-        //origin POST handle
+        int fd;
+
+        response.file_path_ = location.getFilePath(request.url_);// 경로찾고
+        if ((fd = open(response.file_path_.c_str(), O_CREAT | O_WRONLY | O_NONBLOCK)) < 0)
+            std::cout << "open error occur: " << errno << std::endl;
+        if (write(fd, request._buffer.c_str(), request._buffer.size()) < 0)
+            std::cout << "write error occur" << std::endl;
+    
+        response.status_ = ResponseStatus(201);
+        response.http_version_ = "HTTP/1.1";
+        response.addHeader("Server", this->server_name_);
+        response.addHeader("Date", generateTime());
+        response.addHeader("Content-Type", searchMimeType(request.url_));
+        response.addHeader("Content-Length", location.getFileSize(request.url_));
+        // response.file_path_ = "";
     }
-    else
+    else if (post_type == UPLOAD_POST)
     {
         std::string boundary;
         boundary = request.header_["Content-Type"].substr(request.header_["Content-Type"].find("boundary="), std::string::npos);
+        boundary.erase(0, sizeof("boundary="));
     
         MultiPart multi(request.body_, boundary);
+        multi.makeEntity();
+        multi.parseEntity();
+        multi.writeEntity(location);
+
+        response.status_ = ResponseStatus(201);
+        response.http_version_ = "HTTP/1.1";
+        response.response_data_ = "your data has saved!!!";
+        response.addHeader("Content-Length", "22");
+        response.addHeader("Server", this->server_name_);
+        response.addHeader("Date", generateTime());
+        // response.addHeader("Content-Type", searchMimeType(request.url_));
+        response.file_path_ = "";
     }
-    return (res);
+    return (response);
 }
 
 Response Server::DELETEHandler(Request &request, Location& location)
@@ -382,4 +410,3 @@ std::string Server::getCgiUri(Request& req, int port)
     tmp = replace_all(tmp, "//", "/");
     return tmp;
 }
-

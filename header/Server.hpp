@@ -15,6 +15,8 @@
 #define ON 1
 #define FILE 2
 #define NONE 0
+#define STATIC_POST 1
+#define UPLOAD_POST 2
 
 class Server
 {
@@ -48,10 +50,10 @@ class Server
         Response DELETEHandler(Request& request, Location& location);
         Response GETHandlerCGI(Response& res);
         Response POSTHandlerCGI(Request& request, Location& location);
-        Response DELETEHandlerCGI(Request& request, Location& location);
+        Response DELETEHandlerCGI(Request& request, Location& location);        
         char** getCgiVariable(Request& request, Connection& tmp, Location& location);
         std::string getCgiUri(Request& req, int port);
-
+        void writePost();
 };
 
 #endif

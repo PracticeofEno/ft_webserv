@@ -206,6 +206,8 @@ void Request::parseChunked(std::string tmp)
     {
         str.str(tmp);
         str >> num;
+        if (num == 0 && tmp.compare("\r\n") == 0)
+            state = DONE_REQUST;
     }
     else
     {
@@ -234,7 +236,7 @@ bool Request::parseSocket()
         }
         else if (state == DONE_REQUST)
         {
-            body_ = _buffer;
+            break;
         }
     }
     return true;
@@ -257,6 +259,17 @@ void Request::resetData()
 void Request::printStartLine()
 {
     std::cout << this->method_ << " | " << this->url_ << " | " << this->version_ << std::endl;
+}
+
+int Request::checkPostType()
+{
+    if (this->header_.find("Content-Type") == this->header_.end())
+        return (NONE);
+    std::string& value = this->header_["Content-Type"];
+    if (value.find("multipart/form-data") == 0)
+        return (UPLOAD_POST);
+    else
+        return (STATIC_POST);
 }
 
 void Request::setLocationFile()
