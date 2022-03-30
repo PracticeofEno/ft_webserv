@@ -130,6 +130,23 @@ Location& Server::findLocation(Request& request)
     return (*tmp);
 }
 
+bool Server::findLocation(std::string location)
+{
+    std::string url;
+
+    std::vector<Location>::iterator it;
+    std::vector<Location>::iterator its = this->locations_.begin();
+    std::vector<Location>::iterator ite = this->locations_.end();
+    std::vector<Location>::iterator tmp = this->locations_.begin();
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->location_name_.compare(location) == 0)
+            return true;
+    }
+    return false;
+}
+
 Response Server::GETHandler(Request &request, Location& location)
 {
     Response res;
@@ -365,3 +382,4 @@ std::string Server::getCgiUri(Request& req, int port)
     tmp = replace_all(tmp, "//", "/");
     return tmp;
 }
+

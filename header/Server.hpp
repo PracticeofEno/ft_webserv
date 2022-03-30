@@ -38,6 +38,7 @@ class Server
         bool handleRequest(Request& request, Connection& tmp);
         Response handleRequestCGI(Connection& tmp);
         Location& findLocation(Request& reqeust);
+        bool findLocation(std::string location);
         bool CheckCGI(std::string url, Location& location);
         void CGIHandler(Request& request, Connection& tmp, Location& location);
         

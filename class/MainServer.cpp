@@ -277,6 +277,8 @@ void MainServer::handleReadEvent(int event_fd)
                 {
                     con.reqeust_.url_.append("/");
                     con.reqeust_.setLocationFile();
+                    if (server.findLocation(con.reqeust_.location_) == false)
+                        throw ExceptionCode(404);
                     if (server.handleRequest(con.reqeust_, con) == false)
                         throw ExceptionCode(404);
                 }

@@ -79,6 +79,7 @@ int Location::existFile(Request& request)
     std::string tmp;
     std::string filename = request.file_;
 
+    
     tmp = getFilePath(filename);
 
     if (access(tmp.c_str(), F_OK) == 0)
