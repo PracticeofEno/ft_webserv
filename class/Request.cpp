@@ -109,6 +109,7 @@ void Request::parseStartline(std::string tmp)
         if (checkMethod(method_) == false)
         {
             ExceptionCode ex(405);
+            ex.error_str = "Method Not Allowed";
             throw ex;
         }
         url_ = "/";
@@ -131,6 +132,7 @@ void Request::parseStartline(std::string tmp)
             if (checkMethod(method_) == false)
             {
                 ExceptionCode ex(405);
+                ex.error_str = "Method Not Allowed";
                 throw ex;
             }
             url_ = "/";

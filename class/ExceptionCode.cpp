@@ -1,19 +1,17 @@
 #include "ExceptionCode.hpp"
 #include "MainServer.hpp"
 
-ExceptionCode::ExceptionCode() : con_(main_server.cons_.cons_[0]){}
-
+ExceptionCode::ExceptionCode() : con_(main_server.cons_.cons_[0]) {}
 ExceptionCode::ExceptionCode(int code) : con_(main_server.cons_.cons_[0])
 {
     status_ = ResponseStatus(code);
     code_ = code;
 }
-
 ExceptionCode::ExceptionCode(int code, Connection &con) : con_(con), code_(code)
 {
     status_ = ResponseStatus(code);
+    con_ = con;
 }
-
 ExceptionCode::ExceptionCode(const ExceptionCode &tmp) : con_(tmp.con_)
 {
     *this = tmp;
@@ -24,7 +22,7 @@ ExceptionCode &ExceptionCode::operator=(const ExceptionCode &tmp)
     this->con_ = tmp.con_;
     this->status_ = tmp.status_;
     this->code_ = tmp.code_;
-    this->location_ = tmp.location_;
+    this->error_str = tmp.error_str;
     return *this;
 }
 
@@ -49,16 +47,24 @@ void ExceptionCode::handleException()
     if (code_ == 404)
     {
         res.header_["Content-Type"] = "text/html";
-        res.header_["Content-Length"] = location.getFileSize(server.error_page_);
-        res.file_path_ = location.getFilePath(server.error_page_);
+        res.header_["Content-Length"] = location.getFileSize("/" + server.error_page_);
+        res.file_path_ = location.getFilePath("/" + server.error_page_);
         res.send(con_.socket_);
-        this->con_.resetData();
     }
-    else if (code_ == 302)
+    else if (code_ == 400)
+    { 
+        res.response_data_ = this->error_str;
+        std::stringstream data_size;
+        data_size << res.response_data_.size();
+        //res.header_["Content-Type"] = "text/html";
+        res.header_["Content-Length"] = data_size.str();
+        res.send(con_.socket_);
+    }
+    else if (code_ == 405)
     {
-        res.header_["Location"] = this->location_;
-        res.writeStartLine(con_.socket_);
-        res.writeHeader(con_.socket_);
-        this->con_.resetData();
+        //res.header_["Content-Length"] = 
+        //res.header_
+        //res.send(con_.socket_);
     }
+    //else if (code_ == 500)
 }

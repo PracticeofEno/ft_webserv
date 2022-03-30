@@ -209,7 +209,8 @@ Response Server::POSTHandler(Request &request, Location &location)
     if (request.header_.find("Content-Type") == request.header_.end())
     {
         ExceptionCode ex(400);
-        
+        ex.error_str = "Bad Request - Content-Type missing";
+        throw ex;
     }
     if (request.header_["Content-Type"].find("multipart/form-data") == std::string::npos)
     {

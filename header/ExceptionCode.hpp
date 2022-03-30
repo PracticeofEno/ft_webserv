@@ -20,11 +20,11 @@ class ExceptionCode : public std::exception
         std::string location_;
         std::string error_str;
         int code_;
-
         void handleException();
 
     private:
         
+
 
         //int _socket;
 };
