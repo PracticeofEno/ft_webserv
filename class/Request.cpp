@@ -206,11 +206,11 @@ void Request::parseChunked(std::string tmp)
     {
         str.str(tmp);
         str >> num;
+        if (num == 0 && tmp.compare("\r\n") == 0)
+            state = DONE_REQUST;
     }
     else
     {
-        if (num == 0 && tmp.compare("\r\n") == 0)
-            state = DONE_REQUST;
         body_.append(tmp.substr(0, num));
         num = 0;
     }
