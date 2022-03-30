@@ -109,6 +109,7 @@ void Request::parseStartline(std::string tmp)
         if (checkMethod(method_) == false)
         {
             ExceptionCode ex(405);
+            ex.error_str = "Method Not Allowed";
             throw ex;
         }
         url_ = "/";
@@ -131,6 +132,7 @@ void Request::parseStartline(std::string tmp)
             if (checkMethod(method_) == false)
             {
                 ExceptionCode ex(405);
+                ex.error_str = "Method Not Allowed";
                 throw ex;
             }
             url_ = "/";
@@ -150,7 +152,8 @@ void Request::parseHeaders(std::string tmp)
     {
         if (header_.find("Host") == header_.end())
         {
-            ExceptionCode ex(500);
+            ExceptionCode ex(400);
+            ex.error_str = "Host header is not found";
             throw ex;
         }
         else

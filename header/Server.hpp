@@ -13,8 +13,7 @@
 
 #define NOT_ALLOW_METHOD 0
 #define ON 1
-#define NO_EXIST_FILE 0
-#define DIRECTORY 1
+#define FILE 2
 #define NONE 0
 
 class Server
@@ -36,9 +35,10 @@ class Server
         //////////////////////////////////////////////////////////
 
         void dataSetting(std::string data);
-        Response handleRequest(Request& request, Connection& tmp);
+        bool handleRequest(Request& request, Connection& tmp);
         Response handleRequestCGI(Connection& tmp);
         Location& findLocation(Request& reqeust);
+        bool findLocation(std::string location);
         bool CheckCGI(std::string url, Location& location);
         void CGIHandler(Request& request, Connection& tmp, Location& location);
         
