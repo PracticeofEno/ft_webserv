@@ -28,18 +28,19 @@ class Request
 		std::string body_;
 		std::string query_;
 
-		int getState();
-		std::string readLine();
-		void readSocket(int socket);
-		bool parseSocket();
-		void parseStartline(std::string tmp);
-		void parseHeaders(std::string tmp);
-		bool checkMethod(std::string method);
-		bool checkUrl(std::string url);
-		bool checkVersion(std::string version);
-		void checkRequest(Connection& con, Request& request, Location& location);
-		void resetData();
-		void printStartLine();
+		int			getState();
+		std::string	readLine();
+		void		readSocket(int socket);
+		bool		parseSocket();
+		void		parseStartline(std::string tmp);
+		void		parseHeaders(std::string tmp);
+		bool		checkMethod(std::string method);
+		bool		checkUrl(std::string url);
+		bool		checkVersion(std::string version);
+		void		checkRequest(Connection& con, Request& request, Location& location);
+		void		resetData();
+		void		printStartLine();
+		int			checkPostType();
 
 		std::string _buffer;
 	private:

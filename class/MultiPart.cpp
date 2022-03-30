@@ -1,59 +1,83 @@
 #include "MultiPart.hpp"
 #include "Total.hpp"
 
-MultiPart::MultiPart(std::string data, std::string boundary)
+MultiPart::MultiPart(std::string body, std::string boundary)
 {
-    _data = data;
+    _body = body;
     _boundary = boundary;
-    makeEntity();
-
 }
 
 MultiPart::~MultiPart() {}
 
 void MultiPart::makeEntity()
 {
-    std::string tmp;
-    std::string start_boundary = "--" + _boundary;
-    std::string end_bondary = start_boundary + "--";
+    std::string buf;
+    std::string start_boundary = "---" + _boundary;
+    std::string end_boundary = start_boundary + "--";
+    size_t index;
 
     while (true)
     {
-        tmp = this->readLine();
-        if (tmp.compare(end_bondary) != 0)
+        buf = readLine();
+        // if (buf == start_boundary)
+        if (buf != end_boundary && buf == start_boundary)
         {
-            if (_data.compare("") == 0)
-            {
-                this->entity_.clear();
-                break;
-            }
-            if (tmp.compare(start_boundary) == 0)
-            {
-                this->entity_.push_back(makeUploadData());
-            }
+            index = _body.find(start_boundary);
+            this->entity_.push_back(UploadData(_body.substr(0, index)));
+            _body.erase(0, index);
         }
-        else
+        else if (buf == end_boundary)
         {
             break;
         }
     }
 }
 
-UploadData MultiPart::makeUploadData()
+void MultiPart::parseEntity()
 {
-    std::string tmp;
+    std::vector<UploadData>::iterator it;
+    std::vector<UploadData>::iterator its = entity_.begin();
+    std::vector<UploadData>::iterator ite = entity_.end();
 
-    while (true)
+    for (it = its; it != ite; it++)
     {
-        tmp = this->readLine();
-        //if (tmp == "\r\n")
-
-        
+        it->parseHeader();
     }
+}
+
+int MultiPart::writeEntity(Location& location)
+{
+    std::vector<UploadData>::iterator it;
+    std::vector<UploadData>::iterator its = entity_.begin();
+    std::vector<UploadData>::iterator ite = entity_.end();
+
+    for (it = its; it != ite; it++)
+    {
+        // 헤더에서 파일 이름 들고오기
+        std::string filename = it->header_["Content-Disposition"];
+        size_t range_start = filename.find("filename") + sizeof("filename\"");
+        size_t range_end = filename.find("\"", range_start, 1) - range_start;
+        filename = "/" + filename.substr(range_start, range_end);
+
+        int fd;
+        std::string file_path = location.getFilePath(filename);
+
+        if ((fd = open(file_path.c_str(), O_CREAT | O_WRONLY | O_NONBLOCK)) < 0)
+            std::cout << "open error occur: " << errno << std::endl;
+        if (write(fd, it->body_.c_str(), it->body_.size() - 2) < 0)
+            std::cout << "write error occur" << std::endl;
+    }
+    return (0);
 }
 
 std::string MultiPart::readLine()
 {
-    return "";
+    std::string ret("");
+    size_t      index = _body.find("\r\n");
+    if (index != std::string::npos)
+    {
+        ret = _body.substr(0, index);
+        _body.erase(0, index + 2);
+    }
+    return (ret);
 }
-
