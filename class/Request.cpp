@@ -157,26 +157,7 @@ void Request::parseHeaders(std::string tmp)
             throw ex;
         }
         else
-        {
-            if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
-            {
-                body_ = "";
-                state = DONE_REQUST;
-            }
-            else if (header_.find("Transfer-Encoding") != header_.end())
-            {
-                state = CHUNKED;
-            }
-            else if (header_.find("Content-Length") != header_.end())
-            {
-                int length;
-                std::istringstream convert(header_["Content-Length"]);
-                convert >> length;
-                body_ = _buffer.substr(0, length);
-                state = DONE_REQUST;
-                //read content lenghth
-            }
-        }
+            state = BODY;
     }
     else
     {
@@ -216,6 +197,29 @@ void Request::parseChunked(std::string tmp)
     }
 }
 
+void Request::parseBody(std::string tmp)
+{
+    if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
+    {
+        body_ = "";
+        state = DONE_REQUST;
+    }
+    else if (header_.find("Transfer-Encoding") != header_.end())
+    {
+        state = CHUNKED;
+    }
+    else if (header_.find("Content-Length") != header_.end())
+    {
+        int length;
+        std::istringstream convert(header_["Content-Length"]);
+        convert >> length;
+        if (_buffer != "")
+            state = DONE_REQUST;
+        body_ = _buffer.substr(0, length);
+        //read content length
+    }
+}
+
 bool Request::parseSocket()
 {
     std::string tmp;
@@ -229,6 +233,10 @@ bool Request::parseSocket()
         else if (state == HEADERS)
         {
             parseHeaders(tmp);
+        }
+        else if (state == BODY)
+        {
+            parseBody(tmp);
         }
         else if (state == CHUNKED)
         {
