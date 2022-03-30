@@ -4,6 +4,8 @@
 #include "Total.hpp"
 #include "Util.hpp"
 
+class Request;
+
 class Location
 {
     public:
@@ -26,7 +28,7 @@ class Location
         void dataSetting(std::string data);
         bool methodCheck(std::string method);
         bool redirectionCheck();
-        bool existFile(std::string url);
+        int existFile(Request& request);
         bool isDir(std::string url);
         std::string getFilePath(std::string url);
         std::string getFileSize(std::string url);

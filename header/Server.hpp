@@ -13,8 +13,7 @@
 
 #define NOT_ALLOW_METHOD 0
 #define ON 1
-#define NO_EXIST_FILE 0
-#define DIRECTORY 1
+#define FILE 2
 #define NONE 0
 #define STATIC_POST 1
 #define UPLOAD_POST 2
@@ -28,6 +27,7 @@ class Server
         std::vector<Location>   locations_;
         int                     socket_;
         std::vector<int>        port_;
+        std::string             error_page_;
 
         /*                      OCCF                             */
         Server();
@@ -37,9 +37,10 @@ class Server
         //////////////////////////////////////////////////////////
 
         void dataSetting(std::string data);
-        Response handleRequest(Request& request, Connection& tmp);
+        bool handleRequest(Request& request, Connection& tmp);
         Response handleRequestCGI(Connection& tmp);
         Location& findLocation(Request& reqeust);
+        bool findLocation(std::string location);
         bool CheckCGI(std::string url, Location& location);
         void CGIHandler(Request& request, Connection& tmp, Location& location);
         

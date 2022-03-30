@@ -22,6 +22,8 @@ Request& Request::operator= (const Request& tmp)
     this->query_ = tmp.query_;
     this->_buffer = tmp._buffer;
     this->state = tmp.state;
+    this->location_ = tmp.location_;
+    this->file_ = tmp.file_;
     return *this;
 }
 
@@ -107,6 +109,7 @@ void Request::parseStartline(std::string tmp)
         if (checkMethod(method_) == false)
         {
             ExceptionCode ex(405);
+            ex.error_str = "Method Not Allowed";
             throw ex;
         }
         url_ = "/";
@@ -129,6 +132,7 @@ void Request::parseStartline(std::string tmp)
             if (checkMethod(method_) == false)
             {
                 ExceptionCode ex(405);
+                ex.error_str = "Method Not Allowed";
                 throw ex;
             }
             url_ = "/";
@@ -148,7 +152,8 @@ void Request::parseHeaders(std::string tmp)
     {
         if (header_.find("Host") == header_.end())
         {
-            ExceptionCode ex(500);
+            ExceptionCode ex(400);
+            ex.error_str = "Host header is not found";
             throw ex;
         }
         else
@@ -192,6 +197,23 @@ void Request::parseHeaders(std::string tmp)
     }
 }
 
+void Request::parseChunked(std::string tmp)
+{
+    std::stringstream str;
+    static int num;
+
+    if (num == 0)
+    {
+        str.str(tmp);
+        str >> num;
+    }
+    else
+    {
+        body_.append(tmp.substr(0, num));
+        num = 0;
+    }
+}
+
 bool Request::parseSocket()
 {
     std::string tmp;
@@ -208,6 +230,7 @@ bool Request::parseSocket()
         }
         else if (state == CHUNKED)
         {
+            parseChunked(tmp);
         }
         else if (state == DONE_REQUST)
         {
@@ -227,6 +250,8 @@ void Request::resetData()
     body_.clear();
     query_.clear();
     _buffer.clear();
+    location_.clear();
+    file_.clear();
 }
 
 void Request::printStartLine()
@@ -243,4 +268,12 @@ int Request::checkPostType()
         return (UPLOAD_POST);
     else
         return (STATIC_POST);
+}
+
+void Request::setLocationFile()
+{
+    location_ = url_.substr(0, url_.find_last_of("/"));
+    if (location_ == "")
+        location_ = "/";
+    file_ = url_.substr(url_.find_last_of("/") + 1, std::string::npos);
 }
