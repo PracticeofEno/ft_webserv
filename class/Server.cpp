@@ -318,8 +318,14 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	arg[0] = new char[10];
 	arg[1] = new char[10];
     arg[2] = NULL;
-
-	strncpy(arg[0], "php-cgi", 8);
+    std::string tmp = "./";
+    if (location.cgi_extension_ == "php")
+	    strncpy(arg[0], "php-cgi", 8);
+    else if (location.cgi_extension_ == "cgi")
+    {
+        tmp.append(request.file_);
+        strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
+    }
 	strncpy(arg[1], "index.php", 10);
 
     env = getCgiVariable(request, con, location);

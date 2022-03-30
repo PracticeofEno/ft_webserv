@@ -157,7 +157,15 @@ void Request::parseHeaders(std::string tmp)
             throw ex;
         }
         else
-            state = BODY;
+        {
+            if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
+            {
+                body_ = "";
+                state = DONE_REQUST;
+            }
+            else
+                state = BODY;
+        }
     }
     else
     {
@@ -200,12 +208,8 @@ void Request::parseChunked(std::string tmp)
 void Request::parseBody(std::string tmp)
 {
     (void)tmp;
-    if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
-    {
-        body_ = "";
-        state = DONE_REQUST;
-    }
-    else if (header_.find("Transfer-Encoding") != header_.end())
+    
+    if (header_.find("Transfer-Encoding") != header_.end())
     {
         state = CHUNKED;
     }
