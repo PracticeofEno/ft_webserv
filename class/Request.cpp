@@ -209,6 +209,8 @@ void Request::parseChunked(std::string tmp)
     }
     else
     {
+        if (num == 0 && tmp.compare("\r\n") == 0)
+            state = DONE_REQUST;
         body_.append(tmp.substr(0, num));
         num = 0;
     }
