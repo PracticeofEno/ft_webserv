@@ -234,6 +234,10 @@ bool Request::parseSocket()
         {
             parseChunked(tmp);
         }
+        else if (state == BODY)
+        {
+
+        }
         else if (state == DONE_REQUST)
         {
             break;

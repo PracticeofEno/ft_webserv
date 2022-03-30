@@ -60,7 +60,7 @@ int MultiPart::writeEntity(Location& location)
         filename = "/" + filename.substr(range_start, range_end);
 
         int fd;
-        std::string file_path = location.getFilePath(filename);
+        std::string file_path = location.getUploadPath(filename);
 
         if ((fd = open(file_path.c_str(), O_CREAT | O_WRONLY | O_NONBLOCK)) < 0)
             std::cout << "open error occur: " << errno << std::endl;

@@ -35,6 +35,7 @@ class Location
         std::string getRecentTime(std::string url);
         std::string getDirectoryList(std::string url);
         std::string getDirectoryDefaultFile();
+        std::string getUploadPath(std::string url);
     private:
 };
 

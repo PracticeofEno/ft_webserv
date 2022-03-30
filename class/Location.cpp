@@ -115,6 +115,19 @@ std::string Location::getFilePath(std::string url)
     return current_path;
 }
 
+std::string Location::getUploadPath(std::string url)
+{
+    char buf[4096];
+    realpath(".", buf);
+    std::string current_path(buf);
+    current_path.append("/");
+    current_path.append(this->upload_path_);
+    current_path.append("/");
+    current_path.append(url.substr(url.find_last_of("/") + 1, std::string::npos));  
+    current_path = replace_all(current_path, "//", "/");
+    return current_path;
+}
+
 std::string Location::getFileSize(std::string url)
 {
     std::string path;

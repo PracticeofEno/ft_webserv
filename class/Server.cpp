@@ -73,7 +73,7 @@ bool Server::handleRequest(Request &request, Connection& con)
         ex.location_ = "http://google.com";
         throw ex;
     }
-    if (location.existFile(request) == NOTEXIST)
+    if (location.existFile(request) == NOTEXIST && request.method_ != "POST")
         return false;
 
     if (this->CheckCGI(con.reqeust_.url_, location))
@@ -234,19 +234,21 @@ Response Server::POSTHandler(Request &request, Location &location)
     {
         int fd;
 
-        response.file_path_ = location.getFilePath(request.url_);// 경로찾고
+        response.file_path_ = location.getUploadPath(request.url_);// 경로찾고
         if ((fd = open(response.file_path_.c_str(), O_CREAT | O_WRONLY | O_NONBLOCK)) < 0)
             std::cout << "open error occur: " << errno << std::endl;
-        if (write(fd, request._buffer.c_str(), request._buffer.size()) < 0)
+        if (write(fd, request.body_.c_str(), request.body_.size()) < 0)
             std::cout << "write error occur" << std::endl;
-    
+
         response.status_ = ResponseStatus(201);
         response.http_version_ = "HTTP/1.1";
         response.addHeader("Server", this->server_name_);
         response.addHeader("Date", generateTime());
-        response.addHeader("Content-Type", searchMimeType(request.url_));
-        response.addHeader("Content-Length", location.getFileSize(request.url_));
-        // response.file_path_ = "";
+        response.header_["Connection"] = "Keep-alive";
+        response.header_["Content-Type"] = "text/plain";
+        response.response_data_ = "201 Created";
+        response.header_["Content-Length"] = "11";
+        response.file_path_ = "";
     }
     else if (post_type == UPLOAD_POST)
     {
@@ -261,11 +263,12 @@ Response Server::POSTHandler(Request &request, Location &location)
 
         response.status_ = ResponseStatus(201);
         response.http_version_ = "HTTP/1.1";
-        response.response_data_ = "your data has saved!!!";
-        response.addHeader("Content-Length", "22");
+        response.response_data_ = "201 Created";
+        response.addHeader("Content-Length", "11");
         response.addHeader("Server", this->server_name_);
         response.addHeader("Date", generateTime());
-        // response.addHeader("Content-Type", searchMimeType(request.url_));
+        response.header_["Connection"] = "Keep-alive";
+        response.header_["Content-Type"] = "text/plain";
         response.file_path_ = "";
     }
     return (response);
