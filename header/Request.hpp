@@ -27,6 +27,8 @@ class Request
 		std::map<std::string, std::string> header_;
 		std::string body_;
 		std::string query_;
+		std::string location_;
+		std::string file_;
 
 		int getState();
 		std::string readLine();
@@ -34,18 +36,18 @@ class Request
 		bool parseSocket();
 		void parseStartline(std::string tmp);
 		void parseHeaders(std::string tmp);
+		void parseChunked(std::string tmp);
 		bool checkMethod(std::string method);
 		bool checkUrl(std::string url);
 		bool checkVersion(std::string version);
 		void checkRequest(Connection& con, Request& request, Location& location);
 		void resetData();
 		void printStartLine();
+		void setLocationFile();
 
 		std::string _buffer;
 	private:
-
 		int	state;
-
 };
 
 #endif

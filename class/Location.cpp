@@ -74,15 +74,32 @@ bool Location::redirectionCheck()
     return true;
 }
 
-bool Location::existFile(std::string url)
+int Location::existFile(Request& request)
 {
     std::string tmp;
-    tmp = getFilePath(url);
+    std::string filename = request.file_;
+
+    tmp = getFilePath(filename);
 
     if (access(tmp.c_str(), F_OK) == 0)
-        return true;
+    {
+        struct stat sb;
+        if (stat(this->getFilePath(filename).c_str(), &sb) == -1)
+        {
+            ExceptionCode ex(999);
+            throw ex;
+        }
+        if (sb.st_mode & S_IFREG)
+        {
+            return REGULAR;
+        }
+        else if (sb.st_mode & S_IFDIR && *(--request.url_.end()) == '/')
+            return DIRECTORY;
+        else
+            return NOTEXIST;
+    }
     else
-        return false;
+        return NOTEXIST;
 }
 
 std::string Location::getFilePath(std::string url)
@@ -91,7 +108,8 @@ std::string Location::getFilePath(std::string url)
     realpath(".", buf);
     std::string current_path(buf);
     current_path.append(this->root_);
-    current_path.append(url);
+    current_path.append("/");
+    current_path.append(url.substr(url.find_last_of("/") + 1, std::string::npos));  
     current_path = replace_all(current_path, "//", "/");
     return current_path;
 }

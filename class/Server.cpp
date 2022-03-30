@@ -59,33 +59,36 @@ void Server::dataSetting(std::string data)
     
 }
 
-Response Server::handleRequest(Request &request, Connection& con)
+bool Server::handleRequest(Request &request, Connection& con)
 {
-    Response& response = con.response_;
     Location& location = findLocation(request);
 
     if (request.body_.size() > (size_t)this->client_body_size_)
-        throw ExceptionCode(413, con);
+        throw ExceptionCode(413);
     if (location.methodCheck(request.method_) == NOT_ALLOW_METHOD)
-        throw ExceptionCode(405, con);
+        throw ExceptionCode(405);
     if (location.redirectionCheck() == ON)
-        throw ExceptionCode(302, con);
-    if (location.existFile(request.url_) == NO_EXIST_FILE)
-        throw ExceptionCode(404, con);
+    {
+        ExceptionCode ex(302);
+        ex.location_ = "http://google.com";
+        throw ex;
+    }
+    if (location.existFile(request) == NOTEXIST)
+        return false;
 
     if (this->CheckCGI(con.reqeust_.url_, location))
         this->CGIHandler(con.reqeust_, con, location);
     else
     {
         if (request.method_ == "GET")
-            response = GETHandler(request, location);
+            con.response_ = GETHandler(request, location);
         else if (request.method_ == "POST")
-            response = POSTHandler(request, location);
+            con.response_ = POSTHandler(request, location);
         else if (request.method_ == "DELETE")
-            response = DELETEHandler(request, location);    
-        response.state = READY;
+            con.response_ = DELETEHandler(request, location);    
+        con.response_.state = READY;
     }
-    return response;
+    return true;
 }
 
 Response Server::handleRequestCGI(Connection& tmp)
@@ -111,12 +114,10 @@ Location& Server::findLocation(Request& request)
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
     std::vector<Location>::iterator tmp = this->locations_.begin();
-    if (*(--request.url_.end()) == '/' && request.url_ != "/")
-        request.url_ = ft_rtrim(request.url_, "/");
-    
+
     for (it = its; it != ite; it++)
     {
-        if (ft_strcmp(it->location_name_.c_str(), request.url_.c_str()) == true)
+        if (ft_strcmp(it->location_name_.c_str(), request.location_.c_str()) == true)
         {
             match_count = it->location_name_.size();
             if (match_count > max_count)
@@ -134,28 +135,30 @@ Response Server::GETHandler(Request &request, Location& location)
     Response res;
 
     // 루트 디렉토리를 가르키면 index.html 추가해줌
-    if (request.url_ == "/")
-        request.url_.append("index.html");
+    
+
+    if (location.location_name_ == "/" && request.file_ == "")
+        request.file_ = "index.html";
     
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
     res.addHeader("Server", this->server_name_);
     res.addHeader("Date", generateTime());
-    res.addHeader("Content-Type", searchMimeType(request.url_));
-    res.addHeader("Last-Modified", location.getRecentTime(request.url_));
-    res.addHeader("Content-Length", location.getFileSize(request.url_));
+    res.addHeader("Content-Type", searchMimeType(request.file_));
+    res.addHeader("Last-Modified", location.getRecentTime(request.file_));
+    res.addHeader("Content-Length", location.getFileSize(request.file_));
     res.addHeader("Connection", "Keep-Alive");
-    res.file_path_ = location.getFilePath(request.url_);
+    res.file_path_ = location.getFilePath(request.file_);
 
     //디렉토리라면 content-type 텍스트로 바꿔주고 response_data에 
     //디렉토리리스트 html 만들어 넣은뒤에 content-length설정해주고 파일 이름 없앰
-    if (location.isDir(request.url_) == DIRECTORY)
+    if (location.isDir(request.file_) == DIRECTORY)
     {
         if (location.directory_listing_)
         {
             std::stringstream ss;
             res.header_["Content-Type"] = "text/html";
-            res.response_data_ = location.getDirectoryList(request.url_);
+            res.response_data_ = location.getDirectoryList(request.file_);
             ss << res.response_data_.size();
             res.header_["Content-Length"] = ss.str();
             res.file_path_ = "";
@@ -204,7 +207,10 @@ Response Server::POSTHandler(Request &request, Location &location)
 
     (void)location;
     if (request.header_.find("Content-Type") == request.header_.end())
-        throw ExceptionCode(403);
+    {
+        ExceptionCode ex(400);
+        
+    }
     if (request.header_["Content-Type"].find("multipart/form-data") == std::string::npos)
     {
         //origin POST handle

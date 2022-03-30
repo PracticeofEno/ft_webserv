@@ -270,15 +270,23 @@ void MainServer::handleReadEvent(int event_fd)
             con.makeRequest();
             if (con.reqeust_.getState() == DONE_REQUST)
             {
+                con.reqeust_.setLocationFile();
                 con.reqeust_.printStartLine();
                 Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-                con.response_ = server.handleRequest(con.reqeust_, con);
+                if (server.handleRequest(con.reqeust_, con) == false)
+                {
+                    con.reqeust_.url_.append("/");
+                    con.reqeust_.setLocationFile();
+                    if (server.handleRequest(con.reqeust_, con) == false)
+                        throw ExceptionCode(404);
+                }
             }
         }
         catch (ExceptionCode &e)
         {
-            e.con_ = con;
-            throw e;
+            ExceptionCode ex(e.code_, con);
+            ex.location_ = e.location_;
+            throw ex;
         }
     }
     else if (con.kind_ == CGI)

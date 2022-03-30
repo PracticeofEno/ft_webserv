@@ -14,15 +14,17 @@ class ExceptionCode : public std::exception
         ExceptionCode(int code, Connection& con);
         virtual ~ExceptionCode() throw();
         virtual const char* what() const throw();
-        int getCode() const;
 
-        Connection con_;
+        Connection& con_;
         ResponseStatus status_;
+        std::string location_;
+        std::string error_str;
+        int code_;
 
         void handleException();
 
     private:
-        int _code;
+        
 
         //int _socket;
 };
