@@ -62,11 +62,32 @@ void ExceptionCode::handleException()
         res.send(con_.socket_);
         con_.resetData();
     }
+    else if (code_ == 400)
+    { 
+        res.response_data_ = this->error_str;
+        std::stringstream data_size;
+        data_size << res.response_data_.size();
+        res.header_["Content-Length"] = data_size.str();
+        res.file_path_ = "";
+        res.send(con_.socket_);
+        con_.resetData();
+    }
     else if (code_ == 405)
     {
-        //res.header_["Content-Length"] = 
-        //res.header_
-        //res.send(con_.socket_);
+        res.response_data_ = "Method Not Allowed";
+        res.header_["Allow"] = location.method_;
+        res.header_["Content-Length"] = "18";
+        res.send(con_.socket_);
     }
-    //else if (code_ == 500)
+    else if (code_ == 413)
+    {
+        std::stringstream size;
+        res.response_data_ = "Request Entity Too Large";
+        size << server.client_body_size_;
+        res.header_["clinet_body_size"] =  size.str();
+        size << req_.body_.size();
+        res.header_["Request_Size"] = size.str();
+        res.header_["Content-Length"] = "24";
+        res.send(con_.socket_);
+    }
 }
