@@ -199,6 +199,7 @@ void Request::parseChunked(std::string tmp)
 
 void Request::parseBody(std::string tmp)
 {
+    (void)tmp;
     if (header_.find("Content-Length") == header_.end() && header_.find("Transfer-Encoding") == header_.end())
     {
         body_ = "";
@@ -213,9 +214,9 @@ void Request::parseBody(std::string tmp)
         int length;
         std::istringstream convert(header_["Content-Length"]);
         convert >> length;
-        if (_buffer != "")
+        if (tmp != "")
             state = DONE_REQUST;
-        body_ = _buffer.substr(0, length);
+        body_ = tmp.substr(0, length);
         //read content length
     }
 }
@@ -241,10 +242,6 @@ bool Request::parseSocket()
         else if (state == CHUNKED)
         {
             parseChunked(tmp);
-        }
-        else if (state == BODY)
-        {
-
         }
         else if (state == DONE_REQUST)
         {
