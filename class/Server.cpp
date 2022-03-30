@@ -207,7 +207,10 @@ Response Server::POSTHandler(Request &request, Location &location)
 
     (void)location;
     if (request.header_.find("Content-Type") == request.header_.end())
-        throw ExceptionCode(403);
+    {
+        ExceptionCode ex(400);
+        
+    }
     if (request.header_["Content-Type"].find("multipart/form-data") == std::string::npos)
     {
         //origin POST handle

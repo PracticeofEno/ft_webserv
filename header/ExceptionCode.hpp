@@ -18,6 +18,7 @@ class ExceptionCode : public std::exception
         Connection& con_;
         ResponseStatus status_;
         std::string location_;
+        std::string error_str;
         int code_;
 
         void handleException();
