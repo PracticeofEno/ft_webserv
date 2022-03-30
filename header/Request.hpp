@@ -36,8 +36,9 @@ class Request
 		bool		parseSocket();
 		void		parseStartline(std::string tmp);
 		void		parseHeaders(std::string tmp);
-		bool		checkMethod(std::string method);
+		void		parseBody(std::string tmp);
 		void		parseChunked(std::string tmp);
+		bool		checkMethod(std::string method);
 		bool		checkUrl(std::string url);
 		bool		checkVersion(std::string version);
 		void		checkRequest(Connection& con, Request& request, Location& location);
