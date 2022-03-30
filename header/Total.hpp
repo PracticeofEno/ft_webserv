@@ -15,6 +15,10 @@
 #define NOT_READY 0
 #define READY 1
 
+//location define
+#define REGULAR 0
+#define DIRECTORY 1
+
 #include <iostream>
 #include <fstream>
 #include <sys/types.h>
