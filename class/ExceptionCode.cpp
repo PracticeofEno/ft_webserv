@@ -57,16 +57,6 @@ void ExceptionCode::handleException()
         res.response_data_ = this->error_str;
         std::stringstream data_size;
         data_size << res.response_data_.size();
-        //res.header_["Content-Type"] = "text/html";
-        res.header_["Content-Length"] = data_size.str();
-        res.send(con_.socket_);
-        con_.resetData();
-    }
-    else if (code_ == 400)
-    { 
-        res.response_data_ = this->error_str;
-        std::stringstream data_size;
-        data_size << res.response_data_.size();
         res.header_["Content-Length"] = data_size.str();
         res.file_path_ = "";
         res.send(con_.socket_);
@@ -74,7 +64,7 @@ void ExceptionCode::handleException()
     }
     else if (code_ == 405)
     {
-        res.response_data_ = "Method Not Allowed";
+        res.response_data_ = "Method Not Allowed\n";
         res.header_["Allow"] = location.method_;
         res.header_["Content-Length"] = "18";
         res.send(con_.socket_);
@@ -83,7 +73,7 @@ void ExceptionCode::handleException()
     else if (code_ == 413)
     {
         std::stringstream size;
-        res.response_data_ = "Request Entity Too Large";
+        res.response_data_ = "Request Entity Too Large\n";
         size << server.client_body_size_;
         res.header_["clinet_body_size"] =  size.str();
         res.header_["Content-Length"] = "24";
