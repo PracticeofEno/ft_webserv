@@ -7,12 +7,12 @@ Request::Request(void) : state(START_LINE) {}
 
 Request::~Request(void) {}
 
-Request::Request(const Request& tmp)
+Request::Request(const Request &tmp)
 {
     *this = tmp;
 }
 
-Request& Request::operator= (const Request& tmp)
+Request &Request::operator=(const Request &tmp)
 {
     this->url_ = tmp.url_;
     this->method_ = tmp.method_;
@@ -35,7 +35,7 @@ int Request::getState()
 std::string Request::readLine()
 {
     std::string ret("");
-    size_t      index = _buffer.find("\r\n");
+    size_t index = _buffer.find("\r\n");
     if (index != std::string::npos)
     {
         ret = _buffer.substr(0, index + 2);
@@ -104,7 +104,7 @@ void Request::parseStartline(std::string tmp)
     if (tmp.compare("\r\n") == 0 && method_ == "GET")
     {
         state = DONE_REQUST;
-        return ;
+        return;
     }
     endPos = tmp.find(" ");
     if (endPos != std::string::npos)
@@ -168,7 +168,9 @@ void Request::parseHeaders(std::string tmp)
                 body_ = "";
                 state = DONE_REQUST;
             }
-            else
+            else if (header_.find("Transfer-Encoding") != header_.end())
+                state = CHUNKED;
+            else if (header_.find("Content-Length") != header_.end())
                 state = BODY;
         }
     }
@@ -194,40 +196,33 @@ void Request::parseHeaders(std::string tmp)
 void Request::parseChunked(std::string tmp)
 {
     std::stringstream str;
-    static int num;
+    std::string num_string;
+    int num;
 
-    if (num == 0)
+    num_string = tmp.substr(0, tmp.find("\r\n"));
+    str << num_string;
+    str >> num;
+
+    if (num != 0)
     {
-        str.str(tmp);
-        str >> num;
-        if (num == 0 && tmp.compare("\r\n") == 0)
-            state = DONE_REQUST;
+        tmp = readLine();
+        body_.append(tmp.substr(0, num));
     }
     else
     {
-        body_.append(tmp.substr(0, num));
-        num = 0;
+        state = DONE_REQUST;
     }
+    
 }
 
 void Request::parseBody(std::string tmp)
 {
-    (void)tmp;
-    
-    if (header_.find("Transfer-Encoding") != header_.end())
-    {
-        state = CHUNKED;
-    }
-    else if (header_.find("Content-Length") != header_.end())
-    {
-        int length;
-        std::istringstream convert(header_["Content-Length"]);
-        convert >> length;
-        if (tmp != "")
-            state = DONE_REQUST;
-        body_ = tmp.substr(0, length);
-        //read content length
-    }
+    int length;
+    std::istringstream convert(header_["Content-Length"]);
+    convert >> length;
+    if (tmp != "")
+      state = DONE_REQUST;
+    body_ = tmp.substr(0, length);
 }
 
 bool Request::parseSocket()
@@ -283,7 +278,7 @@ int Request::checkPostType()
 {
     if (this->header_.find("Content-Type") == this->header_.end())
         return (NONE);
-    std::string& value = this->header_["Content-Type"];
+    std::string &value = this->header_["Content-Type"];
     if (value.find("multipart/form-data") == 0)
         return (UPLOAD_POST);
     else
