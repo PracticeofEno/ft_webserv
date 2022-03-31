@@ -93,15 +93,36 @@ bool Server::handleRequest(Request &request, Connection& con)
 
 Response Server::handleRequestCGI(Connection& tmp)
 {
-    Response& response = tmp.response_;
+    Response& res = tmp.response_;
 
-    if (tmp.reqeust_.method_ == "GET")
-        response = GETHandlerCGI(tmp.response_);
-    // else if (request.method_ == "POST")
-    //     response = POSTHandlerCGI(request, location);
-    // else if (request.method_ == "DELETE")
-    //     response = DELETEHandlerCGI(request, location);    
-    return response;
+    std::stringstream ss, ss2;
+    int size;
+    int sub_size = 0;
+
+    int code;
+
+    ss << res.response_data_.substr(8, 3);
+    ss >> code;
+
+    sub_size = res.response_data_.find("\r\n");
+    res.response_data_.erase(0, sub_size + 2);
+
+    res.status_ = ResponseStatus(code);
+    res.http_version_ = "HTTP/1.1";
+
+    size_t start_index = res.response_data_.find(":") + 2;
+    size_t count = res.response_data_.find("\r\n") - start_index;
+    res.header_["Content-Type"] = res.response_data_.substr(res.response_data_.find(":") + 2, count);
+    sub_size = res.response_data_.find("\r\n");
+    res.response_data_ = res.response_data_.erase(0, sub_size + 4);
+    res.header_["Connection"] = "Keep-Alive";
+    
+    size = res.response_data_.size();
+    ss2 << size;
+    
+    res.header_["Content-Length"] = ss2.str();
+    res.file_path_ = "";   
+    return res;
 }
 
 Location& Server::findLocation(Request& request)
@@ -197,23 +218,7 @@ Response Server::GETHandler(Request &request, Location& location)
 
 Response Server::GETHandlerCGI(Response &res)
 {
-    std::stringstream ss;
-    int size;
-    int sub_size = 0;
-
-    sub_size = res.response_data_.find("\r\n");
-    res.response_data_.erase(0, sub_size + 4);
-
-    res.status_ = ResponseStatus(200);
-    res.http_version_ = "HTTP/1.1";
-    res.header_["Content-Type"] = res.response_data_.substr(0, sub_size);
-    res.addHeader("Connection", "Keep-Alive");
     
-    size = res.response_data_.size();
-    ss << size;
-    
-    res.header_["Content-Length"] = ss.str();
-    res.file_path_ = "";
 
     return (res);
 }
@@ -313,26 +318,28 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
     char** env;
     pid_t pid;
     int pip[2];
+    int pip2[2];
 
     char **arg = new char*[3];
-	arg[0] = new char[10];
-	arg[1] = new char[10];
+	arg[0] = new char[50];
+	arg[1] = new char[50];
     arg[2] = NULL;
-    std::string tmp = "./";
-    if (location.cgi_extension_ == "php")
-	    strncpy(arg[0], "php-cgi", 8);
-    else if (location.cgi_extension_ == "cgi")
-    {
-        tmp.append(request.file_);
-        strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
-    }
-	strncpy(arg[1], "index.php", 10);
+	
+    std::string tmp = location.getCgiCommand(request.file_);
+    strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
+	strncpy(arg[1], "index.php", 51);
 
     env = getCgiVariable(request, con, location);
 
     pipe(pip);
+    pipe(pip2);
     con.pipe_read_ = pip[0];
     con.pipe_event_ = pip[1];
+
+    //testcode
+    write(pip2[1], "abcdefg", 7);
+    close(pip2[1]);
+    ///////////////
     con.kind_ = CGI;
     main_server.cons_.appConnection(pip[0], CGI);
 
@@ -340,6 +347,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
     if (pid == 0)
     {
         close(pip[0]);
+        dup2(pip2[0], STDIN_FILENO);
         dup2(pip[1], STDOUT_FILENO);
         execvpe(arg[0], arg, env);
     }

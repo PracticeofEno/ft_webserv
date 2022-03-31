@@ -296,7 +296,7 @@ void MainServer::handleReadEvent(int event_fd)
         Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
         //CGI실행 결과를 받음. 
         con.response_.readPipe(con.pipe_read_);
-        std::cout << con.response_.response_data_.size() << std::endl;
+        std::cout << con.response_.response_data_ << std::endl;
         con.response_ = server.handleRequestCGI(con);
         con.response_.state = READY;
 

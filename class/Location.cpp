@@ -211,3 +211,17 @@ std::string Location::getDirectoryDefaultFile()
     current_path = replace_all(current_path, "//", "/");
     return current_path;
 }
+
+std::string Location::getCgiCommand(std::string filename)
+{
+    std::string tmp = "www/cgi-bin/";
+    if (this->cgi_extension_ == "php")
+        return "php-cgi";
+    else if (this->cgi_extension_ == "blabla")
+    {
+        tmp.append(filename);
+        return tmp;
+    }
+    tmp.append(filename);
+    return tmp;
+}

@@ -36,6 +36,7 @@ class Location
         std::string getDirectoryList(std::string url);
         std::string getDirectoryDefaultFile();
         std::string getUploadPath(std::string url);
+        std::string getCgiCommand(std::string filename);
     private:
 };
 
