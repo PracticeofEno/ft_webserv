@@ -44,6 +44,12 @@ std::string Request::readLine()
     }
     else
     {
+        if (state == BODY)
+        {
+            body_ = _buffer;
+            _buffer = "";
+            state = DONE_REQUST;
+        }
         return (ret);
     }
 }
