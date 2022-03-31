@@ -49,7 +49,7 @@ void Location::dataSetting(std::string data)
         upload_path_ = value;
     else if (key.compare("dlDefault") == 0)
         dl_default_ = value;
-    else if (key.compare("directoryListing") == 0)
+    else if (key.compare("directory_listing") == 0)
     {
         directory_listing_ = false;
         if (value.compare("on") == 0)

@@ -78,6 +78,7 @@ void ExceptionCode::handleException()
         res.header_["Allow"] = location.method_;
         res.header_["Content-Length"] = "18";
         res.send(con_.socket_);
+        con_.resetData();
     }
     else if (code_ == 413)
     {
@@ -87,5 +88,6 @@ void ExceptionCode::handleException()
         res.header_["clinet_body_size"] =  size.str();
         res.header_["Content-Length"] = "24";
         res.send(con_.socket_);
+        con_.resetData();
     }
 }

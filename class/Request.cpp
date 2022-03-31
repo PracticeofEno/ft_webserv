@@ -40,13 +40,12 @@ std::string Request::readLine()
     {
         ret = _buffer.substr(0, index + 2);
         _buffer.erase(0, index + 2);
+        return (ret);
     }
     else
     {
-        if (_buffer != "")
-            ret = _buffer;
+        return (ret);
     }
-    return (ret);
 }
 
 void Request::readSocket(int socket)
@@ -65,15 +64,10 @@ void Request::readSocket(int socket)
         else if (strlen > 0)
         {
             _buffer.append(buf, strlen);
-            continue;
         }
         else
             break;
     }
-
-    int tmp = 0;
-    tmp = 5;
-    (void)tmp;
 }
 
 bool Request::checkMethod(std::string method)
@@ -171,7 +165,9 @@ void Request::parseHeaders(std::string tmp)
             else if (header_.find("Transfer-Encoding") != header_.end())
                 state = CHUNKED;
             else if (header_.find("Content-Length") != header_.end())
+            {
                 state = BODY;
+            }
         }
     }
     else

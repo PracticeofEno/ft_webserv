@@ -347,10 +347,10 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-            std::cout << "Recieve Events count : " << _event_cnt << std::endl;
+            //std::cout << "Recieve Events count : " << _event_cnt << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
-                 std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
+                // std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
                 {
                     std::cout << "errror" << std::endl;
