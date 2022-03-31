@@ -213,7 +213,7 @@ void Request::parseChunked(std::string tmp)
 void Request::parseBody(std::string tmp)
 {
     (void)tmp;
-    
+
     if (header_.find("Transfer-Encoding") != header_.end())
     {
         state = CHUNKED;
@@ -223,7 +223,7 @@ void Request::parseBody(std::string tmp)
         int length;
         std::istringstream convert(header_["Content-Length"]);
         convert >> length;
-        if (tmp != "")
+        if (tmp != "" && body_ != "")
             state = DONE_REQUST;
         body_ = tmp.substr(0, length);
         //read content length
