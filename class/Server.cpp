@@ -337,7 +337,8 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
     con.pipe_event_ = pip[1];
 
     //testcode
-    write(pip2[1], "abcdefg", 7);
+    write(pip2[1], request.body_.c_str(), request.body_.size());
+    //write(pip2[1], "abcdefg"", 7);
     close(pip2[1]);
     ///////////////
     con.kind_ = CGI;
