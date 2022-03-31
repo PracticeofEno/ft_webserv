@@ -41,6 +41,11 @@ std::string Request::readLine()
         ret = _buffer.substr(0, index + 2);
         _buffer.erase(0, index + 2);
     }
+    else
+    {
+        if (_buffer != "")
+            ret = _buffer;
+    }
     return (ret);
 }
 
