@@ -267,12 +267,13 @@ void MainServer::handleReadEvent(int event_fd)
     {
         try
         {
-            con.makeRequest();
+            if (con.reqeust_.getState() != DONE_REQUST)
+                con.makeRequest();
             if (con.reqeust_.getState() == DONE_REQUST)
             {
                 con.reqeust_.setLocationFile();
-                con.reqeust_.printStartLine();
-                Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+                //con.reqeust_.printStartLine();
+                Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
                 if (server.handleRequest(con.reqeust_, con) == false)
                 {
                     con.reqeust_.url_.append("/");
@@ -293,8 +294,8 @@ void MainServer::handleReadEvent(int event_fd)
     }
     else if (con.kind_ == CGI)
     {
-        Server& server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-        //CGI실행 결과를 받음. 
+        Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+        // CGI실행 결과를 받음.
         con.response_.readPipe(con.pipe_read_);
         std::cout << con.response_.response_data_ << std::endl;
         con.response_ = server.handleRequestCGI(con);
@@ -305,7 +306,7 @@ void MainServer::handleReadEvent(int event_fd)
         ep_event.data.fd = con.socket_;
         epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
         close(con.pipe_read_);
-        //this->cons_.deletePipeConnection(con.pipe_read_);
+        // this->cons_.deletePipeConnection(con.pipe_read_);
     }
 }
 
@@ -319,19 +320,19 @@ void MainServer::handleWriteEvent(int event_fd)
         {
             con.response_.send(con.socket_);
             con.resetData();
-            //this->cons_.deleteConnection(con);
+            this->cons_.deleteConnection(con);
         }
         else if (con.kind_ == CGI)
         {
             con.response_.send(con.socket_);
             con.resetData();
+            this->cons_.deleteConnection(con);
         }
     }
     else
     {
-        this->cons_.printPool();
-        std::cout << con.socket_ << std::endl;
-        std::cout << "None Activity" << std::endl;
+        std::cout << this->cons_.cons_.size() << std::endl;
+        //std::cout << "None Activity" << std::endl;
     }
 }
 
@@ -347,9 +348,10 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-            //std::cout << "Recieve Events count : " << _event_cnt << std::endl;
+             std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
+                //std::cout << this->cons_.cons_.size() << std::endl;
                 // std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
                 {

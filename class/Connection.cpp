@@ -27,9 +27,9 @@ Connection &Connection::operator=(const Connection &tmp)
 bool Connection::makeRequest()
 {
     this->reqeust_.readSocket(this->socket_);
-    std::cout << "==== buf content =====" << std::endl;
-    std::cout << this->reqeust_._buffer << std::endl;
-    std::cout << "========================================" << std::endl;
+    // std::cout << "==== buf content =====" << std::endl;
+    // std::cout << this->reqeust_._buffer << std::endl;
+    // std::cout << "========================================" << std::endl;
     this->reqeust_.parseSocket();
     return true;
 }
@@ -39,4 +39,5 @@ void Connection::resetData()
     this->kind_ = CLIENT;
     response_.resetData();
     reqeust_.resetData();
+
 }

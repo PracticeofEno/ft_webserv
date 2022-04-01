@@ -92,15 +92,16 @@ void ConnectionPool::deleteConnection(Connection& con)
     }
     if (it != ite)
     {
-        std::cout << "delete connection : " << it->socket_ << std::endl << std::endl;
         this->printPool();
+        std::cout << "delete connection : " << con.socket_ << std::endl << std::endl;
+        epoll_event ep_event;
+        ep_event.data.fd = con.socket_;
+        epoll_ctl(this->epfd_, EPOLL_CTL_DEL, con.socket_, &ep_event);
+        close(con.socket_);
         this->cons_.erase(it);
         this->printPool();
     }
-    epoll_event ep_event;
-    ep_event.data.fd = con.socket_;
-    epoll_ctl(this->epfd_, EPOLL_CTL_DEL, con.socket_, &ep_event);
-    close(con.socket_);
+    
 }
 
 bool ConnectionPool::checkSocket(int socket, int kind)
@@ -154,18 +155,20 @@ void ConnectionPool::deletePipeConnection(int pipe)
 
     for (it = its; it != ite; it++)
     {
-        if (it->pipe_read_ == pipe)
+        if (it->socket_ == pipe)
             break;
     }
     if (it != ite)
     {
-        std::cout << "delete connection : " << it->socket_ << std::endl;
-        cons_.erase(it);
+        this->printPool();
+        this->cons_.erase(it);
+        close(pipe);
+        this->printPool();
+        std::cout << "delete connection : " << pipe << std::endl << std::endl;
+        epoll_event ep_event;
+        ep_event.data.fd = pipe;
+        epoll_ctl(this->epfd_, EPOLL_CTL_DEL, pipe, &ep_event);
     }
-    epoll_event ep_event;
-    ep_event.data.fd = pipe;
-    epoll_ctl(this->epfd_, EPOLL_CTL_DEL, pipe, &ep_event);
-    close(pipe);
 }
 
 void ConnectionPool::printPool()

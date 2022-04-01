@@ -173,11 +173,18 @@ Response Server::GETHandler(Request &request, Location& location)
     Response res;
 
     // 루트 디렉토리를 가르키면 index.html 추가해줌
-    
-
     if (location.location_name_ == "/" && request.file_ == "")
-        request.file_ = "index.html";
-    
+    {
+        res.status_ = ResponseStatus(200);
+        res.http_version_ = "HTTP/1.1";
+        res.addHeader("Server", this->server_name_);
+        res.addHeader("Date", generateTime());
+        res.addHeader("Last-Modified", location.getRecentTime(request.file_));
+        res.addHeader("Content-Length", "0");
+        res.addHeader("Connection", "Keep-Alive");
+        res.file_path_ = "";
+        return res;
+    }
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
     res.addHeader("Server", this->server_name_);
@@ -327,7 +334,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	
     std::string tmp = location.getCgiCommand(request.file_);
     strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
-	strncpy(arg[1], "index.php", 51);
+	strncpy(arg[1], "< index.php", 51);
 
     env = getCgiVariable(request, con, location);
 
