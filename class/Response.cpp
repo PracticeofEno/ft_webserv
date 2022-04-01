@@ -21,37 +21,35 @@ Response &Response::operator=(const Response &tmp)
 
 void Response::send(int fd)
 {
-    writeStartLine(fd);
-    writeHeader(fd);
+    std::string send_message;
+
+    send_message.append(writeStartLine());
+    send_message.append(writeHeader());
     if (file_path_ != "")
-        writeFile(fd);
+        send_message.append(writeFile());
     else
-        write(fd, response_data_.c_str(), response_data_.size());
+        send_message.append(response_data_);
+    write(fd, send_message.c_str(), send_message.size());
 }
 
-void Response::writeStartLine(int fd)
+std::string Response::writeStartLine()
 {
-    write(fd, this->http_version_.c_str(), this->http_version_.size());
-    write(fd, " ", 1);
-    write(fd, this->status_.code_.c_str(), this->status_.code_.size());
-    write(fd, " ", 1);
-    write(fd, this->status_.messasge_.c_str(), this->status_.messasge_.size());
-    write(fd, "\r\n", 2);
+    std::string start = http_version_ + " " + status_.code_ + " " + status_.messasge_ + "\r\n";
+    return start;
 }
 
-void Response::writeHeader(int fd)
+std::string Response::writeHeader()
 {
+    std::string header;
     std::map<std::string, std::string>::iterator it;
     std::map<std::string, std::string>::iterator its = this->header_.begin();
     std::map<std::string, std::string>::iterator ite = this->header_.end();
     for (it = its; it != ite; it++)
     {
-        write(fd, it->first.c_str(), it->first.size());
-        write(fd, ": ", 2);
-        write(fd, it->second.c_str(), it->second.size());
-        write(fd, "\r\n", 2);
+        header.append(it->first + ": " + it->second + "\r\n");
     }
-    write(fd, "\r\n", 2);
+    header.append("\r\n");
+    return header;
 }
 
 void Response::writeHeaderCGI(int fd)
@@ -69,8 +67,9 @@ void Response::writeHeaderCGI(int fd)
     // write(fd, "\r\n", 2);
 }
 
-void Response::writeFile(int fd)
+std::string Response::writeFile()
 {
+    std::string stringbuffer;
     std::ifstream is(file_path_.c_str(), std::ifstream::binary);
     if (is)
     {
@@ -84,9 +83,10 @@ void Response::writeFile(int fd)
         // read data as a block:
         is.read((char *)buffer, length);
         is.close();
-        write(fd, buffer, length);
+        stringbuffer = reinterpret_cast< char const* >(buffer);
         delete[] buffer;
     }
+    return stringbuffer;
 }
 
 void Response::addHeader(std::string key, std::string value)

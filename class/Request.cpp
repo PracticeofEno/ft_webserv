@@ -62,12 +62,7 @@ void Request::readSocket(int socket)
     while (true)
     {
         strlen = read(socket, buf, BUF_SIZE);
-        if (strlen == 0)
-        {
-            std::cout << "fd : " << socket << " all data receive" << std::endl;
-            break;
-        }
-        else if (strlen > 0)
+        if (strlen > 0)
         {
             _buffer.append(buf, strlen);
         }
