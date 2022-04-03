@@ -226,6 +226,7 @@ void Request::parseBody(std::string tmp)
     convert >> length;
     if (tmp != "")
       state = DONE_REQUST;
+    tmp.append(_buffer);
     body_ = tmp.substr(0, length);
 }
 

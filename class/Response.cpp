@@ -32,7 +32,6 @@ void Response::send(int fd)
     if (file_path_ != "")
     {
         std::ifstream is(file_path_.c_str(), std::ifstream::binary);
-        
         if (is)
         {
             // seekg를 이용한 파일 크기 추출
@@ -41,7 +40,8 @@ void Response::send(int fd)
             is.seekg(0, is.beg);
 
             // malloc으로 메모리 할당
-            buffer = new unsigned char[length + send_message.size()];
+            length = length + send_message.size(); 
+            buffer = new unsigned char[length];
             memcpy(buffer, send_message.c_str(), send_message.size());
             // read data as a block:
             is.read((char *)buffer + send_message.size(), length);
@@ -50,11 +50,12 @@ void Response::send(int fd)
     }
     else
     {
-        buffer = new unsigned char[send_message.size() + response_data_.size()];
+        length = send_message.size() + response_data_.size();
+        buffer = new unsigned char[length];
         memcpy(buffer, send_message.c_str(), send_message.size());
         memcpy(buffer + send_message.size(), response_data_.c_str(), response_data_.size());
     }
-    count = write(fd, buffer, length + send_message.size());
+    count = write(fd, buffer, length);
     std::cout << "write count : " << count << std::endl;
     if (count == 0 && count == -1)
     {

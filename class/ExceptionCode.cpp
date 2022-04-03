@@ -23,6 +23,7 @@ ExceptionCode &ExceptionCode::operator=(const ExceptionCode &tmp)
     this->status_ = tmp.status_;
     this->code_ = tmp.code_;
     this->error_str = tmp.error_str;
+    this->location_ = tmp.location_;
     return *this;
 }
 
@@ -80,6 +81,13 @@ void ExceptionCode::handleException()
         size << server.client_body_size_;
         res.header_["clinet_body_size"] =  size.str();
         res.header_["Content-Length"] = "24";
+        res.send(con_.socket_);
+        con_.resetData();
+    }
+    else if (code_ == 302)
+    {
+        res.header_["Location"] = this->location_;
+        std::cout << "Location header is " << location_ << std::endl;
         res.send(con_.socket_);
         con_.resetData();
     }

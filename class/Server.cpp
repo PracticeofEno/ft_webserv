@@ -70,7 +70,7 @@ bool Server::handleRequest(Request &request, Connection& con)
     if (location.redirectionCheck() == ON)
     {
         ExceptionCode ex(302);
-        ex.location_ = "http://google.com";
+        ex.location_ = "http://" + location.redirection_ + location.location_name_ + request.file_;
         throw ex;
     }
     if (location.existFile(request) == NOTEXIST && request.method_ != "POST")
