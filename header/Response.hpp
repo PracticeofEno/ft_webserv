@@ -33,6 +33,5 @@ class Response
         
     private:
         void writeHeaderCGI(int fd);
-        std::string writeFile();
 };
 #endif

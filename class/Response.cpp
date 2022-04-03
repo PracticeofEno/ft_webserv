@@ -24,21 +24,43 @@ void Response::send(int fd)
 {
     std::string send_message;
     int count;
+    unsigned char *buffer = 0;
+    int length = 0;
 
     send_message.append(writeStartLine());
     send_message.append(writeHeader());
-    std::cout << send_message.size() << std::endl;
     if (file_path_ != "")
-        send_message.append(writeFile());
+    {
+        std::ifstream is(file_path_.c_str(), std::ifstream::binary);
+        
+        if (is)
+        {
+            // seekg를 이용한 파일 크기 추출
+            is.seekg(0, is.end);
+            length = (int)is.tellg();
+            is.seekg(0, is.beg);
+
+            // malloc으로 메모리 할당
+            buffer = new unsigned char[length + send_message.size()];
+            memcpy(buffer, send_message.c_str(), send_message.size());
+            // read data as a block:
+            is.read((char *)buffer + send_message.size(), length);
+            is.close();
+        }
+    }
     else
-        send_message.append(response_data_);
-    count = write(fd, send_message.c_str(), send_message.size());
+    {
+        buffer = new unsigned char[send_message.size() + response_data_.size()];
+        memcpy(buffer, send_message.c_str(), send_message.size());
+        memcpy(buffer + send_message.size(), response_data_.c_str(), response_data_.size());
+    }
+    count = write(fd, buffer, length + send_message.size());
     std::cout << "write count : " << count << std::endl;
     if (count == 0 && count == -1)
     {
         this->disconnect_ = true;
     }
-    
+    delete[] buffer;
 }
 
 std::string Response::writeStartLine()
@@ -74,28 +96,6 @@ void Response::writeHeaderCGI(int fd)
         write(fd, "\r\n", 2);
     }
     // write(fd, "\r\n", 2);
-}
-
-std::string Response::writeFile()
-{
-    std::string stringbuffer;
-    std::ifstream is(file_path_.c_str(), std::ifstream::binary);
-    if (is)
-    {
-        // seekg를 이용한 파일 크기 추출
-        is.seekg(0, is.end);
-        int length = (int)is.tellg();
-        is.seekg(0, is.beg);
-
-        // malloc으로 메모리 할당
-        unsigned char *buffer = new unsigned char[length];
-        // read data as a block:
-        is.read((char *)buffer, length);
-        is.close();
-        stringbuffer = reinterpret_cast< char const* >(buffer);
-        delete[] buffer;
-    }
-    return stringbuffer;
 }
 
 void Response::addHeader(std::string key, std::string value)
