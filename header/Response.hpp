@@ -3,6 +3,10 @@
 
 #include "Total.hpp"
 #include "ResponseStatus.hpp"
+class Connection;
+
+#define NOT_READY 0
+#define SEND 1
 
 class Response 
 {
@@ -11,7 +15,9 @@ class Response
         ResponseStatus status_;
         std::map<std::string, std::string> header_;
         std::string file_path_;
-        string file_data_;
+        std::string response_data_;
+        int state;
+        bool disconnect_;
 
         Response();
         ~Response();
@@ -20,13 +26,13 @@ class Response
 
         void send(int fd);
         void addHeader(std::string key, std::string value);
-        bool readFileData(int fd);
         void resetData();
+        void readPipe(int pipe);
+        std::string writeStartLine();
+        std::string writeHeader();
+        
     private:
-        
-        void writeStartLine(int fd);
-        void writeHeader(int fd);
-        void writeFile(int fd);
-        
+        void writeHeaderCGI(int fd);
+        std::string writeFile();
 };
 #endif

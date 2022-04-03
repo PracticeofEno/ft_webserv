@@ -11,20 +11,23 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#define MIMETYPE std::map<std::string, std::string>
+#define NOT_ALLOW_METHOD 0
+#define ON 1
+#define FILE 2
+#define NONE 0
+#define STATIC_POST 1
+#define UPLOAD_POST 2
 
 class Server
 {
     public :
         std::string             server_name_;
         std::string             http_version_;
-        std::string             error_page_path_;
-        std::string             root_;
-        std::string             cgi_extension_;
         int                     client_body_size_;
         std::vector<Location>   locations_;
         int                     socket_;
-        int                     port_;
+        std::vector<int>        port_;
+        std::string             error_page_;
 
         /*                      OCCF                             */
         Server();
@@ -34,27 +37,23 @@ class Server
         //////////////////////////////////////////////////////////
 
         void dataSetting(std::string data);
-        Response handleRequest(Request& request, Connection& tmp);
+        bool handleRequest(Request& request, Connection& tmp);
+        Response handleRequestCGI(Connection& tmp);
+        Location& findLocation(Request& reqeust);
+        bool findLocation(std::string location);
+        bool CheckCGI(std::string url, Location& location);
+        void CGIHandler(Request& request, Connection& tmp, Location& location);
         
     private :
-        int findLocation(std::string root);
-        std::string generateTime();
-        Response GETHandler(Request& request);
-        Response POSTHandler(Request& request);
-        Response DELETEHandler(Request& request);
-        void CGIHandler(Request& request, Connection& tmp);
-        std::string searchMimeType(std::string uri);
-        std::string getRecentTime(std::string url);
-        std::string getFilePath(std::string url);
-        std::string getFileSize(std::string url);
-        Response tryHandle(Request& req, Connection& tmp);
-        Response tryHandle(Request& req, int index, Connection& tmp);
-        bool CheckCGI(std::string url);
-        bool CheckCGI(std::string url, int index);
-        char** getCgiVariable(Request& request, Connection& tmp);
-        std::string getCgiUri(Request& req);
-        
-
+        Response GETHandler(Request& request, Location& location);
+        Response POSTHandler(Request& request, Location& location);
+        Response DELETEHandler(Request& request, Location& location);
+        Response GETHandlerCGI(Response& res);
+        Response POSTHandlerCGI(Request& request, Location& location);
+        Response DELETEHandlerCGI(Request& request, Location& location);        
+        char** getCgiVariable(Request& request, Connection& tmp, Location& location);
+        std::string getCgiUri(Request& req, int port);
+        void writePost();
 };
 
 #endif

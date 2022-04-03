@@ -14,7 +14,9 @@ CLASS_FILES = 	MainServer \
 				Response \
 				ResponseStatus \
 				ExceptionCode \
-				Util
+				Util \
+				MultiPart \
+				UploadData \
 
 CLASS_SRCS = $(addprefix class/, $(addsuffix .cpp, $(CLASS_FILES)))
 
