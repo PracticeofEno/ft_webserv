@@ -4,6 +4,8 @@
 #include "Total.hpp"
 #include "Util.hpp"
 
+class Request;
+
 class Location
 {
     public:
@@ -14,6 +16,7 @@ class Location
         std::string                 dl_default_;
         std::string                 cgi_extension_;
         std::string                 upload_path_;
+        std::string                 location_name_;
 
         /*                      OCCF                             */
         Location();
@@ -24,7 +27,16 @@ class Location
 
         void dataSetting(std::string data);
         bool methodCheck(std::string method);
-
+        bool redirectionCheck();
+        int existFile(Request& request);
+        bool isDir(std::string url);
+        std::string getFilePath(std::string url);
+        std::string getFileSize(std::string url);
+        std::string getRecentTime(std::string url);
+        std::string getDirectoryList(std::string url);
+        std::string getDirectoryDefaultFile();
+        std::string getUploadPath(std::string url);
+        std::string getCgiCommand(std::string filename);
     private:
 };
 

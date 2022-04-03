@@ -8,16 +8,24 @@ class ExceptionCode : public std::exception
 {
     public:
         ExceptionCode();
+        ExceptionCode(const ExceptionCode& tmp);
+        ExceptionCode& operator=(const ExceptionCode& tmp);
         ExceptionCode(int code);
+        ExceptionCode(int code, Connection& con);
         virtual ~ExceptionCode() throw();
         virtual const char* what() const throw();
-        int getCode() const;
 
-        Connection con;
+        Connection& con_;
+        ResponseStatus status_;
+        std::string location_;
+        std::string error_str;
+        int code_;
+        void handleException();
 
     private:
-        int _code;
         
+
+
         //int _socket;
 };
 #endif

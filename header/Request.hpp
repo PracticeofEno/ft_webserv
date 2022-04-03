@@ -3,6 +3,16 @@
 
 #include "Total.hpp"
 
+#define START_LINE 0
+#define HEADERS 1
+#define BODY 2
+#define CHUNKED 3
+#define DONE_REQUST 4
+
+class Connection;
+class request;
+class Location;
+
 class Request
 {
 	public:
@@ -15,18 +25,32 @@ class Request
 		std::string	url_;
 		std::string	version_;
 		std::map<std::string, std::string> header_;
+		std::string body_;
 		std::string query_;
-		
-		int getState();
-		std::string readLine();
-		void readSocket(int socket);
-		void resetData();
+		std::string location_;
+		std::string file_;
+		bool		disconnect_;
+
+		int			getState();
+		std::string	readLine();
+		void		readSocket(int socket);
+		bool		parseSocket();
+		void		parseStartline(std::string tmp);
+		void		parseHeaders(std::string tmp);
+		void		parseBody(std::string tmp);
+		void		parseChunked(std::string tmp);
+		bool		checkMethod(std::string method);
+		bool		checkUrl(std::string url);
+		bool		checkVersion(std::string version);
+		void		checkRequest(Connection& con, Request& request, Location& location);
+		void		resetData();
+		void		printStartLine();
+		int			checkPostType();
+		void		setLocationFile();
 
 		std::string _buffer;
 	private:
-		
 		int	state;
-		
 };
 
 #endif

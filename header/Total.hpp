@@ -12,8 +12,14 @@
 #define EXIST -2
 
 // Response Ready not ready
-#define NOT_READY 1
-#define READY 2
+#define NOT_READY 0
+#define READY 1
+
+//location define
+#define REGULAR 0
+#define DIRECTORY 1
+
+#define ALL 100
 
 #include <iostream>
 #include <fstream>

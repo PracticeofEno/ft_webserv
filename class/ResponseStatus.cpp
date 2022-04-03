@@ -8,8 +8,10 @@
  ResponseStatus::ResponseStatus(int code)
  {
      std::stringstream ssInt;
+     setReserve();
      ssInt << code;
      setCode(ssInt.str());
+     this->messasge_ = this->_reserve[this->code_];
  }
  ResponseStatus::~ResponseStatus() {}
 
