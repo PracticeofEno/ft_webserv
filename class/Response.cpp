@@ -16,6 +16,7 @@ Response &Response::operator=(const Response &tmp)
     this->status_ = tmp.status_;
     this->response_data_ = tmp.response_data_;
     this->state = tmp.state;
+    this->disconnect_ = tmp.disconnect_;
     return *this;
 }
 
@@ -31,6 +32,7 @@ void Response::send(int fd)
     else
         send_message.append(response_data_);
     count = write(fd, send_message.c_str(), send_message.size());
+    std::cout << "write count : " << count << std::endl;
     if (count == 0 && count == -1)
         this->disconnect_ = true;
     

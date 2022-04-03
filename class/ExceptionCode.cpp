@@ -34,6 +34,9 @@ const char *ExceptionCode::what() const throw()
 
 void ExceptionCode::handleException()
 {
+    if (code_ == 999)
+        return;
+
     Server &server = main_server.sp_.getServer(this->con_.reqeust_.header_["Host"], this->con_.port_);
     Response &res = this->con_.response_;
     Location &location = server.findLocation(con_.reqeust_);

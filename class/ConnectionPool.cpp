@@ -79,7 +79,7 @@ void ConnectionPool::appConnection(int socket, int kind)
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
 }
 
-void ConnectionPool::deleteConnection(Connection& con)
+void ConnectionPool::deleteConnection(Connection con)
 {
     std::vector<Connection>::iterator it;
     std::vector<Connection>::iterator its = cons_.begin();
@@ -92,14 +92,16 @@ void ConnectionPool::deleteConnection(Connection& con)
     }
     if (it != ite)
     {
+        std::cout << std::endl;
         this->printPool();
-        std::cout << "delete connection : " << con.socket_ << std::endl << std::endl;
+        std::cout << "delete connection : " << con.socket_ << std::endl;
         epoll_event ep_event;
         ep_event.data.fd = con.socket_;
         epoll_ctl(this->epfd_, EPOLL_CTL_DEL, con.socket_, &ep_event);
         close(con.socket_);
         this->cons_.erase(it);
         this->printPool();
+        std::cout << std::endl;
     }
     
 }
@@ -119,6 +121,8 @@ bool ConnectionPool::checkSocket(int socket, int kind)
     {
         if (it->kind_ == kind)
             return (true);
+        else if (kind == ALL)
+            return true;
         else
             return (false);
     }
@@ -135,7 +139,7 @@ Connection& ConnectionPool::getConnection(int socket)
     {
         if (it->socket_ == socket || it->pipe_read_ == socket)
         {
-            return *it;
+            break;
         }
     }
     return *it;
@@ -176,8 +180,6 @@ void ConnectionPool::printPool()
     std::vector<Connection>::iterator it;
     std::vector<Connection>::iterator its = cons_.begin();
     std::vector<Connection>::iterator ite = cons_.end();
-
-    std::cout << std::endl << std::endl;
     for (it = its; it != ite; it++)
     {
         std::cout << "fd : " << it->socket_ << " | kinds = ";

@@ -19,6 +19,8 @@
 #define REGULAR 0
 #define DIRECTORY 1
 
+#define ALL 100
+
 #include <iostream>
 #include <fstream>
 #include <sys/types.h>

@@ -21,6 +21,7 @@ public:
     std::string client_ip_;
     std::string buf_cgi_;
     char buf_CGI_[BUF_SIZE];//3
+    bool disconnect_;
     
     Connection();
     Connection(int socket, int kind, int port);

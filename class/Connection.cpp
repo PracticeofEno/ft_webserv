@@ -21,6 +21,7 @@ Connection &Connection::operator=(const Connection &tmp)
     this->reqeust_ = tmp.reqeust_;
     this->response_ = tmp.response_;
     this->client_ip_ = tmp.client_ip_;
+    this->disconnect_ = tmp.disconnect_;
     return *this;
 }
 

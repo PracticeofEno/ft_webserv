@@ -255,68 +255,71 @@ void MainServer::handleReadEvent(int event_fd)
     std::string client_ip;
     char ip_tmp[16];
 
-    Connection &con = cons_.getConnection(event_fd);
-    if (con.kind_ == SERVER)
+    if (cons_.checkSocket(event_fd, ALL))
     {
-        addr_sz = sizeof(clnt_addr);
-        client_sock = accept(con.socket_, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
-        client_ip = std::string(inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
-        this->cons_.addConnection(client_sock, CLIENT, client_ip, con.port_);
-    }
-    else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
-    {
-        try
+        Connection &con = cons_.getConnection(event_fd);
+        if (con.kind_ == SERVER)
         {
-            if (con.reqeust_.getState() != DONE_REQUST)
-                con.makeRequest();
-            if (con.reqeust_.getState() == DONE_REQUST)
+            addr_sz = sizeof(clnt_addr);
+            client_sock = accept(con.socket_, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
+            client_ip = std::string(inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
+            this->cons_.addConnection(client_sock, CLIENT, client_ip, con.port_);
+        }
+        else if (con.kind_ == CLIENT && con.disconnect_ == false) // 클라이언트 소켓에서 온거라면 알맞게 처리
+        {
+            try
             {
-                con.reqeust_.setLocationFile();
-                // con.reqeust_.printStartLine();
-                Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-                if (server.handleRequest(con.reqeust_, con) == false)
+                if (con.reqeust_.getState() != DONE_REQUST)
+                    con.makeRequest();
+                if (con.reqeust_.getState() == DONE_REQUST)
                 {
-                    con.reqeust_.url_.append("/");
                     con.reqeust_.setLocationFile();
-                    if (server.findLocation(con.reqeust_.location_) == false)
-                        throw ExceptionCode(404);
+                    // con.reqeust_.printStartLine();
+                    Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
                     if (server.handleRequest(con.reqeust_, con) == false)
-                        throw ExceptionCode(404);
+                    {
+                        con.reqeust_.url_.append("/");
+                        con.reqeust_.setLocationFile();
+                        if (server.findLocation(con.reqeust_.location_) == false)
+                            throw ExceptionCode(404);
+                        if (server.handleRequest(con.reqeust_, con) == false)
+                            throw ExceptionCode(404);
+                    }
                 }
             }
+            catch (ExceptionCode &e)
+            {
+                ExceptionCode ex(e.code_, con);
+                ex.location_ = e.location_;
+                throw ex;
+            }
         }
-        catch (ExceptionCode &e)
+        else if (con.kind_ == CGI && con.disconnect_ == false)
         {
-            ExceptionCode ex(e.code_, con);
-            ex.location_ = e.location_;
-            throw ex;
-        }
-    }
-    else if (con.kind_ == CGI)
-    {
-        Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-        // CGI실행 결과를 받음.
-        con.response_.readPipe(con.pipe_read_);
-        std::cout << con.response_.response_data_ << std::endl;
-        con.response_ = server.handleRequestCGI(con);
-        con.response_.state = READY;
+            Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+            // CGI실행 결과를 받음.
+            con.response_.readPipe(con.pipe_read_);
+            std::cout << con.response_.response_data_ << std::endl;
+            con.response_ = server.handleRequestCGI(con);
+            con.response_.state = READY;
 
-        epoll_event ep_event;
-        ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLRDHUP;
-        ep_event.data.fd = con.socket_;
-        epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
-        close(con.pipe_read_);
-        // this->cons_.deletePipeConnection(con.pipe_read_);
+            epoll_event ep_event;
+            ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLRDHUP;
+            ep_event.data.fd = con.socket_;
+            epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
+            close(con.pipe_read_);
+            // this->cons_.deletePipeConnection(con.pipe_read_);
+        }
     }
 }
 
 void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
-
-    //연결이 끊어졌다면 
-    if (con.reqeust_.disconnect_ == true || con.response_.disconnect_ == true)
+    //연결이 끊어졌다면
+    if (con.disconnect_ == true || con.disconnect_ == true)
     {
+        std::cout << "disconnect true delete" << std::endl;
         this->cons_.deleteConnection(con);
     }
     else
@@ -336,13 +339,7 @@ void MainServer::handleWriteEvent(int event_fd)
                 this->cons_.deleteConnection(con);
             }
         }
-        else
-        {
-            std::cout << this->cons_.cons_.size() << std::endl;
-            // std::cout << "None Activity" << std::endl;
-        }
     }
-
 }
 
 void MainServer::start()
@@ -362,13 +359,11 @@ void MainServer::start()
             {
                 // std::cout << this->cons_.cons_.size() << std::endl;
                 //  std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
-                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
+                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLRDHUP)
                 {
-                    std::cout << "errror" << std::endl;
-                    if (cons_.checkSocket(_ep_events_buf[i].data.fd, CLIENT))
-                    {
-                        cons_.deleteConnection(cons_.getConnection(_ep_events_buf[i].data.fd));
-                    }
+                    std::cout << "EPOLLRDHYP errror" << std::endl;
+                    std::cout << "set disconnect flag true" << std::endl;
+                    cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {

@@ -183,6 +183,7 @@ Response Server::GETHandler(Request &request, Location& location)
         res.addHeader("Content-Length", "0");
         res.addHeader("Connection", "Keep-Alive");
         res.file_path_ = "";
+        res.state = READY;
         return res;
     }
     res.status_ = ResponseStatus(200);

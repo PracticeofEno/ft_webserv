@@ -24,6 +24,7 @@ Request &Request::operator=(const Request &tmp)
     this->state = tmp.state;
     this->location_ = tmp.location_;
     this->file_ = tmp.file_;
+    this->disconnect_ = tmp.disconnect_;
     return *this;
 }
 
@@ -64,7 +65,7 @@ void Request::readSocket(int socket)
         strlen = read(socket, buf, BUF_SIZE);
         if (strlen == 0)
         {
-            std::cout << "haha "<< std::endl;
+            std::cout << "0byte read!! shipar uma!!! "<< std::endl;
             this->disconnect_ = true;
             break;
         }
