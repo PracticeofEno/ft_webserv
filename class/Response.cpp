@@ -27,6 +27,7 @@ void Response::send(int fd)
 
     send_message.append(writeStartLine());
     send_message.append(writeHeader());
+    std::cout << send_message.size() << std::endl;
     if (file_path_ != "")
         send_message.append(writeFile());
     else
@@ -34,7 +35,9 @@ void Response::send(int fd)
     count = write(fd, send_message.c_str(), send_message.size());
     std::cout << "write count : " << count << std::endl;
     if (count == 0 && count == -1)
+    {
         this->disconnect_ = true;
+    }
     
 }
 

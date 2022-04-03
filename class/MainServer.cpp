@@ -265,7 +265,7 @@ void MainServer::handleReadEvent(int event_fd)
             client_ip = std::string(inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
             this->cons_.addConnection(client_sock, CLIENT, client_ip, con.port_);
         }
-        else if (con.kind_ == CLIENT && con.disconnect_ == false) // 클라이언트 소켓에서 온거라면 알맞게 처리
+        else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
         {
             try
             {
@@ -294,7 +294,7 @@ void MainServer::handleReadEvent(int event_fd)
                 throw ex;
             }
         }
-        else if (con.kind_ == CGI && con.disconnect_ == false)
+        else if (con.kind_ == CGI)
         {
             Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
             // CGI실행 결과를 받음.
@@ -316,28 +316,24 @@ void MainServer::handleReadEvent(int event_fd)
 void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
-    //연결이 끊어졌다면
-    if (con.disconnect_ == true || con.disconnect_ == true)
+
+    if (con.response_.state == READY)
     {
-        std::cout << "disconnect true delete" << std::endl;
-        this->cons_.deleteConnection(con);
-    }
-    else
-    {
-        if (con.response_.state == READY)
+        if (con.kind_ != CGI)
         {
-            if (con.kind_ != CGI)
-            {
-                con.response_.send(con.socket_);
-                con.resetData();
+            con.response_.send(con.socket_);
+            if (con.reqeust_.header_["Connection"] == "Close" || con.reqeust_.header_["Connection"] == "close")
                 this->cons_.deleteConnection(con);
-            }
-            else if (con.kind_ == CGI)
-            {
-                con.response_.send(con.socket_);
+            else
                 con.resetData();
+        }
+        else if (con.kind_ == CGI)
+        {
+            con.response_.send(con.socket_);
+            if (con.reqeust_.header_["Connection"] == "Close" || con.reqeust_.header_["Connection"] == "close")
                 this->cons_.deleteConnection(con);
-            }
+            else
+                con.resetData();
         }
     }
 }
@@ -358,20 +354,19 @@ void MainServer::start()
             for (int i = 0; i < _event_cnt; i++)
             {
                 // std::cout << this->cons_.cons_.size() << std::endl;
-                //  std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
+                std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLRDHUP)
                 {
                     std::cout << "EPOLLRDHYP errror" << std::endl;
                     std::cout << "set disconnect flag true" << std::endl;
+                    std::cout << errno << std::endl;
                     cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;
-                    throw ExceptionCode(999);
-                    
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
-                if (_ep_events_buf[i].events & EPOLLIN)
+                if (_ep_events_buf[i].events & EPOLLOUT)
                 {
                     handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
