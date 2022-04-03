@@ -1,5 +1,6 @@
 #include "MainServer.hpp"
 
+
 MainServer::MainServer()
 {
 }
@@ -20,6 +21,9 @@ MainServer &MainServer::operator=(const MainServer &tmp)
     return *this;
 }
 
+void MainServer::makeMimeType(std::string data)
+
+
 MainServer::MainServer(std::string fileName)
 {
     std::ifstream inputFile(fileName.c_str());
@@ -36,6 +40,8 @@ MainServer::MainServer(std::string fileName)
         }
         inputFile.close();
         makeServerPool(data);
+        //makerMimeType(mime);
+
     }
     else
         std::cout << "Config file open fail" << std::endl;
