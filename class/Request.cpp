@@ -3,7 +3,7 @@
 #include "Util.hpp"
 #include "Server.hpp"
 
-Request::Request(void) : state(START_LINE) {}
+Request::Request(void) : disconnect_(false), state(START_LINE)  {}
 
 Request::~Request(void) {}
 
@@ -62,11 +62,17 @@ void Request::readSocket(int socket)
     while (true)
     {
         strlen = read(socket, buf, BUF_SIZE);
-        if (strlen > 0)
+        if (strlen == 0)
+        {
+            std::cout << "haha "<< std::endl;
+            this->disconnect_ = true;
+            break;
+        }
+        else if (strlen > 0)
         {
             _buffer.append(buf, strlen);
         }
-        else
+        else if (strlen == -1)
             break;
     }
 }

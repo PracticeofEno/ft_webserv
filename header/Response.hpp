@@ -17,6 +17,7 @@ class Response
         std::string file_path_;
         std::string response_data_;
         int state;
+        bool disconnect_;
 
         Response();
         ~Response();

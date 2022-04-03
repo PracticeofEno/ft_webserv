@@ -1,7 +1,7 @@
 #include "Response.hpp"
 #include "ExceptionCode.hpp"
 
-Response::Response() : http_version_("HTTP/1.1"), state(NOT_READY) {}
+Response::Response() : http_version_("HTTP/1.1"), state(NOT_READY), disconnect_(false) {}
 Response::~Response() {}
 
 Response::Response(const Response &tmp)
@@ -22,6 +22,7 @@ Response &Response::operator=(const Response &tmp)
 void Response::send(int fd)
 {
     std::string send_message;
+    int count;
 
     send_message.append(writeStartLine());
     send_message.append(writeHeader());
@@ -29,7 +30,10 @@ void Response::send(int fd)
         send_message.append(writeFile());
     else
         send_message.append(response_data_);
-    write(fd, send_message.c_str(), send_message.size());
+    count = write(fd, send_message.c_str(), send_message.size());
+    if (count == 0 && count == -1)
+        this->disconnect_ = true;
+    
 }
 
 std::string Response::writeStartLine()

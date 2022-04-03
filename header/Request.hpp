@@ -29,6 +29,7 @@ class Request
 		std::string query_;
 		std::string location_;
 		std::string file_;
+		bool		disconnect_;
 
 		int			getState();
 		std::string	readLine();

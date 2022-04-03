@@ -97,7 +97,7 @@ bool MainServer::openSocket(int port)
         return false;
     }
 
-    if (listen(server_sock, 5) < 0) // 대기큐 5라고 써서 대기큐가 모지랄수도(?)
+    if (listen(server_sock, 128) < 0) // 대기큐 5라고 써서 대기큐가 모지랄수도(?)
     {
         std::cout << "listen error" << std::endl;
         close(server_sock);
@@ -272,7 +272,7 @@ void MainServer::handleReadEvent(int event_fd)
             if (con.reqeust_.getState() == DONE_REQUST)
             {
                 con.reqeust_.setLocationFile();
-                //con.reqeust_.printStartLine();
+                // con.reqeust_.printStartLine();
                 Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
                 if (server.handleRequest(con.reqeust_, con) == false)
                 {
@@ -302,7 +302,7 @@ void MainServer::handleReadEvent(int event_fd)
         con.response_.state = READY;
 
         epoll_event ep_event;
-        ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+        ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLRDHUP;
         ep_event.data.fd = con.socket_;
         epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
         close(con.pipe_read_);
@@ -314,26 +314,35 @@ void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
 
-    if (con.response_.state == READY)
+    //연결이 끊어졌다면 
+    if (con.reqeust_.disconnect_ == true || con.response_.disconnect_ == true)
     {
-        if (con.kind_ != CGI)
-        {
-            con.response_.send(con.socket_);
-            con.resetData();
-            this->cons_.deleteConnection(con);
-        }
-        else if (con.kind_ == CGI)
-        {
-            con.response_.send(con.socket_);
-            con.resetData();
-            this->cons_.deleteConnection(con);
-        }
+        this->cons_.deleteConnection(con);
     }
     else
     {
-        std::cout << this->cons_.cons_.size() << std::endl;
-        //std::cout << "None Activity" << std::endl;
+        if (con.response_.state == READY)
+        {
+            if (con.kind_ != CGI)
+            {
+                con.response_.send(con.socket_);
+                con.resetData();
+                this->cons_.deleteConnection(con);
+            }
+            else if (con.kind_ == CGI)
+            {
+                con.response_.send(con.socket_);
+                con.resetData();
+                this->cons_.deleteConnection(con);
+            }
+        }
+        else
+        {
+            std::cout << this->cons_.cons_.size() << std::endl;
+            // std::cout << "None Activity" << std::endl;
+        }
     }
+
 }
 
 void MainServer::start()
@@ -348,14 +357,18 @@ void MainServer::start()
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
-             std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
+            std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
             for (int i = 0; i < _event_cnt; i++)
             {
-                //std::cout << this->cons_.cons_.size() << std::endl;
-                // std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
+                // std::cout << this->cons_.cons_.size() << std::endl;
+                //  std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLHUP)
                 {
                     std::cout << "errror" << std::endl;
+                    if (cons_.checkSocket(_ep_events_buf[i].data.fd, CLIENT))
+                    {
+                        cons_.deleteConnection(cons_.getConnection(_ep_events_buf[i].data.fd));
+                    }
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {

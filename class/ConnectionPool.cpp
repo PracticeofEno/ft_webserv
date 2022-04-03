@@ -41,9 +41,9 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip, 
     }
 
     if (kind == SERVER )
-        userevent.events = EPOLLIN | EPOLLET;
+        userevent.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLRDHUP;
     else if (kind == CLIENT || kind == CGI)
-        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT;
+        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
 
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
@@ -71,9 +71,9 @@ void ConnectionPool::appConnection(int socket, int kind)
     }
 
     if (kind == SERVER )
-        userevent.events = EPOLLIN | EPOLLET;
+        userevent.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLRDHUP;
     else if (kind == CLIENT || kind == CGI)
-        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT;
+        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
 
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
