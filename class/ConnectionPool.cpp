@@ -43,7 +43,7 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip, 
     if (kind == SERVER )
         userevent.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLRDHUP;
     else if (kind == CLIENT || kind == CGI)
-        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
+        userevent.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLRDHUP;
 
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
@@ -73,7 +73,7 @@ void ConnectionPool::appConnection(int socket, int kind)
     if (kind == SERVER )
         userevent.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLRDHUP;
     else if (kind == CLIENT || kind == CGI)
-        userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
+        userevent.events = EPOLLIN | EPOLLET |  EPOLLERR | EPOLLRDHUP;
 
     userevent.data.fd = socket;
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
@@ -95,7 +95,9 @@ void ConnectionPool::deleteConnection(Connection con)
         std::cout << std::endl;
         this->printPool();
         std::cout << "delete connection : " << con.socket_ << std::endl;
+        shutdown(con.socket_, SHUT_WR);
         epoll_event ep_event;
+        ep_event.events = EPOLLIN | EPOLLET |  EPOLLERR | EPOLLRDHUP;
         ep_event.data.fd = con.socket_;
         epoll_ctl(this->epfd_, EPOLL_CTL_DEL, con.socket_, &ep_event);
         close(con.socket_);

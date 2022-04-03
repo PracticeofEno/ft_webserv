@@ -274,7 +274,7 @@ void MainServer::handleReadEvent(int event_fd)
                 if (con.reqeust_.getState() == DONE_REQUST)
                 {
                     con.reqeust_.setLocationFile();
-                    // con.reqeust_.printStartLine();
+                    con.reqeust_.printStartLine();
                     Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
                     if (server.handleRequest(con.reqeust_, con) == false)
                     {
@@ -304,7 +304,7 @@ void MainServer::handleReadEvent(int event_fd)
             con.response_.state = READY;
 
             epoll_event ep_event;
-            ep_event.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLRDHUP;
+            ep_event.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLRDHUP;
             ep_event.data.fd = con.socket_;
             epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
             close(con.pipe_read_);
@@ -364,12 +364,15 @@ void MainServer::start()
                     std::cout << "EPOLLRDHYP errror" << std::endl;
                     std::cout << "set disconnect flag true" << std::endl;
                     cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;
+                    throw ExceptionCode(999);
+
+                    
                 }
                 if (_ep_events_buf[i].events & EPOLLIN)
                 {
                     handleReadEvent(_ep_events_buf[i].data.fd);
                 }
-                if (_ep_events_buf[i].events & EPOLLOUT)
+                if (_ep_events_buf[i].events & EPOLLIN)
                 {
                     handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
