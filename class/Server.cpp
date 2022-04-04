@@ -116,7 +116,10 @@ Response Server::handleRequestCGI(Connection& tmp)
         ss << cgi_header["Status"];
         ss >> code;
     }
-
+    if (cgi_header.find("Status") != cgi_header.end())
+    {
+        res.header_["Content-Type"] = cgi_header.find("Content-Type")->second;
+    }
     res.status_ = ResponseStatus(code);
     res.http_version_ = "HTTP/1.1";
     res.header_["Connection"] = "Keep-Alive";
@@ -176,20 +179,6 @@ Response Server::GETHandler(Request &request, Location& location)
 {
     Response res;
 
-    // 루트 디렉토리를 가르키면 index.html 추가해줌
-    if (location.location_name_ == "/" && request.file_ == "")
-    {
-        res.status_ = ResponseStatus(200);
-        res.http_version_ = "HTTP/1.1";
-        res.addHeader("Server", this->server_name_);
-        res.addHeader("Date", generateTime());
-        res.addHeader("Last-Modified", location.getRecentTime(request.file_));
-        res.addHeader("Content-Length", "0");
-        res.addHeader("Connection", "Keep-Alive");
-        res.file_path_ = "";
-        res.state = READY;
-        return res;
-    }
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
     res.addHeader("Server", this->server_name_);
