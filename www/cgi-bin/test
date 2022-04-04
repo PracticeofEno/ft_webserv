@@ -16,4 +16,4 @@ export "SERVER_NAME=server1"
 export "SERVER_PORT=80"
 export "SERVER_SOFTWARE=ft_webserv"
 
-./ubuntu_cgi_tester.blabla '<' 'info.php'
+./ubuntu_cgi_tester < info.php

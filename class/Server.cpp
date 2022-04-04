@@ -94,27 +94,31 @@ bool Server::handleRequest(Request &request, Connection& con)
 Response Server::handleRequestCGI(Connection& tmp)
 {
     Response& res = tmp.response_;
+    std::map<std::string, std::string> cgi_header;
+    std::string str_tmp;
+
+    while (true)
+    {
+        str_tmp = res.response_data_.substr(0, res.response_data_.find("\r\n") + 2);
+        res.response_data_ = res.response_data_.erase(0, res.response_data_.find("\r\n") + 2);
+        if (str_tmp == "\r\n" || res.response_data_ == "")
+            break;
+        size_t start_index = str_tmp.find(":");
+        cgi_header[str_tmp.substr(0, start_index)] = str_tmp.substr(start_index + 2, str_tmp.find("\r\n"));
+    }
 
     std::stringstream ss, ss2;
-    int size;
-    int sub_size = 0;
+    int code = 0;
+    int size = 0;
 
-    int code;
-
-    ss << res.response_data_.substr(8, 3);
-    ss >> code;
-
-    sub_size = res.response_data_.find("\r\n");
-    res.response_data_.erase(0, sub_size + 2);
+    if (cgi_header.find("Status") != cgi_header.end())
+    {
+        ss << cgi_header["Status"];
+        ss >> code;
+    }
 
     res.status_ = ResponseStatus(code);
     res.http_version_ = "HTTP/1.1";
-
-    size_t start_index = res.response_data_.find(":") + 2;
-    size_t count = res.response_data_.find("\r\n") - start_index;
-    res.header_["Content-Type"] = res.response_data_.substr(res.response_data_.find(":") + 2, count);
-    sub_size = res.response_data_.find("\r\n");
-    res.response_data_ = res.response_data_.erase(0, sub_size + 4);
     res.header_["Connection"] = "Keep-Alive";
     
     size = res.response_data_.size();
@@ -335,7 +339,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	
     std::string tmp = location.getCgiCommand(request.file_);
     strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
-	strncpy(arg[1], "< index.php", 51);
+	strncpy(arg[1], "info.php", 51);
 
     env = getCgiVariable(request, con, location);
 

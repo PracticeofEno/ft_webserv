@@ -163,14 +163,16 @@ void ConnectionPool::deletePipeConnection(int pipe)
     }
     if (it != ite)
     {
+        std::cout << std::endl;
         this->printPool();
-        this->cons_.erase(it);
+        std::cout << "delete pipe connection : " << pipe << std::endl;
         close(pipe);
-        this->printPool();
-        std::cout << "delete connection : " << pipe << std::endl << std::endl;
         epoll_event ep_event;
         ep_event.data.fd = pipe;
         epoll_ctl(this->epfd_, EPOLL_CTL_DEL, pipe, &ep_event);
+        this->cons_.erase(it);
+        this->printPool();
+        std::cout << std::endl;
     }
 }
 

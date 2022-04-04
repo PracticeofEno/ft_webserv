@@ -255,61 +255,58 @@ void MainServer::handleReadEvent(int event_fd)
     std::string client_ip;
     char ip_tmp[16];
 
-    if (cons_.checkSocket(event_fd, ALL))
+    Connection &con = cons_.getConnection(event_fd);
+    if (con.kind_ == SERVER)
     {
-        Connection &con = cons_.getConnection(event_fd);
-        if (con.kind_ == SERVER)
+        addr_sz = sizeof(clnt_addr);
+        client_sock = accept(con.socket_, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
+        client_ip = std::string(inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
+        this->cons_.addConnection(client_sock, CLIENT, client_ip, con.port_);
+    }
+    else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
+    {
+        try
         {
-            addr_sz = sizeof(clnt_addr);
-            client_sock = accept(con.socket_, (struct sockaddr *)&clnt_addr, &addr_sz); // 이때 accept!!
-            client_ip = std::string(inet_ntop(AF_INET, &clnt_addr.sin_addr, ip_tmp, INET_ADDRSTRLEN));
-            this->cons_.addConnection(client_sock, CLIENT, client_ip, con.port_);
-        }
-        else if (con.kind_ == CLIENT) // 클라이언트 소켓에서 온거라면 알맞게 처리
-        {
-            try
+            if (con.reqeust_.getState() != DONE_REQUST)
+                con.makeRequest();
+            if (con.reqeust_.getState() == DONE_REQUST)
             {
-                if (con.reqeust_.getState() != DONE_REQUST)
-                    con.makeRequest();
-                if (con.reqeust_.getState() == DONE_REQUST)
+                con.reqeust_.setLocationFile();
+                con.reqeust_.printStartLine();
+                Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+                if (server.handleRequest(con.reqeust_, con) == false)
                 {
+                    con.reqeust_.url_.append("/");
                     con.reqeust_.setLocationFile();
-                    con.reqeust_.printStartLine();
-                    Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+                    if (server.findLocation(con.reqeust_.location_) == false)
+                        throw ExceptionCode(404);
                     if (server.handleRequest(con.reqeust_, con) == false)
-                    {
-                        con.reqeust_.url_.append("/");
-                        con.reqeust_.setLocationFile();
-                        if (server.findLocation(con.reqeust_.location_) == false)
-                            throw ExceptionCode(404);
-                        if (server.handleRequest(con.reqeust_, con) == false)
-                            throw ExceptionCode(404);
-                    }
+                        throw ExceptionCode(404);
                 }
             }
-            catch (ExceptionCode &e)
-            {
-                ExceptionCode ex(e.code_, con);
-                ex.location_ = e.location_;
-                throw ex;
-            }
         }
-        else if (con.kind_ == CGI)
+        catch (ExceptionCode &e)
         {
-            Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
-            // CGI실행 결과를 받음.
-            con.response_.readPipe(con.pipe_read_);
-            std::cout << con.response_.response_data_ << std::endl;
-            con.response_ = server.handleRequestCGI(con);
-            con.response_.state = READY;
-
-            epoll_event ep_event;
-            ep_event.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLRDHUP;
-            ep_event.data.fd = con.socket_;
-            epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
-            close(con.pipe_read_);
-            // this->cons_.deletePipeConnection(con.pipe_read_);
+            ExceptionCode ex(e.code_, con);
+            ex.location_ = e.location_;
+            throw ex;
         }
+    }
+    else if (con.kind_ == CGI)
+    {
+        Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
+        // CGI실행 결과를 받음.
+        con.response_.readPipe(con.pipe_read_);
+        std::cout << con.response_.response_data_ << std::endl;
+        con.response_ = server.handleRequestCGI(con);
+        con.response_.state = READY;
+
+        epoll_event ep_event;
+        ep_event.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
+        ep_event.data.fd = con.socket_;
+        close(con.pipe_read_);
+        epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
+        //this->cons_.deletePipeConnection(con.pipe_read_);
     }
 }
 
