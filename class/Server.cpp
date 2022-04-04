@@ -76,8 +76,8 @@ bool Server::handleRequest(Request &request, Connection& con)
     if (location.existFile(request) == NOTEXIST && request.method_ != "POST")
         return false;
 
-    if (this->CheckCGI(con.reqeust_.url_, location))
-        this->CGIHandler(con.reqeust_, con, location);
+    if (this->CheckCGI(request.url_, location))
+        this->CGIHandler(request, con, location);
     else
     {
         if (request.method_ == "GET")
@@ -116,7 +116,7 @@ Response Server::handleRequestCGI(Connection& tmp)
         ss << cgi_header["Status"];
         ss >> code;
     }
-    if (cgi_header.find("Status") != cgi_header.end())
+    if (cgi_header.find("Content-Type") != cgi_header.end())
     {
         res.header_["Content-Type"] = cgi_header.find("Content-Type")->second;
     }
@@ -165,7 +165,6 @@ bool Server::findLocation(std::string location)
     std::vector<Location>::iterator it;
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
-    std::vector<Location>::iterator tmp = this->locations_.begin();
 
     for (it = its; it != ite; it++)
     {
@@ -328,7 +327,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	
     std::string tmp = location.getCgiCommand(request.file_);
     strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
-	strncpy(arg[1], "info.php", 51);
+	strncpy(arg[1], "abcd", 51);
 
     env = getCgiVariable(request, con, location);
 
@@ -385,7 +384,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "/"));
-    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.url_)));
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.file_) ));
     env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", tmp.client_ip_));

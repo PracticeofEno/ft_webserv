@@ -4,6 +4,7 @@
 #include "Total.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include <sys/time.h>
 
 class MainServer;
 
@@ -12,7 +13,7 @@ class Connection
 public:
     int socket_; // Clinet socket
     int kind_;
-    int timeout_;
+    long timeout_;
     int port_;
     int pipe_read_;//1
     int pipe_event_;//2

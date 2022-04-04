@@ -1,5 +1,6 @@
 #include "Util.hpp"
 #include "Total.hpp"
+#include "Connection.hpp"
 #define MIMETYPE std::map<std::string, std::string>
 
 std::string &ft_ltrim(std::string &s, const char *t)
@@ -78,4 +79,12 @@ int	ft_strcmp(const char *s1, const char *s2)
 		i++;
 	}
     return true;
+}
+
+long	get_time(void)
+{
+	struct timeval	time;
+
+	gettimeofday(&time, NULL);
+	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }

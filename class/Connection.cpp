@@ -2,8 +2,9 @@
 #include "MainServer.hpp"
 #include "unistd.h"
 
+
 Connection::Connection() {}
-Connection::Connection(int socket, int kind, int port) : socket_(socket), kind_(kind), timeout_(0), port_(port), pipe_read_(0) {}
+Connection::Connection(int socket, int kind, int port) : socket_(socket), kind_(kind), timeout_(20000), port_(port), pipe_read_(0) {}
 
 Connection::~Connection() {}
 
@@ -40,5 +41,5 @@ void Connection::resetData()
     this->kind_ = CLIENT;
     response_.resetData();
     reqeust_.resetData();
-
 }
+
