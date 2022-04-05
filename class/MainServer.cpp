@@ -430,7 +430,7 @@ bool MainServer::checkValidConfig()
     {
         lo_its = it->locations_.begin();
         lo_ite = it->locations_.end();
-        for(lo_it = lo_its; lo_its != lo_ite; lo_it++)
+        for(lo_it = lo_its; lo_it != lo_ite; lo_it++)
         {
             if (lo_it->checkValid() == false)
                 return false;

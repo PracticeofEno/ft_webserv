@@ -30,11 +30,11 @@ class Location
         bool redirectionCheck();
         int existFile(Request& request);
         bool isDir(std::string url);
-        std::string getServerRootPath(std::string url);
+        std::string getFilePath(std::string url);
         std::string getFileSize(std::string url);
         std::string getRecentTime(std::string url);
         std::string getDirectoryList(std::string url);
-        std::string getDirectoryDefaultFile();
+        std::string getServerRootPath(std::string file);
         std::string getUploadPath(std::string url);
         std::string getCgiCommand(std::string filename);
         bool checkValid();

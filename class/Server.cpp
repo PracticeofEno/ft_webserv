@@ -203,7 +203,7 @@ Response Server::GETHandler(Request &request, Location& location)
         }
         else
         {
-            res.file_path_ = location.getDirectoryDefaultFile();
+            res.file_path_ = location.getServerRootPath(location.dl_default_);
             res.header_["Content-Type"] = "text/html";
             struct stat st;
             std::stringstream ss;

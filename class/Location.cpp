@@ -103,7 +103,7 @@ int Location::existFile(Request& request)
         return NOTEXIST;
 }
 
-std::string Location::getServerRootPath(std::string url)
+std::string Location::getFilePath(std::string url)
 {
     char buf[4096];
     realpath(".", buf);
@@ -201,13 +201,13 @@ std::string Location::getDirectoryList(std::string url)
     return buf;
 }
 
-std::string Location::getDirectoryDefaultFile()
+std::string Location::getServerRootPath(std::string file)
 {
     char buf[4096];
     realpath(".", buf);
     std::string current_path(buf);
     current_path.append("/www/");
-    current_path.append(dl_default_);
+    current_path.append(file);
     current_path = replace_all(current_path, "//", "/");
     return current_path;
 }
@@ -231,26 +231,26 @@ bool Location::checkValid()
     std::string path = this->getServerRootPath(this->dl_default_);
     struct stat sb;
 
-    if (stat(this->getServerRootPath(path).c_str(), &sb) == -1)
+    if (stat(path.c_str(), &sb) == -1)
     {
-        std::cout << "Wrong default file" << std::endl;
+        std::cout << "Wrong default file : " << path << std::endl;
         return false;
     }
     if (sb.st_mode & S_IFDIR)
     {
-        std::cout << "Wrong default file - Please check file type" << std::endl;
+        std::cout << "Wrong default file : " << path << std::endl;
         return false;
     }
 
     std::string uploadPath = this->getServerRootPath(this->upload_path_);
-    if (stat(this->getServerRootPath(path).c_str(), &sb) == -1)
+    if (stat(uploadPath.c_str(), &sb) == -1)
     {
-        std::cout << "Wrong uploadPath" << std::endl;
+        std::cout << "Wrong uploadPath : " <<  upload_path_ << std::endl;
         return false;
     }
     if (sb.st_mode & S_IFREG)
     {
-        std::cout << "Worng uploadPath - Please check file type" << std::endl;
+        std::cout << "Wrong uploadPath : " <<  upload_path_ << std::endl;
         return false;
     }
     return true;
