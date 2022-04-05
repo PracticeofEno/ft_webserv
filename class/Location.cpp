@@ -238,7 +238,7 @@ bool Location::checkValid()
     }
     if (sb.st_mode & S_IFDIR)
     {
-        std::cout << "Wrong default file : " << path << std::endl;
+        std::cout << "Wrong default file - Please check file type : " << path << std::endl;
         return false;
     }
 
@@ -250,7 +250,7 @@ bool Location::checkValid()
     }
     if (sb.st_mode & S_IFREG)
     {
-        std::cout << "Wrong uploadPath : " <<  upload_path_ << std::endl;
+        std::cout << "Wrong uploadPath - Plase check file type : " <<  upload_path_ << std::endl;
         return false;
     }
     return true;
