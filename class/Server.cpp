@@ -186,7 +186,7 @@ Response Server::GETHandler(Request &request, Location& location)
     res.addHeader("Last-Modified", location.getRecentTime(request.file_));
     res.addHeader("Content-Length", location.getFileSize(request.file_));
     res.addHeader("Connection", "Keep-Alive");
-    res.file_path_ = location.getServerRootPath(request.file_);
+    res.file_path_ = location.getFilePath(request.file_);
 
     //디렉토리라면 content-type 텍스트로 바꿔주고 response_data에 
     //디렉토리리스트 html 만들어 넣은뒤에 content-length설정해주고 파일 이름 없앰

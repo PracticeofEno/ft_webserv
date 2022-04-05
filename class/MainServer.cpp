@@ -137,7 +137,7 @@ bool MainServer::init(void)
     }
     if (checkValidConfig() == false)
     {
-        //std::cout << "Error - Wrong cofigfile" << std::endl;
+        // std::cout << "Error - Wrong cofigfile" << std::endl;
         return false;
     }
     return true;
@@ -310,12 +310,7 @@ void MainServer::handleReadEvent(int event_fd)
         std::cout << con.response_.response_data_ << std::endl;
         con.response_ = server.handleRequestCGI(con);
         con.response_.state = READY;
-
-        epoll_event ep_event;
-        ep_event.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
-        ep_event.data.fd = con.socket_;
         close(con.pipe_read_);
-        epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
         // this->cons_.deletePipeConnection(con.pipe_read_);
     }
 }
@@ -359,10 +354,10 @@ int MainServer::eventWait()
         event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
     else
     {
-        //sort()는 사실 없어도 되는데.. 클라이언트가 많아지면 정렬한뒤에 첫번째놈 가져오면 되는데..
+        // sort()는 사실 없어도 되는데.. 클라이언트가 많아지면 정렬한뒤에 첫번째놈 가져오면 되는데..
         //현재는 서버마저 CLIENT POLL에 넣어버려서 ㅋ -_- 빠르게 가져오자면 가져올순 있지만..무의미한 sort라 주석
         //바꾸기가 너무 귀찮아
-        //this->cons_.sort(); 
+        // this->cons_.sort();
         event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, this->cons_.getMinTimeOut());
     }
     current_time = get_time();
@@ -399,11 +394,19 @@ void MainServer::start()
                     std::cout << errno << std::endl;
                     cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;
                 }
-                if (_ep_events_buf[i].events & EPOLLIN)
+                else if (_ep_events_buf[i].events & EPOLLIN)
                 {
                     handleReadEvent(_ep_events_buf[i].data.fd);
+                    Connection& tmp = cons_.getConnection(_ep_events_buf[i].data.fd);
+                    if (tmp.response_.state == READY)
+                    {
+                        epoll_event ep_event;
+                        ep_event.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
+                        ep_event.data.fd = tmp.socket_;
+                        epoll_ctl(_epfd, EPOLL_CTL_MOD, tmp.socket_, &ep_event);
+                    }
                 }
-                if (_ep_events_buf[i].events & EPOLLOUT)
+                else if (_ep_events_buf[i].events & EPOLLOUT)
                 {
                     handleWriteEvent(_ep_events_buf[i].data.fd);
                 }
@@ -426,11 +429,23 @@ bool MainServer::checkValidConfig()
     std::vector<Location>::iterator lo_its;
     std::vector<Location>::iterator lo_ite;
 
-    for(it = its; it != ite; it++)
+    for (it = its; it != ite; it++)
     {
+        std::string tmp = it->locations_[0].getServerRootPath(it->error_page_);
+        struct stat sb;
+        if (stat(tmp.c_str(), &sb) == -1)
+        {
+            std::cout << "Wrong eror file : " << tmp << std::endl;
+            return false;
+        }
+        if (sb.st_mode & S_IFDIR)
+        {
+            std::cout << "Wrong eror file: " << tmp << std::endl;
+            return false;
+        }
         lo_its = it->locations_.begin();
         lo_ite = it->locations_.end();
-        for(lo_it = lo_its; lo_it != lo_ite; lo_it++)
+        for (lo_it = lo_its; lo_it != lo_ite; lo_it++)
         {
             if (lo_it->checkValid() == false)
                 return false;

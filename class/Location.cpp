@@ -176,7 +176,7 @@ std::string Location::getDirectoryList(std::string url)
     struct dirent *file = NULL;
     
 
-    if ((dir_ptr = opendir(getServerRootPath(url).c_str())) == NULL)
+    if ((dir_ptr = opendir(getFilePath(url).c_str())) == NULL)
     {
         ExceptionCode ex(999);
         throw ex;
