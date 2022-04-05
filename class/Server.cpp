@@ -327,10 +327,6 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	
     std::string tmp = location.getCgiCommand(request.file_);
     strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
-<<<<<<< HEAD
-=======
-	strncpy(arg[1], "abcd", 51);
->>>>>>> bdae953c7181d6cb5d7896603c84a5b962812a2f
 
     env = getCgiVariable(request, con, location);
 
@@ -393,11 +389,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "text/html"));
     env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "/"));
-<<<<<<< HEAD
     env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getServerRootPath(request.file_) ));
-=======
-<<<<<<< HEAD
-    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.url_)));
     env_tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", request.method_));
     if (request.method_ == "GET")
     {
@@ -411,11 +403,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
         std::cout << ss.str() << std::endl;
         env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.body_));
     }
-=======
-    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.file_) ));
->>>>>>> ee942abfd69c535a9cc6238772a8d9b415987a7a
-    env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
->>>>>>> bdae953c7181d6cb5d7896603c84a5b962812a2f
+
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));
