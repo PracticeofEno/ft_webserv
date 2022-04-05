@@ -42,4 +42,3 @@ void Connection::resetData()
     response_.resetData();
     reqeust_.resetData();
 }
-

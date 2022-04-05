@@ -11,17 +11,16 @@ class MainServer;
 class Connection
 {
 public:
-    int socket_; // Clinet socket
+    int socket_;
     int kind_;
     long timeout_;
     int port_;
-    int pipe_read_;//1
-    int pipe_event_;//2
+    int pipe_read_;
     Request reqeust_;
     Response response_;
     std::string client_ip_;
     std::string buf_cgi_;
-    char buf_CGI_[BUF_SIZE];//3
+    char buf_CGI_[BUF_SIZE];
     bool disconnect_;
     
     Connection();

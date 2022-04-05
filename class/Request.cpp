@@ -125,6 +125,11 @@ void Request::parseStartline(std::string tmp)
         if (endPos != std::string::npos)
         {
             url_ = tmp.substr(0, endPos);
+            if ((endPos = url_.find("?")) != std::string::npos)
+            {
+                query_ = url_.substr(endPos + 1, std::string::npos);
+                url_ = url_.substr(0, endPos);
+            }
             tmp.erase(0, endPos + 1);
             version_ = tmp;
         }

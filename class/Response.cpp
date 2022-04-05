@@ -123,6 +123,7 @@ void Response::readPipe(int pipe)
     while (42)
     {
         strlen = read(pipe, buf, tmp);
+        // sleep(10);
         buf[strlen] = 0;
         if (strlen == 0)
         {

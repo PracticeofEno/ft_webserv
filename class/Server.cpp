@@ -317,8 +317,8 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 {
     char** env;
     pid_t pid;
-    int pip[2];
-    int pip2[2];
+    int pip_to_child[2];
+    int pip_to_parrent[2];
 
     char **arg = new char*[3];
 	arg[0] = new char[50];
@@ -327,40 +327,51 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	
     std::string tmp = location.getCgiCommand(request.file_);
     strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
+<<<<<<< HEAD
+=======
 	strncpy(arg[1], "abcd", 51);
+>>>>>>> bdae953c7181d6cb5d7896603c84a5b962812a2f
 
     env = getCgiVariable(request, con, location);
 
-    pipe(pip);
-    pipe(pip2);
-    con.pipe_read_ = pip[0];
-    con.pipe_event_ = pip[1];
+    pipe(pip_to_child);
+    pipe(pip_to_parrent);
+    con.pipe_read_ = pip_to_parrent[0];
 
-    //testcode
-    write(pip2[1], request.body_.c_str(), request.body_.size());
-    //write(pip2[1], "abcdefg"", 7);
-    close(pip2[1]);
-    ///////////////
+    int flags = fcntl(pip_to_child[1], F_GETFL);
+    flags |= O_NONBLOCK;
+    if (fcntl(pip_to_child[1], F_SETFL, flags) < 0)
+    {
+        std::cout << "add connection fcntl() error" << std::endl;
+        close(pip_to_child[1]);
+        _exit(1);
+    }
+
     con.kind_ = CGI;
-    main_server.cons_.appConnection(pip[0], CGI);
+    main_server.cons_.appConnection(pip_to_parrent[0], CGI);
 
     pid = fork();
     if (pid == 0)
     {
-        close(pip[0]);
-        dup2(pip2[0], STDIN_FILENO);
-        dup2(pip[1], STDOUT_FILENO);
+        dup2(pip_to_child[0], STDIN_FILENO);
+        dup2(pip_to_parrent[1], STDOUT_FILENO);
+        close(pip_to_child[1]);
+        close(pip_to_parrent[0]);
         execvpe(arg[0], arg, env);
     }
     else
     {
         int status;
-        close(pip[1]);
+        close(pip_to_child[0]);
+        close(pip_to_parrent[1]);
+        write(pip_to_child[1], request.body_.c_str(), request.body_.size());
+        close(pip_to_child[1]);
         waitpid(pid, &status, WNOHANG);
     }
-
-    for (int i = 0 ; i < 18; i++)
+    int i;
+    for (i = 0 ; env[i] != 0; i++)
         delete[] env[i];
+    delete[] env[i];
     delete[] env;
     delete arg[0];
     delete arg[1];
@@ -376,30 +387,49 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     int i = 0;
     std::map<std::string, std::string> env_tmp;
     std::stringstream ss;
-    ss << tmp.port_;
     std::string tmp2;
 
     env_tmp.insert(std::pair<std::string, std::string>("AUTH_TYPE", "null"));
-    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", "0"));
-    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "null"));
+    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "text/html"));
     env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "/"));
+<<<<<<< HEAD
     env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getServerRootPath(request.file_) ));
+=======
+<<<<<<< HEAD
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.url_)));
+    env_tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", request.method_));
+    if (request.method_ == "GET")
+    {
+        env_tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", "0"));
+        env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
+    }
+    else if (request.method_ == "POST")
+    {
+        ss << request.body_.size();
+        env_tmp.insert(std::pair<std::string, std::string>("CONTENT_LENGTH", ss.str()));
+        std::cout << ss.str() << std::endl;
+        env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.body_));
+    }
+=======
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.file_) ));
+>>>>>>> ee942abfd69c535a9cc6238772a8d9b415987a7a
     env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
+>>>>>>> bdae953c7181d6cb5d7896603c84a5b962812a2f
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_USER", "null"));
-    env_tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", request.method_));
     //env_tmp.insert(std::pair<std::string, std::string>("REQUEST_URI", getCgiUri(request, tmp.port_)));
     //env_tmp.insert(std::pair<std::string, std::string>("SCRIPT_NAME", request.url_));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_NAME", this->server_name_));
+    ss.str("");
+    ss << tmp.port_;
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PORT", ss.str()));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", "HTTP/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("SERVER_SOFTWARE", "ft_webserv"));
     env_tmp.insert(std::pair<std::string, std::string>("REDIRECT_STATUS", "200"));
     env_tmp.insert(std::pair<std::string, std::string>("Protocol-Specific Meta-Variables", "null"));
-    env_tmp.insert(std::pair<std::string, std::string>("REDIRECT_STATUS", "200"));
 
     env = new char*[env_tmp.size() + 1];
     std::map<std::string, std::string>::iterator it;
