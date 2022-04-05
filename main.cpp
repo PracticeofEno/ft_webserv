@@ -3,9 +3,16 @@
 
 MainServer main_server;
 std::map<std::string, std::string> mime;
-int	main()
+std::string server;
+int	main(int argc, char **argv)
 {
-	main_server = MainServer("default.config");
+	if (argc != 2)
+	{
+		std::cout << "Need config file" << std::endl;
+		return 0;
+	}
+	server = argv[1];
+	main_server = MainServer(server);
 	if (main_server.init())
 		main_server.start();
 	return 0;
