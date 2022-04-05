@@ -47,7 +47,7 @@ void Location::dataSetting(std::string data)
         cgi_extension_ = value;
     else if (key.compare("uploadPath") == 0)
         upload_path_ = value;
-    else if (key.compare("dlDefault") == 0)
+    else if (key.compare("default") == 0)
         dl_default_ = value;
     else if (key.compare("directory_listing") == 0)
     {

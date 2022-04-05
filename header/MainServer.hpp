@@ -20,7 +20,7 @@ class MainServer
         MainServer(const MainServer& tmp);
         MainServer& operator=(const MainServer& tmp);
         ~MainServer();
-        void init();
+        bool init();
         void start();
 
     private:
@@ -35,6 +35,7 @@ class MainServer
         int         eventWait();
 
         bool        openSocket(int port);
+        bool        checkValidConfig();
 
 };
 extern MainServer main_server;

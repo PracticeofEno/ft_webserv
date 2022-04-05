@@ -109,7 +109,7 @@ bool MainServer::openSocket(int port)
     return true;
 }
 
-void MainServer::init(void)
+bool MainServer::init(void)
 {
 
     std::string recieveString;
@@ -130,9 +130,15 @@ void MainServer::init(void)
 
         for (it2 = its2; it2 != ite2; it2++)
         {
+            // if (openSocket((*it2)) == false)
+            //     return false;
             openSocket((*it2));
         }
     }
+    if (checkValidConfig() == false)
+        return false;
+    
+    return true;
 }
 
 void MainServer::makeServerPool(std::string data)
@@ -406,4 +412,9 @@ void MainServer::start()
             e.handleException();
         }
     }
+}
+
+bool MainServer::checkValidConfig()
+{
+    return true;
 }
