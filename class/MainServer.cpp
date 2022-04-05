@@ -431,16 +431,16 @@ bool MainServer::checkValidConfig()
 
     for (it = its; it != ite; it++)
     {
-        std::string tmp = it->locations_[0].getServerRootPath(it->error_page_);
+        std::string error_page = it->locations_[0].getServerRootPath(it->error_page_);
         struct stat sb;
-        if (stat(tmp.c_str(), &sb) == -1)
+        if (stat(error_page.c_str(), &sb) == -1)
         {
-            std::cout << "Wrong eror file : " << tmp << std::endl;
+            std::cout << "Wrong error file : " << error_page << std::endl;
             return false;
         }
         if (sb.st_mode & S_IFDIR)
         {
-            std::cout << "Wrong eror file: " << tmp << std::endl;
+            std:: cout << "Wrong error file - Plase check file type : " << error_page << std::endl;
             return false;
         }
         lo_its = it->locations_.begin();
