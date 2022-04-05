@@ -57,16 +57,16 @@ void ConnectionPool::addConnection(int socket, int kind, std::string client_ip, 
     }
 }
 
-void ConnectionPool::appConnection(int socket, int kind)
+void ConnectionPool::appConnection(int pipe, int kind)
 {
     struct epoll_event userevent;      // 등록하기 위한 변수!
 
-    int flags = fcntl(socket, F_GETFL);
+    int flags = fcntl(pipe, F_GETFL);
     flags |= O_NONBLOCK;
-    if (fcntl(socket, F_SETFL, flags) < 0)
+    if (fcntl(pipe, F_SETFL, flags) < 0)
     {
         std::cout << "server_fd fcntl() error" << std::endl;
-        close(socket);
+        close(pipe);
         _exit(1);
     }
 
@@ -75,8 +75,8 @@ void ConnectionPool::appConnection(int socket, int kind)
     else if (kind == CLIENT || kind == CGI)
         userevent.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
 
-    userevent.data.fd = socket;
-    epoll_ctl(this->epfd_, EPOLL_CTL_ADD, socket, &userevent);
+    userevent.data.fd = pipe;
+    epoll_ctl(this->epfd_, EPOLL_CTL_ADD, pipe, &userevent);
 }
 
 void ConnectionPool::deleteConnection(Connection& con)

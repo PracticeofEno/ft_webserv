@@ -40,5 +40,4 @@ void Connection::resetData()
     this->kind_ = CLIENT;
     response_.resetData();
     reqeust_.resetData();
-
 }
