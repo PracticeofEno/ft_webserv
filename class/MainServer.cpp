@@ -1,4 +1,6 @@
 #include "MainServer.hpp"
+#include "algorithm"
+#include "Util.hpp"
 
 MainServer::MainServer()
 {
@@ -107,7 +109,7 @@ bool MainServer::openSocket(int port)
     return true;
 }
 
-void MainServer::init(void)
+bool MainServer::init(void)
 {
 
     std::string recieveString;
@@ -128,9 +130,15 @@ void MainServer::init(void)
 
         for (it2 = its2; it2 != ite2; it2++)
         {
+            // if (openSocket((*it2)) == false)
+            //     return false;
             openSocket((*it2));
         }
     }
+    if (checkValidConfig() == false)
+        return false;
+    
+    return true;
 }
 
 void MainServer::makeServerPool(std::string data)
@@ -306,7 +314,7 @@ void MainServer::handleReadEvent(int event_fd)
         ep_event.data.fd = con.socket_;
         close(con.pipe_read_);
         epoll_ctl(_epfd, EPOLL_CTL_MOD, con.socket_, &ep_event);
-        //this->cons_.deletePipeConnection(con.pipe_read_);
+        // this->cons_.deletePipeConnection(con.pipe_read_);
     }
 }
 
@@ -335,21 +343,51 @@ void MainServer::handleWriteEvent(int event_fd)
     }
 }
 
+int MainServer::eventWait()
+{
+    long last_time = 0;
+    long current_time = 0;
+    int event_cnt;
+
+    if (current_time != 0)
+        last_time = current_time;
+    else
+        last_time = get_time();
+    if (this->cons_.cons_.size() == this->sp_.serverPool_.size())
+        event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
+    else
+    {
+        //sort()는 사실 없어도 되는데.. 클라이언트가 많아지면 정렬한뒤에 첫번째놈 가져오면 되는데..
+        //현재는 서버마저 CLIENT POLL에 넣어버려서 ㅋ -_- 빠르게 가져오자면 가져올순 있지만..무의미한 sort라 주석
+        //바꾸기가 너무 귀찮아
+        //this->cons_.sort(); 
+        event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, this->cons_.getMinTimeOut());
+    }
+    current_time = get_time();
+    this->cons_.printPool();
+    this->cons_.eraseTimeOut(current_time - last_time);
+    std::cout << "=================================" << std::endl;
+    this->cons_.printPool();
+    return event_cnt;
+}
+
 void MainServer::start()
 {
+    int event_cnt;
     while (1)
     {
-        _event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, -1);
         try
         {
-            if (_event_cnt == -1)
+            event_cnt = eventWait();
+            if (event_cnt == -1)
             {
                 std::cout << "wait() error!" << std::endl;
                 break;
             }
             std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
-            for (int i = 0; i < _event_cnt; i++)
+            for (int i = 0; i < event_cnt; i++)
             {
+                cons_.getConnection(_ep_events_buf[i].data.fd).timeout_ = 20000;
                 // std::cout << this->cons_.cons_.size() << std::endl;
                 std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
                 if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLRDHUP)
@@ -374,4 +412,9 @@ void MainServer::start()
             e.handleException();
         }
     }
+}
+
+bool MainServer::checkValidConfig()
+{
+    return true;
 }

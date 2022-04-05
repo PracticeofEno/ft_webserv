@@ -1,4 +1,5 @@
 #include "ConnectionPool.hpp"
+#include "algorithm"
 
 ConnectionPool::ConnectionPool()
 {
@@ -191,4 +192,58 @@ void ConnectionPool::printPool()
         else if (it->kind_  == CGI) 
             std::cout << "CGI" << std::endl;
     }
+}
+
+struct less_than_key
+{
+    inline bool operator() (const Connection& struct1, const Connection& struct2)
+    {
+        return (struct1.timeout_ < struct2.timeout_);
+    }
+};
+
+void ConnectionPool::sort()
+{
+    std::sort(this->cons_.begin(), this->cons_.end(), less_than_key());
+}
+
+void ConnectionPool::eraseTimeOut(long decrease_time)
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator ite = cons_.end();
+
+    it = cons_.begin();
+    ite = cons_.end();
+    while (true)
+    {
+        if (it == ite)
+            break;
+        if (it->kind_ == CLIENT)
+        {
+            it->timeout_ = it->timeout_ - decrease_time;
+            if (it->timeout_ < 0)
+            {
+                std::cout << "time out delete fd : " << it->socket_ << std::endl;
+                deleteConnection(*it);
+            }
+        }
+        it++;
+    }
+}
+
+long ConnectionPool::getMinTimeOut()
+{
+    std::vector<Connection>::iterator it;
+    std::vector<Connection>::iterator its = cons_.begin();
+    std::vector<Connection>::iterator ite = cons_.end();
+    long min = 60000;
+
+    for (it = its; it != ite; it++)
+    {
+        if (it->kind_ == CLIENT && it->timeout_ < min)
+        {
+            min = it->timeout_;
+        }
+    }
+    return min;
 }

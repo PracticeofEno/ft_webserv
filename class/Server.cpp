@@ -76,8 +76,8 @@ bool Server::handleRequest(Request &request, Connection& con)
     if (location.existFile(request) == NOTEXIST && request.method_ != "POST")
         return false;
 
-    if (this->CheckCGI(con.reqeust_.url_, location))
-        this->CGIHandler(con.reqeust_, con, location);
+    if (this->CheckCGI(request.url_, location))
+        this->CGIHandler(request, con, location);
     else
     {
         if (request.method_ == "GET")
@@ -116,7 +116,10 @@ Response Server::handleRequestCGI(Connection& tmp)
         ss << cgi_header["Status"];
         ss >> code;
     }
-
+    if (cgi_header.find("Content-Type") != cgi_header.end())
+    {
+        res.header_["Content-Type"] = cgi_header.find("Content-Type")->second;
+    }
     res.status_ = ResponseStatus(code);
     res.http_version_ = "HTTP/1.1";
     res.header_["Connection"] = "Keep-Alive";
@@ -162,7 +165,6 @@ bool Server::findLocation(std::string location)
     std::vector<Location>::iterator it;
     std::vector<Location>::iterator its = this->locations_.begin();
     std::vector<Location>::iterator ite = this->locations_.end();
-    std::vector<Location>::iterator tmp = this->locations_.begin();
 
     for (it = its; it != ite; it++)
     {
@@ -176,20 +178,6 @@ Response Server::GETHandler(Request &request, Location& location)
 {
     Response res;
 
-    // 루트 디렉토리를 가르키면 index.html 추가해줌
-    if (location.location_name_ == "/" && request.file_ == "")
-    {
-        res.status_ = ResponseStatus(200);
-        res.http_version_ = "HTTP/1.1";
-        res.addHeader("Server", this->server_name_);
-        res.addHeader("Date", generateTime());
-        res.addHeader("Last-Modified", location.getRecentTime(request.file_));
-        res.addHeader("Content-Length", "0");
-        res.addHeader("Connection", "Keep-Alive");
-        res.file_path_ = "";
-        res.state = READY;
-        return res;
-    }
     res.status_ = ResponseStatus(200);
     res.http_version_ = "HTTP/1.1";
     res.addHeader("Server", this->server_name_);
@@ -339,6 +327,10 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
 	
     std::string tmp = location.getCgiCommand(request.file_);
     strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
+<<<<<<< HEAD
+=======
+	strncpy(arg[1], "abcd", 51);
+>>>>>>> bdae953c7181d6cb5d7896603c84a5b962812a2f
 
     env = getCgiVariable(request, con, location);
 
@@ -401,6 +393,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "text/html"));
     env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "/"));
+<<<<<<< HEAD
     env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.url_)));
     env_tmp.insert(std::pair<std::string, std::string>("REQUEST_METHOD", request.method_));
     if (request.method_ == "GET")
@@ -415,6 +408,10 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
         std::cout << ss.str() << std::endl;
         env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.body_));
     }
+=======
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.file_) ));
+    env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
+>>>>>>> bdae953c7181d6cb5d7896603c84a5b962812a2f
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_IDENT", "null"));

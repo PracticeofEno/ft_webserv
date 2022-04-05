@@ -23,6 +23,9 @@ class ConnectionPool
         void deleteConnection(Connection& con);
         void deletePipeConnection(int pipe);
         bool checkSocket(int socket, int kind);
+        void eraseTimeOut(long decrease_time);
+        void sort();
+        long getMinTimeOut();
         Connection& getConnection(int socket);
 
         void printPool();

@@ -9,4 +9,5 @@ std::string replace_all(std::string &message, const std::string &pattern, const 
 std::string searchMimeType(std::string url);
 std::string generateTime();
 int	ft_strcmp(const char *s1, const char *s2);
+long get_time(void);
 #endif
