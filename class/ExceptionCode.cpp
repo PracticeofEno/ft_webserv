@@ -52,7 +52,7 @@ void ExceptionCode::handleException()
     {
         res.header_["Content-Type"] = "text/html";
         res.header_["Content-Length"] = location.getFileSize("/" + server.error_page_);
-        res.file_path_ = location.getFilePath("/" + server.error_page_);
+        res.file_path_ = location.getServerRootPath("/" + server.error_page_);
         res.send(con_.socket_);
         con_.resetData();
     }

@@ -80,12 +80,12 @@ int Location::existFile(Request& request)
     std::string filename = request.file_;
 
     
-    tmp = getFilePath(filename);
+    tmp = getServerRootPath(filename);
 
     if (access(tmp.c_str(), F_OK) == 0)
     {
         struct stat sb;
-        if (stat(this->getFilePath(filename).c_str(), &sb) == -1)
+        if (stat(this->getServerRootPath(filename).c_str(), &sb) == -1)
         {
             ExceptionCode ex(999);
             throw ex;
@@ -103,7 +103,7 @@ int Location::existFile(Request& request)
         return NOTEXIST;
 }
 
-std::string Location::getFilePath(std::string url)
+std::string Location::getServerRootPath(std::string url)
 {
     char buf[4096];
     realpath(".", buf);
@@ -134,7 +134,7 @@ std::string Location::getFileSize(std::string url)
     struct stat st;
     std::stringstream ss;
 
-    path = getFilePath(url);
+    path = getServerRootPath(url);
     lstat(path.c_str(), &st);
     ss << st.st_size;
     return (ss.str());
@@ -146,7 +146,7 @@ std::string Location::getRecentTime(std::string url)
     std::string ret;
     struct stat st;
 
-    path = getFilePath(url);
+    path = getServerRootPath(url);
     lstat(path.c_str(), &st);
     ret = std::string(ctime(&st.st_mtime));
     ret.erase(ret.find("\n"), 1);
@@ -157,7 +157,7 @@ bool Location::isDir(std::string url)
 {
     struct stat sb;
 
-    if (stat(this->getFilePath(url).c_str(), &sb) == -1)
+    if (stat(this->getServerRootPath(url).c_str(), &sb) == -1)
     {
         ExceptionCode ex(999);
         throw ex;
@@ -176,7 +176,7 @@ std::string Location::getDirectoryList(std::string url)
     struct dirent *file = NULL;
     
 
-    if ((dir_ptr = opendir(getFilePath(url).c_str())) == NULL)
+    if ((dir_ptr = opendir(getServerRootPath(url).c_str())) == NULL)
     {
         ExceptionCode ex(999);
         throw ex;
@@ -224,4 +224,34 @@ std::string Location::getCgiCommand(std::string filename)
     }
     tmp.append(filename);
     return tmp;
+}
+
+bool Location::checkValid()
+{
+    std::string path = this->getServerRootPath(this->dl_default_);
+    struct stat sb;
+
+    if (stat(this->getServerRootPath(path).c_str(), &sb) == -1)
+    {
+        std::cout << "Wrong default file" << std::endl;
+        return false;
+    }
+    if (sb.st_mode & S_IFDIR)
+    {
+        std::cout << "Wrong default file - Please check file type" << std::endl;
+        return false;
+    }
+
+    std::string uploadPath = this->getServerRootPath(this->upload_path_);
+    if (stat(this->getServerRootPath(path).c_str(), &sb) == -1)
+    {
+        std::cout << "Wrong uploadPath" << std::endl;
+        return false;
+    }
+    if (sb.st_mode & S_IFREG)
+    {
+        std::cout << "Worng uploadPath - Please check file type" << std::endl;
+        return false;
+    }
+    return true;
 }

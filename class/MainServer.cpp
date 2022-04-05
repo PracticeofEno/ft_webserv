@@ -136,8 +136,10 @@ bool MainServer::init(void)
         }
     }
     if (checkValidConfig() == false)
+    {
+        //std::cout << "Error - Wrong cofigfile" << std::endl;
         return false;
-    
+    }
     return true;
 }
 
@@ -416,5 +418,23 @@ void MainServer::start()
 
 bool MainServer::checkValidConfig()
 {
+    std::vector<Server>::iterator it;
+    std::vector<Server>::iterator its = this->sp_.serverPool_.begin();
+    std::vector<Server>::iterator ite = this->sp_.serverPool_.end();
+
+    std::vector<Location>::iterator lo_it;
+    std::vector<Location>::iterator lo_its;
+    std::vector<Location>::iterator lo_ite;
+
+    for(it = its; it != ite; it++)
+    {
+        lo_its = it->locations_.begin();
+        lo_ite = it->locations_.end();
+        for(lo_it = lo_its; lo_its != lo_ite; lo_it++)
+        {
+            if (lo_it->checkValid() == false)
+                return false;
+        }
+    }
     return true;
 }

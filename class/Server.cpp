@@ -186,7 +186,7 @@ Response Server::GETHandler(Request &request, Location& location)
     res.addHeader("Last-Modified", location.getRecentTime(request.file_));
     res.addHeader("Content-Length", location.getFileSize(request.file_));
     res.addHeader("Connection", "Keep-Alive");
-    res.file_path_ = location.getFilePath(request.file_);
+    res.file_path_ = location.getServerRootPath(request.file_);
 
     //디렉토리라면 content-type 텍스트로 바꿔주고 response_data에 
     //디렉토리리스트 html 만들어 넣은뒤에 content-length설정해주고 파일 이름 없앰
@@ -284,7 +284,7 @@ Response Server::DELETEHandler(Request &request, Location& location)
     Response res;
     std::string path;
 
-    path = location.getFilePath(request.url_);
+    path = location.getServerRootPath(request.url_);
 
     if (location.isDir(request.url_) == DIRECTORY)
     {
@@ -384,7 +384,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "null"));
     env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "/"));
-    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getFilePath(request.file_) ));
+    env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getServerRootPath(request.file_) ));
     env_tmp.insert(std::pair<std::string, std::string>("QUERY_STRING", request.query_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_ADDR", tmp.client_ip_));
     env_tmp.insert(std::pair<std::string, std::string>("REMOTE_HOST", tmp.client_ip_));
