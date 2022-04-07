@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/ft_webserv",
-            "args": [],
+            "args": ["default.config"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

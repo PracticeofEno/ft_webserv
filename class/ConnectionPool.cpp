@@ -1,5 +1,8 @@
 #include "ConnectionPool.hpp"
 #include "algorithm"
+#include "MainServer.hpp"
+#include <vector>
+#include <string>
 
 ConnectionPool::ConnectionPool()
 {
@@ -80,11 +83,12 @@ void ConnectionPool::appConnection(int pipe, int kind)
     epoll_ctl(this->epfd_, EPOLL_CTL_ADD, pipe, &userevent);
 }
 
-void ConnectionPool::deleteConnection(Connection& con)
+bool ConnectionPool::deleteConnection(Connection& con)
 {
     std::vector<Connection>::iterator it;
     std::vector<Connection>::iterator its = cons_.begin();
     std::vector<Connection>::iterator ite = cons_.end();
+    bool tf = false;
 
     for (it = its; it != ite; it++)
     {
@@ -103,7 +107,9 @@ void ConnectionPool::deleteConnection(Connection& con)
         this->cons_.erase(it);
         this->printPool();
         std::cout << std::endl;
+        tf = true;
     }
+    return tf;
 }
 
 bool ConnectionPool::checkSocket(int socket, int kind)
@@ -224,7 +230,8 @@ void ConnectionPool::eraseTimeOut(long decrease_time)
             if (it->timeout_ < 0)
             {
                 std::cout << "time out delete fd : " << it->socket_ << std::endl;
-                deleteConnection(*it);
+                it = this->cons_.erase(it);
+                ite = cons_.end();
                 if (it == ite)
                     break;
             }

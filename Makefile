@@ -1,6 +1,5 @@
 NAME = ft_webserv
-CFLAGS = -Wall -Wextra -Werror -std=c++98
-# CFLAGS += -D_GLIBCXX_DEBUG
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -D_GLIBCXX_DEBUG
 CC = c++
 
 CFLAGS += -I ./header/

@@ -1,6 +1,7 @@
 #include "MainServer.hpp"
 #include "algorithm"
 #include "Util.hpp"
+#include "ExceptionCode.hpp"
 
 MainServer::MainServer()
 {
@@ -297,7 +298,7 @@ void MainServer::handleReadEvent(int event_fd)
         }
         catch (ExceptionCode &e)
         {
-            ExceptionCode ex(e.code_, con);
+            ExceptionCode ex(e.code_);
             ex.location_ = e.location_;
             throw ex;
         }
@@ -319,24 +320,31 @@ void MainServer::handleWriteEvent(int event_fd)
 {
     Connection &con = cons_.getConnection(event_fd);
 
-    if (con.response_.state == READY)
+    if (con.e_.code_ == 0)
     {
-        if (con.kind_ != CGI)
+        if (con.response_.state == READY)
         {
-            con.response_.send(con.socket_);
-            if (con.reqeust_.header_["Connection"] == "Close" || con.reqeust_.header_["Connection"] == "close")
-                this->cons_.deleteConnection(con);
-            else
-                con.resetData();
+            if (con.kind_ != CGI)
+            {
+                con.response_.send(con.socket_);
+                if (con.reqeust_.header_["Connection"] == "Close" || con.reqeust_.header_["Connection"] == "close")
+                    this->cons_.deleteConnection(con);
+                else
+                    con.resetData();
+            }
+            else if (con.kind_ == CGI)
+            {
+                con.response_.send(con.socket_);
+                if (con.reqeust_.header_["Connection"] == "Close" || con.reqeust_.header_["Connection"] == "close")
+                    this->cons_.deleteConnection(con);
+                else
+                    con.resetData();
+            }
         }
-        else if (con.kind_ == CGI)
-        {
-            con.response_.send(con.socket_);
-            if (con.reqeust_.header_["Connection"] == "Close" || con.reqeust_.header_["Connection"] == "close")
-                this->cons_.deleteConnection(con);
-            else
-                con.resetData();
-        }
+    }
+    else
+    {
+        con.handleException();
     }
 }
 
@@ -373,48 +381,49 @@ void MainServer::start()
     int event_cnt;
     while (1)
     {
-        try
+
+        event_cnt = eventWait();
+        if (event_cnt == -1)
         {
-            event_cnt = eventWait();
-            if (event_cnt == -1)
+            std::cout << "wait() error!" << errno << std::endl; // EINTR
+            continue;
+        }
+        std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
+        for (int i = 0; i < event_cnt; i++)
+        {
+            cons_.getConnection(_ep_events_buf[i].data.fd).timeout_ = 20000;
+            // std::cout << this->cons_.cons_.size() << std::endl;
+            std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
+            if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLRDHUP)
             {
-                std::cout << "wait() error!" << errno << std::endl;// EINTR
-                continue;
+                std::cout << "EPOLLRDHYP errror" << std::endl;
+                std::cout << "set disconnect flag true" << std::endl;
+                std::cout << errno << std::endl;
+                cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;
             }
-            std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
-            for (int i = 0; i < event_cnt; i++)
+            else if (_ep_events_buf[i].events & EPOLLIN)
             {
-                cons_.getConnection(_ep_events_buf[i].data.fd).timeout_ = 20000;
-                // std::cout << this->cons_.cons_.size() << std::endl;
-                std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
-                if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLRDHUP)
-                {
-                    std::cout << "EPOLLRDHYP errror" << std::endl;
-                    std::cout << "set disconnect flag true" << std::endl;
-                    std::cout << errno << std::endl;
-                    cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;
-                }
-                else if (_ep_events_buf[i].events & EPOLLIN)
+                Connection &tmp = cons_.getConnection(_ep_events_buf[i].data.fd);
+                try
                 {
                     handleReadEvent(_ep_events_buf[i].data.fd);
-                    Connection& tmp = cons_.getConnection(_ep_events_buf[i].data.fd);
-                    if (tmp.response_.state == READY)
-                    {
-                        epoll_event ep_event;
-                        ep_event.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
-                        ep_event.data.fd = tmp.socket_;
-                        epoll_ctl(_epfd, EPOLL_CTL_MOD, tmp.socket_, &ep_event);
-                    }
                 }
-                else if (_ep_events_buf[i].events & EPOLLOUT)
+                catch (ExceptionCode &e)
                 {
-                    handleWriteEvent(_ep_events_buf[i].data.fd);
+                    tmp.e_ = e;
+                }
+                if (tmp.response_.state == READY || tmp.e_.code_ != 0)
+                {
+                    epoll_event ep_event;
+                    ep_event.events = EPOLLIN | EPOLLET | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
+                    ep_event.data.fd = tmp.socket_;
+                    epoll_ctl(_epfd, EPOLL_CTL_MOD, tmp.socket_, &ep_event);
                 }
             }
-        }
-        catch (ExceptionCode &e)
-        {
-            e.handleException();
+            else if (_ep_events_buf[i].events & EPOLLOUT)
+            {
+                handleWriteEvent(_ep_events_buf[i].data.fd);
+            }
         }
     }
 }
@@ -440,7 +449,7 @@ bool MainServer::checkValidConfig()
         }
         if (sb.st_mode & S_IFDIR)
         {
-            std:: cout << "Wrong error file - Plase check file type : " << error_page << std::endl;
+            std::cout << "Wrong error file - Plase check file type : " << error_page << std::endl;
             return false;
         }
         lo_its = it->locations_.begin();

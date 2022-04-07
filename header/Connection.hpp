@@ -4,6 +4,7 @@
 #include "Total.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "ExceptionCode.hpp"
 #include <sys/time.h>
 
 class MainServer;
@@ -18,6 +19,7 @@ public:
     int pipe_read_;
     Request reqeust_;
     Response response_;
+    ExceptionCode e_;
     std::string client_ip_;
     std::string buf_cgi_;
     char buf_CGI_[BUF_SIZE];
@@ -32,6 +34,7 @@ public:
     bool makeRequest();
     std::string readLine();
     void resetData();
+    void handleException();
 private:
 };
 

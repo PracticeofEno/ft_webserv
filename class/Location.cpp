@@ -1,5 +1,6 @@
 #include "Location.hpp"
 #include "ExceptionCode.hpp"
+#include "Request.hpp"
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -80,12 +81,12 @@ int Location::existFile(Request& request)
     std::string filename = request.file_;
 
     
-    tmp = getServerRootPath(filename);
+    tmp = getFilePath(filename);
 
     if (access(tmp.c_str(), F_OK) == 0)
     {
         struct stat sb;
-        if (stat(this->getServerRootPath(filename).c_str(), &sb) == -1)
+        if (stat(tmp.c_str(), &sb) == -1)
         {
             ExceptionCode ex(999);
             throw ex;
@@ -134,7 +135,7 @@ std::string Location::getFileSize(std::string url)
     struct stat st;
     std::stringstream ss;
 
-    path = getServerRootPath(url);
+    path = getFilePath(url);
     lstat(path.c_str(), &st);
     ss << st.st_size;
     return (ss.str());
@@ -157,7 +158,7 @@ bool Location::isDir(std::string url)
 {
     struct stat sb;
 
-    if (stat(this->getServerRootPath(url).c_str(), &sb) == -1)
+    if (stat(this->getFilePath(url).c_str(), &sb) == -1)
     {
         ExceptionCode ex(999);
         throw ex;
