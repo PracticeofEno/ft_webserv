@@ -103,8 +103,8 @@ Response Server::handleRequestCGI(Connection& tmp)
         res.response_data_ = res.response_data_.erase(0, res.response_data_.find("\r\n") + 2);
         if (str_tmp == "\r\n" || res.response_data_ == "")
             break;
-        size_t start_index = str_tmp.find(":");
-        cgi_header[str_tmp.substr(0, start_index)] = str_tmp.substr(start_index + 2, str_tmp.find("\r\n"));
+        size_t colon_index = str_tmp.find(":");
+        cgi_header[str_tmp.substr(0, colon_index)] = str_tmp.substr(colon_index + 2, str_tmp.find("\r\n") - colon_index - 2);
     }
 
     std::stringstream ss, ss2;
@@ -119,6 +119,10 @@ Response Server::handleRequestCGI(Connection& tmp)
     if (cgi_header.find("Content-Type") != cgi_header.end())
     {
         res.header_["Content-Type"] = cgi_header.find("Content-Type")->second;
+    }
+    if (cgi_header.find("Location") != cgi_header.end())
+    {
+        res.header_["Location"] = cgi_header.find("Location")->second;
     }
     res.status_ = ResponseStatus(code);
     res.http_version_ = "HTTP/1.1";
@@ -386,7 +390,7 @@ char** Server::getCgiVariable(Request& request, Connection& tmp, Location& locat
     std::string tmp2;
 
     env_tmp.insert(std::pair<std::string, std::string>("AUTH_TYPE", "null"));
-    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "text/html"));
+    env_tmp.insert(std::pair<std::string, std::string>("CONTENT_TYPE", "application/x-www-form-urlencoded"));
     env_tmp.insert(std::pair<std::string, std::string>("GATEWAY_INTERFACE", "CGI/1.1"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_INFO", "/"));
     env_tmp.insert(std::pair<std::string, std::string>("PATH_TRANSLATED", location.getServerRootPath(request.file_) ));

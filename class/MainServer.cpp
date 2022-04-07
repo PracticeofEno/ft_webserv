@@ -378,8 +378,8 @@ void MainServer::start()
             event_cnt = eventWait();
             if (event_cnt == -1)
             {
-                std::cout << "wait() error!" << std::endl;
-                break;
+                std::cout << "wait() error!" << errno << std::endl;// EINTR
+                continue;
             }
             std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
             for (int i = 0; i < event_cnt; i++)

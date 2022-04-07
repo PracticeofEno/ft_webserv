@@ -135,7 +135,11 @@ void Response::readPipe(int pipe)
             this->response_data_.append(buf);
         }
         else
-            break;
+        {
+            std::string check = buf;
+            if (check.find("\r\n") != std::string::npos)
+                break;
+        }
         // 음수일 때 에러 처리 필요할까?
     }
 }

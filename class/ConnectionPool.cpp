@@ -225,6 +225,8 @@ void ConnectionPool::eraseTimeOut(long decrease_time)
             {
                 std::cout << "time out delete fd : " << it->socket_ << std::endl;
                 deleteConnection(*it);
+                if (it == ite)
+                    break;
             }
         }
         it++;

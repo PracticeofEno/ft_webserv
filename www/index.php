@@ -6,7 +6,7 @@
 		<title>board</title>
 	</head>
 	<body>
-		<h1>게시판</h1>
+		<h1><a href=index.php>board</a></h1>
 		<ol>
 			<?php
 				$list = scandir('./board');
@@ -20,6 +20,22 @@
 				}
 			?>
 		</ol>
+		<form action="create.php" method="POST">
+			<!-- <input type="hidden" type="submit" value="create"> -->
+			<input type="submit" value="create">
+		</form>
+		<?php if (isset($_GET['id'])) { ?>
+		<form action="update.php?id=<?=$_GET['id']?>">
+			<input type ="hidden" type="text" name="id" value="<?=$_GET['id']?>">
+			<input type="submit" value="update">
+		</form>
+		<?php } ?>
+		<?php if (isset($_GET['id'])) { ?>
+		<form action="delete.php?id=<?=$_GET['id']?>">
+			<input type ="hidden" type="text" name="id" value="<?=$_GET['id']?>">
+			<input type="submit" value="delete">
+		</form>
+		<?php } ?>
 			<?php
 				$file = fopen('board/'.$_GET['id'], "r");
 				if (!$file)
