@@ -369,10 +369,12 @@ int MainServer::eventWait()
         event_cnt = epoll_wait(_epfd, _ep_events_buf, EPOLL_SIZE, this->cons_.getMinTimeOut());
     }
     current_time = get_time();
+    std::cout << std::endl;
     this->cons_.printPool();
     this->cons_.eraseTimeOut(current_time - last_time);
     std::cout << "=================================" << std::endl;
     this->cons_.printPool();
+    std::cout << std::endl;
     return event_cnt;
 }
 
@@ -384,16 +386,12 @@ void MainServer::start()
 
         event_cnt = eventWait();
         if (event_cnt == -1)
-        {
-            //std::cout << "wait() error!" << errno << std::endl; // EINTR
             continue;
-        }
         std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
         for (int i = 0; i < event_cnt; i++)
         {
-            cons_.getConnection(_ep_events_buf[i].data.fd).timeout_ = 20000;
-            // std::cout << this->cons_.cons_.size() << std::endl;
-            std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
+            if (cons_.checkSocket(_ep_events_buf[i].data.fd, CLIENT))
+                cons_.getConnection(_ep_events_buf[i].data.fd).timeout_ = 20000;
             if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLRDHUP)
             {
                 cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;

@@ -56,6 +56,7 @@ void Connection::handleException()
     res.header_["Server"] = server.server_name_;
     res.header_["Date"] = generateTime();
     res.header_["Connection"] = "Keep-Alive";
+    res.header_["Keep-Alive"] = "20";
     res.status_ = ResponseStatus(this->e_.code_);
     res.http_version_ = "HTTP/1.1";
 

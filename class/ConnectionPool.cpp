@@ -230,6 +230,7 @@ void ConnectionPool::eraseTimeOut(long decrease_time)
             if (it->timeout_ < 0)
             {
                 std::cout << "time out delete fd : " << it->socket_ << std::endl;
+                close(it->socket_);
                 it = this->cons_.erase(it);
                 ite = cons_.end();
                 if (it == ite)

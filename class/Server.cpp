@@ -127,6 +127,7 @@ Response Server::handleRequestCGI(Connection& tmp)
     res.status_ = ResponseStatus(code);
     res.http_version_ = "HTTP/1.1";
     res.header_["Connection"] = "Keep-Alive";
+    res.header_["Keep-Alive"] = "20";
     
     size = res.response_data_.size();
     ss2 << size;
@@ -190,6 +191,7 @@ Response Server::GETHandler(Request &request, Location& location)
     res.addHeader("Last-Modified", location.getRecentTime(request.file_));
     res.addHeader("Content-Length", location.getFileSize(request.file_));
     res.addHeader("Connection", "Keep-Alive");
+    res.header_["Keep-Alive"] = "20";
     res.file_path_ = location.getFilePath(request.file_);
 
     //디렉토리라면 content-type 텍스트로 바꿔주고 response_data에 
@@ -254,6 +256,7 @@ Response Server::POSTHandler(Request &request, Location &location)
         response.addHeader("Server", this->server_name_);
         response.addHeader("Date", generateTime());
         response.header_["Connection"] = "Keep-alive";
+        response.header_["Keep-Alive"] = "20";
         response.header_["Content-Type"] = "text/plain";
         response.response_data_ = "201 Created";
         response.header_["Content-Length"] = "11";
@@ -277,6 +280,7 @@ Response Server::POSTHandler(Request &request, Location &location)
         response.addHeader("Server", this->server_name_);
         response.addHeader("Date", generateTime());
         response.header_["Connection"] = "Keep-alive";
+        response.header_["Keep-Alive"] = "20";
         response.header_["Content-Type"] = "text/plain";
         response.file_path_ = "";
     }
