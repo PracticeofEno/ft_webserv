@@ -169,7 +169,7 @@ bool Location::isDir(std::string url)
         return false;
 }
 
-std::string Location::getDirectoryList(std::string url)
+std::string Location::getDirectoryList(std::string filename, std::string location)
 {
     std::string buf;
     std::string file_list;
@@ -177,14 +177,16 @@ std::string Location::getDirectoryList(std::string url)
     struct dirent *file = NULL;
     
 
-    if ((dir_ptr = opendir(getFilePath(url).c_str())) == NULL)
+    if ((dir_ptr = opendir(getFilePath(filename).c_str())) == NULL)
     {
         ExceptionCode ex(999);
         throw ex;
     }
     while ((file = readdir(dir_ptr)) != NULL)
     {
-        file_list.append("<a href=\"./");
+        file_list.append("<a href=\".");
+        file_list.append(location);
+        file_list.append("/");
         file_list.append(file->d_name);
         file_list.append("\">");
         file_list.append(file->d_name);

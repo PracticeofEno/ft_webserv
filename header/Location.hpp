@@ -33,7 +33,7 @@ class Location
         std::string getFilePath(std::string url);
         std::string getFileSize(std::string url);
         std::string getRecentTime(std::string url);
-        std::string getDirectoryList(std::string url);
+        std::string getDirectoryList(std::string file, std::string location);
         std::string getServerRootPath(std::string file);
         std::string getUploadPath(std::string url);
         std::string getCgiCommand(std::string filename);

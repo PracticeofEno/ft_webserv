@@ -65,7 +65,6 @@ void Request::readSocket(int socket)
         strlen = read(socket, buf, BUF_SIZE);
         if (strlen == 0)
         {
-            std::cout << "0byte read!! shipar uma!!! "<< std::endl;
             this->disconnect_ = true;
             break;
         }

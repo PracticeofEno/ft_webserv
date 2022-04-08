@@ -50,7 +50,7 @@ void Response::send(int fd)
     }
     else
     {
-        std::cout << writeHeader() << std::endl;
+        //std::cout << writeHeader() << std::endl;
         length = send_message.size() + response_data_.size();
         buffer = new unsigned char[length];
         memcpy(buffer, send_message.c_str(), send_message.size());

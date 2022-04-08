@@ -200,7 +200,7 @@ Response Server::GETHandler(Request &request, Location& location)
         {
             std::stringstream ss;
             res.header_["Content-Type"] = "text/html";
-            res.response_data_ = location.getDirectoryList(request.file_);
+            res.response_data_ = location.getDirectoryList(request.file_, request.location_);
             ss << res.response_data_.size();
             res.header_["Content-Length"] = ss.str();
             res.file_path_ = "";
