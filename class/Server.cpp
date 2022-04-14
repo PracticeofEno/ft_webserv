@@ -328,13 +328,38 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
     int pip_to_child[2];
     int pip_to_parrent[2];
 
-    char **arg = new char*[3];
-	arg[0] = new char[50];
-	arg[1] = new char[50];
-    arg[2] = NULL;
+    char **arg = 0;
 	
-    std::string tmp = location.getCgiCommand(request.file_);
-    strncpy(arg[0], tmp.c_str(), tmp.size() + 1);
+    std::string tmp = location.getCgiCommand();
+    if (tmp.find("ubuntu") != std::string::npos)
+    {
+        std::cout << location.getFilePath(request.file_) << std::endl;
+        std::ifstream is(location.getFilePath(request.file_).c_str());
+        if (is)
+        {
+            int length;
+            char *buffer;
+            // seekg를 이용한 파일 크기 추출
+            is.seekg(0, is.end);
+            length = (int)is.tellg();
+            is.seekg(0, is.beg);
+
+            // malloc으로 메모리 할당
+            buffer = new char[length];
+            // read data as a block:
+            is.read((char *)buffer, length);
+            is.close();
+            request.body_.clear();
+            request.body_.append(buffer);
+            if (request.body_.find("\n") != std::string::npos)
+                request.body_.erase(request.body_.find("\n"), std::string::npos);
+            delete[] buffer;
+        }
+    }
+    else if (tmp == "CGI-NONE")
+    {
+        throw ExceptionCode(999);
+    }
 
     env = getCgiVariable(request, con, location);
 
@@ -361,7 +386,7 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
         dup2(pip_to_parrent[1], STDOUT_FILENO);
         close(pip_to_child[1]);
         close(pip_to_parrent[0]);
-        execvpe(arg[0], arg, env);
+        execvpe(tmp.c_str() , arg, env);
     }
     else
     {
@@ -377,10 +402,6 @@ void Server::CGIHandler(Request& request, Connection& con, Location& location)
         delete[] env[i];
     delete[] env[i];
     delete[] env;
-    delete arg[0];
-    delete arg[1];
-    delete arg[2];
-    delete[] arg;
 }
 
 //env 동적 할당해서 끝나고 해제해줘야함

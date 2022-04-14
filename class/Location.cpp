@@ -121,7 +121,7 @@ std::string Location::getUploadPath(std::string url)
     char buf[4096];
     realpath(".", buf);
     std::string current_path(buf);
-    current_path.append("/");
+    current_path.append("/www/");
     current_path.append(this->upload_path_);
     current_path.append("/");
     current_path.append(url.substr(url.find_last_of("/") + 1, std::string::npos));  
@@ -180,11 +180,12 @@ std::string Location::getDirectoryList(std::string filename, std::string locatio
     if ((dir_ptr = opendir(getFilePath(filename).c_str())) == NULL)
     {
         ExceptionCode ex(999);
+        free(dir_ptr);
         throw ex;
     }
     while ((file = readdir(dir_ptr)) != NULL)
     {
-        file_list.append("<a href=\".");
+        file_list.append("<a href=\"http://127.0.0.1");
         file_list.append(location);
         file_list.append("/");
         file_list.append(file->d_name);
@@ -200,7 +201,7 @@ std::string Location::getDirectoryList(std::string filename, std::string locatio
     buf.append(file_list);
     buf.append("</body>\r\n");
     buf.append("</html>\r\n");
-
+    free(dir_ptr);
     return buf;
 }
 
@@ -215,18 +216,24 @@ std::string Location::getServerRootPath(std::string file)
     return current_path;
 }
 
-std::string Location::getCgiCommand(std::string filename)
+std::string Location::getCgiCommand()
 {
+    char buf[4096];
+    realpath(".", buf);
+    std::string current_path(buf);
+    current_path.append("/www/");
+    current_path.append("/cgi-bin/");
+
     std::string tmp = "www/cgi-bin/";
     if (this->cgi_extension_ == "php")
         return "php-cgi";
     else if (this->cgi_extension_ == "blabla")
     {
-        tmp.append(filename);
-        return tmp;
+        current_path.append("ubuntu_cgi_tester");
+        current_path = replace_all(current_path, "//", "/");
+        return current_path;
     }
-    tmp.append(filename);
-    return tmp;
+    return "CGI-NONE";
 }
 
 bool Location::checkValid()

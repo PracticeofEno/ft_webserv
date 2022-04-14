@@ -308,7 +308,8 @@ void MainServer::handleReadEvent(int event_fd)
         Server &server = sp_.getServer(con.reqeust_.header_["Host"], con.port_);
         // CGI실행 결과를 받음.
         con.response_.readPipe(con.pipe_read_);
-        //std::cout << con.response_.response_data_ << std::endl;
+        std::cout << "======= cgi receive data =======" << std::endl;
+        std::cout << con.response_.response_data_ << std::endl;
         con.response_ = server.handleRequestCGI(con);
         con.response_.state = READY;
         close(con.pipe_read_);
@@ -390,11 +391,14 @@ void MainServer::start()
         std::cout << "client_count : " << this->cons_.cons_.size() - 2 << std::endl;
         for (int i = 0; i < event_cnt; i++)
         {
+            std::cout << "event fd : " << _ep_events_buf[i].data.fd << std::endl;
             if (cons_.checkSocket(_ep_events_buf[i].data.fd, CLIENT))
                 cons_.getConnection(_ep_events_buf[i].data.fd).timeout_ = 20000;
             if (_ep_events_buf[i].events & EPOLLERR || _ep_events_buf[i].events & EPOLLRDHUP)
             {
                 cons_.getConnection(_ep_events_buf[i].data.fd).disconnect_ = true;
+                cons_.deleteConnection(cons_.getConnection(_ep_events_buf[i].data.fd));
+                continue;
             }
             else if (_ep_events_buf[i].events & EPOLLIN)
             {

