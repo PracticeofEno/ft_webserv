@@ -5,7 +5,7 @@
 - config 파일 (nginx와 흡사하게 만듬)
 - 다중 서버 실행(config파일에 여러개 서버설정) 
 - Client Body 체크 
-- Location, Deirectory Listing, File Upload(MIME TYPE), CGI  
+- Location, Directory Listing, File Upload(MIME TYPE), CGI, Default Error Page(강아지사진과 함께 나옴)
 ### 실행방법
 ```
 git clone ~~
