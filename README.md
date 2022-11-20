@@ -75,12 +75,12 @@ http {
 		}
 
 		location { } ...
-		}
+	}
 
 	server {
 			server_name blabla2
          		....
-  		}
+  	}
 }
 ```
 
