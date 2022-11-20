@@ -64,7 +64,7 @@ http {
 		
 		location /HAHA {
 			method              GET POST DELETE
-			redirection         ?
+			redirection         server2.com
 			path                /wwww/hoho/
 			directory_listing   on | off
 			default_file_to_answer_if_the_request_is_a_directory blabla.file
