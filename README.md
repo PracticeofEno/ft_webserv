@@ -5,7 +5,7 @@
 
 ## 환경
 - linux
-- 
+- 언어 : C++
 
 ## 필구 충족 사항
 - 모든 매크로를 사용하고 FD_SET, FD_CLR, FD_ISSET, FD_ZERO와 같이 정의할 수 있습니다.
