@@ -60,7 +60,7 @@ http {
 		server_name           blabla
 		default_error_page    blabla.file
 		client_body_size      8192
-	  root                  /www/            
+	  	root                  /www/            
 		
 		location /HAHA {
 			method              GET POST DELETE
@@ -75,12 +75,12 @@ http {
 		}
 
 		location { } ...
-	}
+		}
 
 	server {
 			server_name blabla2
-         ....
-  }
+         		....
+  		}
 }
 ```
 
